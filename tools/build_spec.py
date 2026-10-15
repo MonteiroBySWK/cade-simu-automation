@@ -2,6 +2,7 @@
 """Gera um .cad a partir de uma especificação JSON, via MCP (cad_build).
 
 Uso: python3 tools/build_spec.py tools/examples/intercalada.spec.json out/x.cad
+     python3 tools/build_spec.py tools/examples/intercalada.layout.json out/x.cad  # DSL topologica
 """
 import json
 import sys
@@ -15,6 +16,9 @@ def main(argv):
     if len(argv) < 2:
         print(__doc__); return 2
     spec = json.loads(Path(argv[0]).read_text())
+    if "layout" in spec or argv[0].endswith(".layout.json"):
+        import layout  # motor de layout: spec topologica -> spec baixa
+        spec = layout.compilar(spec.get("layout", spec))
     out = argv[1]
     res = mcp_call.call("cad_build", {
         "titulo": spec.get("titulo", "NOVO"),
