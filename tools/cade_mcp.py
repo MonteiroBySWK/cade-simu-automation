@@ -378,6 +378,13 @@ def _rotear(ents, simbolos, conexoes, wire, rails=None):
                 s_esc = -1 if off[1] <= 0 else 1     # sai do corpo antes de virar
                 e1 = (p1[0], p1[1] + s_esc * 7)
                 emit(p1, e1)
+                # RETO: se a coluna do pino estiver livre até o trilho, desce direto
+                boxes0 = _symboxes(ents)
+                if not _cruza((e1, (e1[0], r["y"])), boxes0, skip=(p1, e1)):
+                    emit(e1, (e1[0], r["y"]))
+                    vert[lado_v[0]].add(e1[0])
+                    feito = True
+                    break
                 via = c.get("via")
                 if via is None:
                     # escolhe uma coluna livre (fora de qualquer corpo) até o trilho
