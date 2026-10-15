@@ -151,6 +151,18 @@ def teste(path):
     check("RT2 aberto bloqueia", {RT2: True, S1: True}, [], st="OK")
     # 9) pressão simultânea = corrida (relés) -> solver detecta
     check("S1+S2 simultâneo = corrida", {S1: True, S2: True}, None, st="RACE")
+    # 10) caminho simétrico: S2 liga KM2
+    check("S2 liga KM2", {S2: True}, ["KM2"], st="OK")
+    # 11) selo mantém KM2
+    check("selo mantém KM2", {}, ["KM2"], st="OK", inicial={"KM2"})
+    # 12) S0 desliga vindo de KM2
+    check("S0 desliga (de KM2)", {S0: True}, [], st="OK", inicial={"KM2"})
+    # 13) RT1 aberto barra o caminho S2 também
+    check("RT1 aberto bloqueia S2", {RT1: True, S2: True}, [], st="OK")
+    # 14) RT2 aberto barra o caminho S2 também
+    check("RT2 aberto bloqueia S2", {RT2: True, S2: True}, [], st="OK")
+    # 15) estado vazio não energiza nada
+    check("repouso = tudo desligado", {}, [], st="OK")
     print(f"RESULTADO: {ok}/{tot} OK")
     return ok == tot
 
@@ -158,7 +170,8 @@ def teste(path):
 if __name__ == "__main__":
     if len(sys.argv) < 2:
         print(__doc__); raise SystemExit(2)
+    args = [a for a in sys.argv[1:] if a != "--test"]
     if "--test" in sys.argv:
-        ok = teste(sys.argv[1])
+        ok = teste(args[0])
         raise SystemExit(0 if ok else 1)
-    tabela(sys.argv[1])
+    tabela(args[0])
