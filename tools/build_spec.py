@@ -21,6 +21,7 @@ def main(argv):
         "simbolos_json": json.dumps(spec["simbolos"]),
         "conexoes_json": json.dumps(spec.get("conexoes", [])),
         "fios_json": json.dumps(spec.get("fios", [])),
+        "rails_json": json.dumps(spec.get("rails", [])),
         "out_path": out,
     })
     print(res)
