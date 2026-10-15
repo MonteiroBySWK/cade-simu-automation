@@ -21,7 +21,25 @@
    6,
    0
   ],
-  "fonte": "learn_pins2 (endpoints de fio em 108 .cad)"
+  "fonte": "learn_pins2 + INICIANTES PRIMEIRO COMANDO.cad (labels 1-3-5/2-4-6, U1-V1-W1-PE)",
+  "pins": {
+   "PE": [
+    18,
+    0
+   ],
+   "U1": [
+    0,
+    0
+   ],
+   "V1": [
+    6,
+    0
+   ],
+   "W1": [
+    12,
+    0
+   ]
+  }
  },
  "1001": {
   "A": [
@@ -318,7 +336,33 @@
    0,
    12
   ],
-  "fonte": "learn_pins2 (endpoints de fio em 108 .cad)"
+  "fonte": "learn_pins2 + INICIANTES PRIMEIRO COMANDO.cad (labels 1-3-5/2-4-6, U1-V1-W1-PE)",
+  "pins": {
+   "1": [
+    0,
+    0
+   ],
+   "2": [
+    0,
+    12
+   ],
+   "3": [
+    6,
+    0
+   ],
+   "4": [
+    6,
+    12
+   ],
+   "5": [
+    12,
+    0
+   ],
+   "6": [
+    12,
+    12
+   ]
+  }
  },
  "2004": {
   "A": [
@@ -832,7 +876,33 @@
    0,
    12
   ],
-  "fonte": "learn_pins2 (endpoints de fio em 108 .cad)"
+  "fonte": "learn_pins2 + INICIANTES PRIMEIRO COMANDO.cad (labels 1-3-5/2-4-6, U1-V1-W1-PE)",
+  "pins": {
+   "1": [
+    0,
+    0
+   ],
+   "2": [
+    0,
+    12
+   ],
+   "3": [
+    6,
+    0
+   ],
+   "4": [
+    6,
+    12
+   ],
+   "5": [
+    12,
+    0
+   ],
+   "6": [
+    12,
+    12
+   ]
+  }
  },
  "6008": {
   "A": [
@@ -856,7 +926,33 @@
    0,
    21
   ],
-  "fonte": "learn_pins2 (endpoints de fio em 108 .cad)"
+  "fonte": "learn_pins2 + INICIANTES PRIMEIRO COMANDO.cad (labels 1-3-5/2-4-6, U1-V1-W1-PE)",
+  "pins": {
+   "1": [
+    0,
+    0
+   ],
+   "2": [
+    0,
+    21
+   ],
+   "3": [
+    6,
+    0
+   ],
+   "4": [
+    6,
+    21
+   ],
+   "5": [
+    12,
+    0
+   ],
+   "6": [
+    12,
+    21
+   ]
+  }
  },
  "6010": {
   "A": [

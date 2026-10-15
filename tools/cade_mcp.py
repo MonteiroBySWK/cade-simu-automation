@@ -300,11 +300,43 @@ def _shorts(ents):
 
 
 def _pin_coord(sym, pino):
-    """Coordenada do pino A/B de um símbolo, via geometria aprendida dos exemplos."""
+    """Coordenada do pino (nomeado U1/V1/1/3... ou A/B) aprendida dos exemplos."""
     pins = _pins().get(sym["classe"])
-    if not pins or pino not in pins:
+    if not pins:
         return None
-    return (int(sym["x"]) + pins[pino][0], int(sym["y"]) + pins[pino][1])
+    nomeados = pins.get("pins", {})
+    off = nomeados.get(pino) or (pins.get(pino) if pino in ("A", "B") else None)
+    if off is None:
+        return None
+    return (int(sym["x"]) + off[0], int(sym["y"]) + off[1])
+
+
+def _symboxes(ents):
+    """Caixas dos corpos dos símbolos (inset 2) p/ o keep-out."""
+    out = []
+    for e in ents:
+        if e["id"] in ("4000", "4018", "4009", "4001", "8", "4010"):
+            continue
+        try:
+            x, y, w, h = int(e["nums"][8]), int(e["nums"][9]), int(e["nums"][14]), int(e["nums"][15])
+        except (ValueError, IndexError):
+            continue
+        if w > 4 and h > 4:
+            out.append((x + 2, y + 2, x + w - 2, y + h - 2))
+    return out
+
+
+def _cruza(seg, boxes, skip=()):
+    (x1, y1), (x2, y2) = seg
+    L = max(abs(x2 - x1), abs(y2 - y1)) or 1
+    for i in range(L + 1):
+        px, py = x1 + (x2 - x1) * i // L, y1 + (y2 - y1) * i // L
+        if any(abs(px - a) <= 4 and abs(py - b) <= 4 for a, b in skip):
+            continue          # vizinhança do pino: o fio encosta/sai dele
+        for b in boxes:
+            if b[0] < px < b[2] and b[1] < py < b[3]:
+                return True
+    return False
 
 
 def _rotear(ents, simbolos, conexoes, wire, rails=None):
@@ -341,18 +373,26 @@ def _rotear(ents, simbolos, conexoes, wire, rails=None):
                 if p1 is None:
                     return f"ERRO: sem geometria p/ {outro_v[0]}.{outro_v[1]}"
                 r = rail_map[lado_v[0]]
-                d_pin = _pins().get(s["classe"], {}).get(outro_v[1], [0, 0])[1]
-                s_esc = -1 if d_pin <= 0 else 1     # sai do corpo antes de virar
+                info = _pins().get(s["classe"], {})
+                off = (info.get("pins") or {}).get(outro_v[1]) or info.get(outro_v[1], [0, 0])
+                s_esc = -1 if off[1] <= 0 else 1     # sai do corpo antes de virar
                 e1 = (p1[0], p1[1] + s_esc * 7)
                 emit(p1, e1)
                 via = c.get("via")
-                if via is not None:
-                    emit(e1, (int(via), e1[1]))
-                    emit((int(via), e1[1]), (int(via), r["y"]))
-                    vert[lado_v[0]].add(int(via))
-                else:
-                    emit(e1, (e1[0], r["y"]))
-                    vert[lado_v[0]].add(e1[0])
+                if via is None:
+                    # escolhe uma coluna livre (fora de qualquer corpo) até o trilho
+                    boxes = _symboxes(ents)
+                    xm = e1[0] + 8
+                    for _ in range(24):
+                        if not any(b[0] - 2 <= xm <= b[2] + 2 and
+                                   min(e1[1], r["y"]) - 2 <= (b[1] + b[3]) / 2 <= max(e1[1], r["y"]) + 2
+                                   for b in boxes):
+                            break
+                        xm += 6
+                    via = xm
+                emit(e1, (int(via), e1[1]))
+                emit((int(via), e1[1]), (int(via), r["y"]))
+                vert[lado_v[0]].add(int(via))
                 feito = True
                 break
         if feito:
@@ -372,19 +412,31 @@ def _rotear(ents, simbolos, conexoes, wire, rails=None):
         s1 = -1 if d1 <= 0 else 1     # pino na borda de cima escapa p/ CIMA
         s2 = -1 if d2 <= 0 else 1
         g = 7
-        a1 = (x1, y1 + s1 * g)
-        b1 = (x2, y2 + s2 * g)
-        pts = [(x1, y1), a1]
-        if s1 == s2:
-            # mesmo lado: pivota no x do destino (não cruza o símbolo)
-            if a1[1] != b1[1]:
-                pts.append((x2, a1[1]))
+        # pinos no MESMO x: fio reto, se o trecho não atravessar símbolo
+        if x1 == x2 and not _cruza((p1, p2), _symboxes(ents), skip=(p1, p2)):
+            pts = [p1, p2]
         else:
-            # lados opostos: COLUNA DE DESVIO única por conexão (evita que dois
-            # nets diferentes se encontrem num mesmo canto e fechem curto)
-            xm = x2 + (10 if x2 >= x1 else -10) + 3 * idx
-            pts += [(xm, a1[1]), (xm, b1[1])]
-        pts += [b1, (x2, y2)]
+            a1 = (x1, y1 + s1 * g)
+            b1 = (x2, y2 + s2 * g)
+            pts = [(x1, y1), a1]
+            if s1 == s2:
+                # mesmo lado: pivota no x do destino (não cruza o símbolo)
+                if a1[1] != b1[1]:
+                    pts.append((x2, a1[1]))
+            else:
+                # lados opostos: COLUNA DE DESVIO única por conexão e FORA de
+                # qualquer corpo de símbolo (senão o fio atravessa o desenho)
+                boxes = _symboxes(ents)
+                passo = 1 if x2 >= x1 else -1
+                xm = x2 + (10 + 3 * (idx % 4)) * passo
+                for _ in range(12):
+                    if not any(b[0] - 2 <= xm <= b[2] + 2 and
+                               min(a1[1], b1[1]) - 2 <= (b[1] + b[3]) / 2 <= max(a1[1], b1[1]) + 2
+                               for b in boxes):
+                        break
+                    xm += 6 * passo
+                pts += [(xm, a1[1]), (xm, b1[1])]
+            pts += [b1, (x2, y2)]
         for a, b in zip(pts, pts[1:]):
             emit(a, b)
     # 2) emite os trilhos em segmentos (vértice em cada conexão -> nets fecham)

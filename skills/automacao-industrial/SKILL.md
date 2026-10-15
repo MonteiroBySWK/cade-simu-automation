@@ -59,6 +59,34 @@ Um circuito **só simula com alimentação**. Além da lógica, inclua:
 - **Como testar no app**: toolbar `▶` (verde, ~x=503,y=32 da janela) entra em simulação (fios ficam finos; trecho energizado fica **vermelho**); clique nos botões (ex.: S1) — bobina/piloto ligam. `■` (vermelho) para.
 - Verificação sem GUI: `cad_test` (netlist) **não** substitui a simulação real — use os dois.
 
+### Pinos NOMEADOS (multi-terminal) — obrigatório para potência
+`tools/symbol_pins.json` guarda, além de `A`/`B`, um dicionário `pins` por classe:
+- Motor `1000`: `U1(0,0) V1(6,0) W1(12,0) PE(18,0)` — 3 fases + terra, no topo.
+- Contator `2001` e térmico `6007`: `1(0,0) 3(6,0) 5(12,0)` topo e `2(0,12) 4(6,12) 6(12,12)` base.
+- Disjuntor `6009`: `1/3/5` topo e `2/4/6` base em `y=21`.
+
+Em `conexoes` use o **nome do pino**: `{"de":["KM1p","2"],"para":["M1","U1"]}`.
+**Sempre ligue TODOS os terminais** — deixar V1/W1/PE solto é erro grave (o usuário vê).
+
+### Potência trifásica (padrão)
+Uma **coluna por fase**, alinhadas (ex.: x, x+6, x+12), descendo L→Q→F→Térmico→Contator→Motor;
+o `PE` do motor desce ao trilho N. Ramos verticais com pinos alinhados → fio **reto** (sem degrau).
+
+### Fluxo de trabalho (com gate — não pule)
+1. **Medir** pinos nos dados reais: `python3 tools/learn_pins2.py` (endpoints de fio por símbolo).
+2. **Aplicar** em `tools/symbol_pins.json` (nunca estimar "no olho").
+3. **Construir + validar**: `python3 tools/build_spec.py <spec>.json out/x.cad`
+   → tem de imprimir `GATE: OK` (valida + sem curto + `cad_test`).
+4. **Estética**: `python3 tools/wires_check.py out/x.cad` → tem de dar `FIOS: ok`.
+5. **Caber na folha**: conteúdo em x≲455, y≲295 (folha fixa ~460×300).
+6. **Ver** no app (`tools/wine_mgr.py up/max/shot`) antes de declarar pronto.
+
+### Roteador (regras que já estão no `cad_build`)
+- Escape do pino **para fora** do corpo (`s=-1` se o pino está na borda de cima).
+- Pinos no mesmo x e caminho livre → **fio reto**.
+- Coluna de desvio **fora de qualquer corpo** (senão atravessa o desenho).
+- Ligação a trilho gera fio vertical em **coluna livre** automaticamente.
+
 ### Layout
 - **Padrão: BARRAMENTOS (trilhos)** — como os esquemas reais. Declare os trilhos e
   ligue o pino a eles (o build desenha o fio vertical curto e segmenta o trilho):
