@@ -75,7 +75,7 @@ def cad_new(titulo: str, out_path: str, modo: str = "0", versao: str = "3000") -
 
 @mcp.tool()
 def cad_inspect(path: str) -> str:
-    """Resume entidades do .cad: contagem, IDs únicos, rungs ladder, nets. Para planejar edições."""
+    """Resume entidades do .cad: contagem, IDs únicos, rungs ladder, nets por símbolo. Para planejar/verificar."""
     d = Path(path).read_bytes().decode("latin1")
     _, ents, _ = split_entities(d)
     ps = [p for p in map(parse_ent, ents) if p]
@@ -84,20 +84,36 @@ def cad_inspect(path: str) -> str:
     rungs = [(p['seq'], p['id'], (p['labels'] + [''])[0], p['nums'][21], p['nums'][22])
              for p in ps if p['id'] in ('10050', '10051', '10060') and len(p['nums']) > 22]
     nets = sorted({n for p in ps if len(p['nums']) > 22 for n in (p['nums'][21], p['nums'][22]) if n.isdigit()}, key=int)
+    simbolos = [{"id": p['id'], "sub": (p['labels'] + [''])[0], "x": p['nums'][8], "y": p['nums'][9],
+                 "A": p['nums'][21], "B": p['nums'][22]}
+                for p in ps if p['id'] not in ("4000", "4018", "4009", "4001") and len(p['nums']) > 22]
     return json.dumps({"bytes": len(d), "entidades": len(ps),
                        "ids": dict(ids.most_common(25)),
                        "ladder": [{"seq": s, "id": i, "sub": l, "A": a, "B": b} for s, i, l, a, b in rungs],
+                       "simbolos": simbolos,
                        "nets_max": nets[-1] if nets else None}, indent=1, ensure_ascii=False)
 
 
 @mcp.tool()
 def cad_preview(path: str, scale: int = 2) -> str:
-    """Renderiza o esquema como PNG (base64, MCP image). Para o agente VER o circuito."""
+    """Renderiza o esquema como PNG (base64, imagem MCP). Canvas ajustado ao conteúdo."""
     from PIL import Image, ImageDraw
     d = Path(path).read_bytes().decode("latin1")
     _, ents, _ = split_entities(d)
     ps = [p for p in map(parse_ent, ents) if p]
-    W, H = 440, 220
+    xs, ys = [], []
+    for p in ps:
+        n = p["nums"]
+        if len(n) < 16:
+            continue
+        try:
+            ints = [int(v) for v in (n[8], n[9], n[10], n[11], n[14], n[15])]
+        except ValueError:
+            continue
+        xs += [ints[0], ints[2], ints[0] + ints[4]]
+        ys += [ints[1], ints[3], ints[1] + ints[5]]
+    mx, my = (max(xs) if xs else 440), (max(ys) if ys else 220)
+    W, H = max(200, mx + 20), max(160, my + 20)
     img = Image.new("RGB", (W * scale, H * scale), "white")
     dr = ImageDraw.Draw(img)
     S = lambda v: int(v) * scale
