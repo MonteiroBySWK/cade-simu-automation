@@ -60,11 +60,19 @@ Um circuito **só simula com alimentação**. Além da lógica, inclua:
 - Verificação sem GUI: `cad_test` (netlist) **não** substitui a simulação real — use os dois.
 
 ### Layout
-- Comando na faixa `x∈[40,320]`, `y∈[20,150]`; **potência abaixo** (`y≥160`).
-- **A folha é FIXA (~460 × 300 unidades)** e o zoom não se ajusta: **todo o conteúdo
-  tem de caber** (Ymax ≲ 300). Rodapé/legenda não redimensionam a folha.
-- **Sempre rode o gate antes de seguir:** `python3 tools/build_spec.py <spec>.json out/x.cad`
-  → imprime `GATE: OK` ou `GATE: REPROVADO` (falha em curto/cruzamento/teste).
+- **Padrão: BARRAMENTOS (trilhos)** — como os esquemas reais. Declare os trilhos e
+  ligue o pino a eles (o build desenha o fio vertical curto e segmenta o trilho):
+  ```json
+  "rails": [{"nome":"L","y":12,"x0":25,"x1":455},{"nome":"N","y":295,"x0":25,"x1":455}],
+  "conexoes": [{"de":["RT1","A"],"para":["L","rail"]},
+               {"de":["KM1","B"],"para":["N","rail"],"via":215}]
+  ```
+  `via` = x por onde o fio desce (use quando houver símbolo no caminho).
+- Comando à esquerda; potência à direita em **fileiras horizontais**; tudo entre os trilhos.
+- **Medidores (rode sempre):**
+  `python3 tools/build_spec.py <spec>.json out/x.cad` → `GATE: OK|REPROVADO`
+  `python3 tools/wires_check.py out/x.cad` → `FIOS: ok|N trechos atravessam símbolo`
+- **A folha é FIXA (~460 × 300)**: Xmax ≲ 455, Ymax ≲ 295. Fora disso fica fora da moldura.
 - **Símbolos de potência** (`6007` térmico, `6009`/`6010` DJ, `2001` contator, `1000` motor)
   têm os pinos A/B no **mesmo lado** → **empilhe na HORIZONTAL** (fileira com
   espaçamento ≥40 em `x`), nunca em cascata vertical (o roteador auto fecharia
