@@ -12,7 +12,9 @@ description: Projetar, editar e validar circuitos CADe_SIMU 4.0 (.cad) por códi
 
 ## Regras de ouro
 
-1. **Nunca escreva `*`/`#` na mão.** Use `cade_cli` (`parse|emit|validate|new-from-json`) ou scripts que clonam entidades doadoras (`tools/pratica5_build.py` como modelo).
+1. **Nunca escreva `*`/`#` na mão.** Use `cade_cli` (`parse|emit|validate|new-from-json`),
+   o MCP (`cad_emit` com revalidação) ou scripts que clonam entidades doadoras
+   (`tools/pratica5_build.py` como modelo).
 2. **Round-trip byte-idêntico é o gate.** Toda modificação: `parse → emit → cmp` + `cade_cli validate`. Se divergir, pare.
 3. **Clone doadores do próprio acervo** (115 `.cad` em Downloads): símbolo novo = entidade doadora com seq/X/Y/labels/nets trocados. Nunca invente flags/tamanhos.
 4. **`.cad` original nunca in-place**; saída em `out/` ou `pratica5/`. Commits em PT-BR, pequenos.
@@ -49,6 +51,18 @@ H_funcionamento em paralelo com a bobina do contator
 H_falha em série com o NA 97-98 do térmico, alimentado de barra viva
 Sem auto-religamento: selo cai com Q; retomada exige novo comando
 ```
+
+## Comunicação com o agente (MCP)
+
+`tools/cade_mcp.py` é o servidor MCP (stdio) — OpenCode e Claude Code chamam
+as mesmas ferramentas: `cad_validate`, `cad_parse`, `cad_emit`, `cad_new`,
+`cad_inspect`, `cad_preview`. Loop padrão para qualquer tarefa:
+
+1. `cad_inspect` (ou `cad_parse`) para entender o ponto de partida.
+2. Compõe/edita `cade.json` — nunca `.cad` cru.
+3. `cad_emit` → `.cad` (já sai revalidado).
+4. `cad_preview` para VER o resultado antes de declarar pronto.
+5. `ladder_sim.py` quando a tarefa mexe em lógica (permissões, selos).
 
 ## Entregáveis de atividade (checklist)
 
