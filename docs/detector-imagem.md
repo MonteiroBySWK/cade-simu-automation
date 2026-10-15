@@ -16,13 +16,16 @@ Pipeline (`tools/detect_symbols.py`):
 ## Estado atual e limites
 
 - Regras (forma geométrica) nos `Exemplos/*.png`: P≈0,87 / R≈0,46.
-- **Medição honesta (leave-one-case-out)** no dataset minerado (76 símbolos,
-  10 casos), `tools/eval_loo.py`:
+- **Medição honesta (leave-one-case-out)** no dataset minerado
+  (221 símbolos, 30 casos), `tools/eval_loo.py`:
 
   | método | P | R |
   |---|---|---|
-  | regras geométricas | 1,00 | 0,11 |
-  | **kNN (dataset minerado)** | **0,83** | **0,79** |
+  | regras geométricas | 1,00 | 0,13 |
+  | **kNN (dataset minerado)** | **0,88** | **0,89** |
+
+  Curva de escala: com 76 símbolos → P=0,83/R=0,79; com 221 → **P=0,88/R=0,89**.
+  A meta de 80% (critério F2) é atingida e cresce com mais dados.
 
 - **Diagnóstico:** as regras puras atingem o teto por **falta de dados** (cada
   correção de falso positivo custa recall em outro símbolo). Com o dataset
