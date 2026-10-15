@@ -147,6 +147,42 @@ def cad_from_image(path: str, out_json: str = "/tmp/cade_from_img.json") -> str:
     return (r.stdout or r.stderr).strip()[:4000]
 
 
+@mcp.tool()
+def cad_simulate(path: str, entradas_json: str = "{}", inicial_json: str = "[]") -> str:
+    """Simula a LÓGICA do circuito pelo netlist (sem GUI) e devolve as bobinas energizadas.
+
+    entradas_json: {"S1":true,...} — chaves acionadas (True = pressionado/desligado/trip).
+    inicial_json: ["KM1"] — bobinas já energizadas no estado inicial (para selo/memória).
+    status ∈ {OK, RACE (corrida), INSTAVEL}. Use para TESTAR de verdade o comando."""
+    sys.path.insert(0, str(ROOT / "tools"))
+    import netlist_sim as ns
+    c = ns.Circuito(path)
+    try:
+        ent = json.loads(entradas_json)
+        ini = set(json.loads(inicial_json))
+    except json.JSONDecodeError as e:
+        return f"ERRO json: {e}"
+    status, bob = c.resolve(ent, ini)
+    return json.dumps({"status": status, "bobinas_energizadas": sorted(bob),
+                       "supply": c.supply, "retorno": c.ret,
+                       "entradas": c.entradas, "bobinas": sorted(c.bobinas)},
+                      ensure_ascii=False)
+
+
+@mcp.tool()
+def cad_test(path: str) -> str:
+    """Roda a verificação funcional embutida (tabela-verdade) de um circuito de comando
+    com selo/intertravamento/térmico. Retorna OK/FALHA por caso."""
+    sys.path.insert(0, str(ROOT / "tools"))
+    import netlist_sim as ns
+    import io
+    import contextlib
+    buf = io.StringIO()
+    with contextlib.redirect_stdout(buf):
+        ok = ns.teste(path)
+    return ("PASSOU\n" if ok else "FALHOU\n") + buf.getvalue()
+
+
 # --- autoria do zero (símbolos + fios) --------------------------------------
 
 _LIB = None

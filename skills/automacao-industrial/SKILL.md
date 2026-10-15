@@ -96,8 +96,18 @@ python3 tools/mcp_call.py cad_preview  '{"path":"out/x.cad"}'
 2. Desenhar a topologia (Parte A) → `cad_build` com `conexoes_json`.
 3. `cad_validate` (tem que dar OK) e checar `AVISO curto`.
 4. `cad_inspect` → conferir os nets (nós devem bater com a topologia).
-5. `cad_preview` → **ver** o esquema.
-6. Abrir no CADe (Wine) p/ confirmar; `tools/render_cad.sh out/x.cad out/x.png`.
+5. **`cad_test`** → prova funcional (selo, intertravamento, térmico, sem auto-religamento).
+   Para casos próprios: `cad_simulate` com `entradas_json` + `inicial_json`.
+6. `cad_preview` → **ver** o esquema.
+7. Abrir no CADe (Wine) p/ confirmar; `tools/render_cad.sh out/x.cad out/x.png`.
+
+### Verificação funcional (o que o `cad_test` prova)
+- **Selo/memória**: com a bobina ligada e nada acionado, ela **permanece**.
+- **Intertravamento (sequencial)**: com KM1 ligado, S2 **não** liga KM2 (e vice-versa).
+- **Permissão**: térmico aberto (RT) **barra** a partida.
+- **Sem auto-religamento**: soltar o desliga **não** religa.
+- **Corrida**: pressão **simultânea** de S1+S2 é detectada como `RACE` (proteção só
+  garante ordem sequencial, não simultânea — comportamento real de relés).
 
 ### IDs úteis
 `2001` contator potência · `6007` térmico potência (1-3-5/2-4-6) · `6010`/`6009` disjuntor ·
