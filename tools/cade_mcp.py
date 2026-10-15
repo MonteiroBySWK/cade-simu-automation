@@ -134,15 +134,19 @@ def cad_from_image(path: str, out_json: str = "/tmp/cade_from_img.json") -> str:
 # --- autoria do zero (símbolos + fios) --------------------------------------
 
 _LIB = None
+ACERVO = Path("/home/monteiro/Downloads/CADe_SIMU 4.0 [BR]/CADe_SIMU 4.0 [BR]/Atividades para Simular/115 arquivos CADe_SIMU/Arquivos .cad")
 
 
 def _lib():
-    """(header, protos, footer, wire): catálogo de entidades doadoras do corpus."""
+    """(header, protos, footer, wire): catálogo de entidades doadoras do corpus+acervo."""
     global _LIB
     if _LIB is None:
         import mk_dataset as M
         header, protos, footer, wire = M.load_donor()
-        for f in sorted((ROOT / "corpus").glob("*.cad")):
+        fontes = sorted((ROOT / "corpus").glob("*.cad"))
+        if ACERVO.is_dir():
+            fontes += sorted(ACERVO.glob("*.cad"))
+        for f in fontes:
             try:
                 _, ents, _ = split_entities(f.read_bytes().decode("latin1"))
             except Exception:
@@ -169,15 +173,20 @@ def cad_symbols() -> str:
 
 
 @mcp.tool()
-def cad_build(titulo: str, simbolos_json: str, fios_json: str = "[]", out_path: str = "/tmp/novo.cad") -> str:
-    """CRIA UM .CAD DO ZERO (sem reusar arquivo). simbolos_json: lista de
-    {classe, x, y, rotulo?}; fios_json: lista de {x1, y1, x2, y2}. Grava out_path e valida.
-    Ex.: simbolos_json='[{"classe":"2001","x":60,"y":40,"rotulo":"-KM1"}]'."""
-    import mk_dataset as M
+def cad_build(titulo: str, simbolos_json: str, fios_json: str = "[]", out_path: str = "/tmp/novo.cad",
+              auto_net: bool = True, conexoes_json: str = "[]") -> str:
+    """CRIA UM .CAD DO ZERO (sem reusar arquivo).
+    simbolos_json: [{"classe","x","y","rotulo"?,"id"?}]
+    conexoes_json: [{"de":["<id>","A|B"],"para":["<id>","A|B"]}] — liga pinos por NOME
+      (recomendado; o build roteia o fio e calcula os NETs automaticamente).
+    fios_json: [{"x1","y1","x2","y2"}] — segmentos manuais (opcional).
+    Com auto_net=True os NETs saem calculados por geometria (pinos×fios).
+    Ex.: conexoes_json='[{"de":["B1","B"],"para":["K1","A"]}]'."""
     header, protos, footer, wire = _lib()
     try:
         simbolos = json.loads(simbolos_json)
         fios = json.loads(fios_json)
+        conexoes = json.loads(conexoes_json)
     except json.JSONDecodeError as e:
         return f"ERRO json: {e}"
     if not isinstance(simbolos, list):
@@ -185,32 +194,178 @@ def cad_build(titulo: str, simbolos_json: str, fios_json: str = "[]", out_path: 
     faltando = [s.get("classe") for s in simbolos if s.get("classe") not in protos]
     if faltando:
         return f"ERRO classe(s) inexistente(s): {faltando}. Use cad_symbols."
-    ents = []
-    seq = 1
+    ents = []   # (id, labels, nums)
     for f in fios:
-        ents.append(M.wire_at(wire, seq, int(f["x1"]), int(f["y1"]), int(f["x2"]), int(f["y2"]))); seq += 1
+        n = list(wire["nums"])
+        n[8], n[9], n[10], n[11] = str(int(f["x1"])), str(int(f["y1"])), str(int(f["x2"])), str(int(f["y2"]))
+        ents.append({"id": "4000", "labels": wire["labels"], "nums": n})
     for s in simbolos:
         p = protos[s["classe"]]
-        e = M.ent_at(p, seq, int(s["x"]), int(s["y"]))
-        if s.get("rotulo"):
-            # substitui o 1º rótulo (logo após 'ID#')
-            head, _, rest = e.partition("#")          # head='*seq*ID', rest='l0#l1#...'
-            parts = rest.split("#", 1)
-            parts[0] = s["rotulo"]
-            e = head + "#" + (parts[0] + "#" + parts[1] if len(parts) > 1 else parts[0])
-        ents.append(e); seq += 1
+        n = list(p["nums"])
+        n[0] = n[1] = "1"
+        n[8], n[9] = str(int(s["x"])), str(int(s["y"]))
+        labs = list(p["labels"])
+        if s.get("rotulo") and labs:
+            labs[0] = s["rotulo"]
+        ents.append({"id": s["classe"], "labels": labs, "nums": n})
     if not ents:
-        ents = [M.ent_at(protos["8000"], 1, 60, 40)]
+        ents = [{"id": "8000", "labels": protos["8000"]["labels"], "nums": list(protos["8000"]["nums"])}]
+    if conexoes:
+        err = _rotear(ents, simbolos, conexoes, wire)
+        if err:
+            return err
+    if auto_net:
+        _assign_nets(ents)
+    avisos = _shorts(ents)
     base = (ROOT / "corpus" / "Arranque_1.cad").read_bytes().decode("latin1")
     import re
     m = re.search(r"#(?=\*\d+\*\d+#)", base)
     hdr = base[:m.start() + 1] if m else header
-    body = "#".join(ents)
+    body = "#".join(f"*{i+1}*{e['id']}#" + "#".join(e["labels"]) + "#*" + "*".join(e["nums"])
+                    for i, e in enumerate(ents))
     cad = hdr + body + "#" + footer
     Path(out_path).write_bytes(cad.encode("latin1"))
     code, out = _run("validate", out_path)
-    return (f"{seq-1} entidades -> {out_path} | {out}" if code == 0
-            else f"ERRO ao validar: {out}")
+    msg = (f"{len(ents)} entidades -> {out_path} | {out}" if code == 0
+           else f"ERRO ao validar: {out}")
+    if avisos:
+        msg += " | AVISO curto A==B em: " + ", ".join(avisos)
+    return msg
+
+
+def _shorts(ents):
+    """Símbolos com o mesmo net em A e B (curto) — o autor deve corrigir o layout."""
+    bad = []
+    for e in ents:
+        if e["id"] in ("4000", "4018", "4009", "4001"):
+            continue
+        n = e["nums"]
+        if len(n) > 22 and n[21] == n[22] and n[21] not in ("0", ""):
+            lab = e["labels"][0] if e["labels"] else e["id"]
+            bad.append(f"{lab or e['id']}")
+    return bad
+
+
+def _pin_coord(sym, pino):
+    """Coordenada do pino A/B de um símbolo, via geometria aprendida dos exemplos."""
+    pins = _pins().get(sym["classe"])
+    if not pins or pino not in pins:
+        return None
+    return (int(sym["x"]) + pins[pino][0], int(sym["y"]) + pins[pino][1])
+
+
+def _rotear(ents, simbolos, conexoes, wire):
+    """Liga pinos por nome: roteia fios em L e anexa como entidades 4000."""
+    byid = {}
+    for i, s in enumerate(simbolos):
+        key = str(s.get("id") or s.get("rotulo") or f"#{i}")
+        byid[key] = s
+    faltam = _pins()
+    for c in conexoes:
+        de, para = c.get("de"), c.get("para")
+        if not de or not para or de[0] not in byid or para[0] not in byid:
+            return f"ERRO conexão inválida: {c} (confira os ids)"
+        p1 = _pin_coord(byid[de[0]], de[1])
+        p2 = _pin_coord(byid[para[0]], para[1])
+        if p1 is None or p2 is None:
+            cls = byid[de[0]]["classe"]
+            return (f"ERRO: sem geometria de pino p/ classe {cls} (ou pino '{de[1]}'). "
+                    f"Use fios_json manual ou outra classe.")
+        (x1, y1), (x2, y2) = p1, p2
+        pins = _pins()
+        d1 = pins.get(byid[de[0]]["classe"], {}).get(de[1], [0, 0])[1]
+        d2 = pins.get(byid[para[0]]["classe"], {}).get(para[1], [0, 0])[1]
+        s1 = 1 if d1 >= 0 else -1     # pino "para baixo" escapa p/ baixo
+        s2 = 1 if d2 >= 0 else -1
+        g = 7
+        a1 = (x1, y1 + s1 * g)
+        b1 = (x2, y2 + s2 * g)
+        pts = [(x1, y1), a1]
+        if a1[1] != b1[1]:
+            pts.append((x2, a1[1]))
+        pts += [b1, (x2, y2)]
+        for a, b in zip(pts, pts[1:]):
+            if a == b:
+                continue
+            n = list(wire["nums"])
+            n[8], n[9], n[10], n[11] = str(a[0]), str(a[1]), str(b[0]), str(b[1])
+            for k in range(8):
+                n[k] = "0"
+            ents.append({"id": "4000", "labels": wire["labels"], "nums": n})
+    return None
+
+
+PINS_FILE = ROOT / "tools" / "symbol_pins.json"
+
+
+def _pins():
+    try:
+        return json.loads(PINS_FILE.read_text())
+    except Exception:
+        return {}
+
+
+def _assign_nets(ents):
+    """Calcula NETs por geometria: une pinos de símbolo e endpoints de fio que
+    coincidem, e propaga por cada fio. Escreve nums[21]/[22] (A/B ou net do fio)."""
+    pins = _pins()
+    parent = {}
+
+    def find(a):
+        parent.setdefault(a, a)
+        while parent[a] != a:
+            parent[a] = parent[parent[a]]; a = parent[a]
+        return a
+
+    def union(a, b):
+        ra, rb = find(a), find(b)
+        if ra != rb:
+            parent[rb] = ra
+
+    def pin_pts(e):
+        if e["id"] == "4000" or e["id"] in ("4018", "4009", "4001"):
+            return [("wire", (int(e["nums"][8]), int(e["nums"][9]))), ("wire", (int(e["nums"][10]), int(e["nums"][11])))]
+        x, y = int(e["nums"][8]), int(e["nums"][9])
+        m = pins.get(e["id"], {})
+        out = []
+        if "A" in m:
+            out.append(("A", (x + m["A"][0], y + m["A"][1])))
+        if "B" in m:
+            out.append(("B", (x + m["B"][0], y + m["B"][1])))
+        return out
+
+    # registra nós e une points coincidentes
+    bycoord = {}
+    for e in ents:
+        for _, pt in pin_pts(e):
+            bycoord.setdefault(pt, []).append(pt)
+            find(pt)
+    # fios unem seus dois endpoints
+    for e in ents:
+        if e["id"] == "4000":
+            p1 = (int(e["nums"][8]), int(e["nums"][9]))
+            p2 = (int(e["nums"][10]), int(e["nums"][11]))
+            union(p1, p2)
+    # atribui número por raiz
+    raizes = {}
+    nxt = [20]
+    for pt in list(bycoord):
+        r = find(pt)
+        if r not in raizes:
+            nxt[0] += 1
+            raizes[r] = nxt[0]
+    for e in ents:
+        pts = pin_pts(e)
+        if e["id"] == "4000":
+            net = raizes[find((int(e["nums"][8]), int(e["nums"][9])))]
+            if len(e["nums"]) > 21:
+                e["nums"][21] = str(net)
+            continue
+        for pin, pt in pts:
+            net = raizes[find(pt)]
+            idx = 21 if pin == "A" else 22
+            if len(e["nums"]) > idx:
+                e["nums"][idx] = str(net)
 
 
 if __name__ == "__main__":
