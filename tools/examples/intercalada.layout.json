@@ -1,0 +1,24 @@
+{
+  "titulo": "PARTIDA INTERCALAR",
+  "layout": {
+    "trilhos": {"L1": 14, "L2": 20, "L3": 26, "N": 290, "x0": 25, "x1": 395},
+    "fontes": [{"classe": "3004", "id": "X1", "rotulo": "-X", "fases": ["L1", "L2", "L3"], "neutro": "N"}],
+    "terra": {"id": "PE", "classe": "3002", "rotulo": "TERRA", "neutro": "N"},
+    "comando": [
+      {"id": "m1", "de": "L1", "para": "N",
+       "serie": [["RT1", "8017", "-RT1"], ["RT2", "8017", "-RT2"], ["S0", "8001", "-S0"]],
+       "ramos": [
+         {"via": ["S1", "8000", "-S1"], "selo": ["selo1", "7000", "-KM1"],
+          "serie": [["nkm2", "7001", "-KM2"]], "carga": ["KM1", "9000", "-KM1"], "indica": ["H1", "9008", "-H1"]},
+         {"via": ["S2", "8000", "-S2"], "selo": ["selo2", "7000", "-KM2"],
+          "serie": [["nkm1", "7001", "-KM1"]], "carga": ["KM2", "9000", "-KM2"], "indica": ["H2", "9008", "-H2"]}
+       ]}
+    ],
+    "potencia": [
+      {"id": "m1", "fases": ["L1", "L2", "L3"], "neutro": "N",
+       "colunas": [["Q1", "6009", "-Q1"], ["F1", "6007", "-F1"], ["KM1p", "2001", "-KM1"], ["M1", "1000", "-M1"]]},
+      {"id": "m2", "fases": ["L1", "L2", "L3"], "neutro": "N",
+       "colunas": [["Q2", "6009", "-Q2"], ["F2", "6007", "-F2"], ["KM2p", "2001", "-KM2"], ["M2", "1000", "-M2"]]}
+    ]
+  }
+}
