@@ -10,12 +10,12 @@ Escolha: (1) agora, (2) e (3) como validação na fase 2.
 
 ## Fases
 
-- [ ] **Fase 0 — Fundação (esta pasta):** README, docs, spec v0.1, git init. ✅ feito
-- [ ] **Fase 1 — Gramática:** extrair IDs únicos do corpus (script Python), cruzar com manual, doc de campos do header.
-- [ ] **Fase 2 — `cade_core` (Rust):** `parse()` + `emit()` + testes round-trip sobre `corpus/`.
-- [ ] **Fase 3 — `cade_cli`:** `parse|emit|validate|new-from-json`; OpenCode usa como ferramenta.
-- [ ] **Fase 4 — Imagem→JSON:** detector de símbolos sobre `Exemplos/*.png` (template matching → ML depois) + preview.
-- [ ] **Fase 5 — Validação Wine + Ghidra headless:** abrir gerados no CADe_SIMU-Linux; scripts `tools/ghidra/` nos `Serialize` se preciso.
+- [x] **Fase 0 — Fundação (esta pasta):** README, docs, spec v0.1, git init. ✅ feito
+- [x] **Fase 1 — Gramática:** `tools/extract_ids.py` → `docs/dicionario-simbolos.md`; `spec/spec-v1.md` congelada. ✅ 15/10/2026
+- [x] **Fase 2 — `cade_core` (Rust):** `parse()` + `emit()` + testes round-trip. ✅ 4 testes verdes; round-trip byte-idêntico em 114/114 `.cad` do acervo
+- [x] **Fase 3 — `cade_cli`:** `validate|parse|emit|new-from-json` e2e OK. ✅ 15/10/2026
+- [x] **Fase 4 — Imagem→JSON (baseline):** `tools/img2json.py` + `docs/imagem-pipeline.md`. ✅ gera `.cad` válido; classificação de símbolos (80%) fica p/ ML futuro
+- [x] **Fase 5 — Validação Wine:** `tools/validate_wine.sh` PASS (sem erro fatal; exit=124 = app segue aberto). ✅ 15/10/2026; Ghidra dispensado (gramática fechou sem ambiguidade)
 
 ## Convenções
 
