@@ -37,6 +37,15 @@ entidade := tipo "#" subtipo ("#" rotulo)* "#" "*" params "*"+ coords "*"+
 fio := "4000#" ... coordenadas...
 ```
 
+## Achados Fase 1 — 15/10/2026 (tools/extract_ids.py sobre 3 .cad)
+
+- Todos `modo=0`; `versao` varia: 3000 (Aula1), 3004 (Arranque_1), 3005 (CADe_S1).
+- Títulos: `-X` (Aula1, Arranque_1), `220V` (CADe_S1). Todos terminam com `$$$`=True.
+- `4000#` domina: 142 ocorrências (37+48+57 por arquivo) → confirma fio/cabo.
+- Família `400x#`: `4001` (25x), `4010` (12x), `4009` (8x), `4002` (5x, só Arranque_1).
+- IDs funcionais (1–2 ocorrências cada): `5000/5003#-F` (fusível?), `2001/2006/7000/7001/9000#Q` (contatos/bobinas?), `8000/8001#B` (botões?), `3001/3000/3002/3004/3005#-X` (bornes?), `6017#DJ`, `7018#C1`, `8100#B`.
+- Ver tabela completa em `docs/dicionario-simbolos.md`.
+
 ## Próximos passos RE (baratos, sem Ghidra)
 
 1. Copiar 10–15 `.cad` variados e comparar headers (`*0*` vs `*3*`, `3005` vs `6017`).
