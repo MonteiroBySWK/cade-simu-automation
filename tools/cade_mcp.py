@@ -123,5 +123,13 @@ def cad_preview(path: str, scale: int = 2) -> str:
     return f"data:image/png;base64,{b64}"
 
 
+@mcp.tool()
+def cad_from_image(path: str, out_json: str = "/tmp/cade_from_img.json") -> str:
+    """Detecta símbolos numa imagem (kNN sobre dataset minerado) e inventaria em cade.json."""
+    r = subprocess.run([sys.executable, str(ROOT / "tools" / "img2cad.py"), path, "-o", out_json],
+                       capture_output=True, text=True, timeout=180)
+    return (r.stdout or r.stderr).strip()[:4000]
+
+
 if __name__ == "__main__":
     mcp.run()
