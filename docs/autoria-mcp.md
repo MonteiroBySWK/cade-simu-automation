@@ -16,10 +16,23 @@ O agente **monta o circuito sem nunca escrever `*`/`#`** — só símbolos e fio
 
 ### `cad_build`
 - `titulo`: string
-- `simbolos_json`: `[{"classe":"2001","x":80,"y":125,"rotulo":"-KM1"}]`
-  (`classe` vem de `cad_symbols`; `rotulo` substitui o rótulo do símbolo)
-- `fios_json`: `[{"x1":50,"y1":120,"x2":250,"y2":120}]` (segmentos retos)
+- `simbolos_json`: `[{"classe":"2001","x":80,"y":125,"rotulo":"-KM1","id":"KM1"}]`
+  (`classe` de `cad_symbols`; `id` único é a chave de ligação; `rotulo` é o texto)
+- `conexoes_json`: `[{"de":["S1","B"],"para":["KM1","A"]}]` — **ligação lógica por
+  nome/pino**; o build roteia o fio e calcula os NETs (recomendado)
+- `fios_json`: `[{"x1":50,"y1":120,"x2":250,"y2":120}]` (segmentos manuais, opcional)
+- `auto_net`: `true` (padrão) calcula os nets por geometria (pinos×fios)
 - `out_path`: destino
+
+Retorno: `N entidades -> path | OK ...`; se houver **`AVISO curto A==B`**, algum
+símbolo ficou com os dois pinos no mesmo nó — corrija o layout.
+
+### NETs e geometria de pinos
+A simulação do CADe é dada por **NETs** (inteiros): dois pontos com o mesmo net
+estão conectados. `cad_build` calcula os nets por geometria usando a **tabela de
+pinos aprendida dos exemplos** (`tools/symbol_pins.json`, 105 classes; regerar com
+`python3 tools/learn_pins.py`). Contatos: `A` em cima, `B` embaixo; ramos em
+paralelo ligam nos **mesmos dois nós**.
 
 Faixa de coordenadas com boa visualização: x∈[40,300], y∈[20,180].
 
