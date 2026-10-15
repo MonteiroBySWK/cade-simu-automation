@@ -20,6 +20,8 @@ texto/imagem  →  cade.json  →  cade_cli  →  .cad  →  Wine (confere)
 - `tools/ladder_sim.py`: confere lógica de rungs (permissões, selos) antes de dizer que está pronto.
 - `tools/validate_wine.sh`: abre o resultado no CADe_SIMU de verdade via Wine.
 - `skills/automacao-industrial`: o passo a passo reutilizável de tudo isso.
+- `docs/detector-imagem.md`: motor imagem→símbolos (machine vision + kNN),
+  dataset minerado dos próprios `.cad` e métricas honestas.
 
 ## Via agente (OpenCode, Claude Code)
 
