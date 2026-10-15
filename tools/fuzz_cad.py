@@ -9,7 +9,7 @@ import re, shutil, subprocess, time, os
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-EXE = Path("/home/monteiro/Downloads/CADe_SIMU 4.0 [BR]/CADe_SIMU 4.0 [BR]/CADe_SIMU 4.0 [BR].exe")
+EXE = Path(os.environ.get("CADE_EXE", "/home/monteiro/Downloads/CADe_SIMU 4.0 [BR]/CADe_SIMU 4.0 [BR]/CADe_SIMU 4.0 [BR].exe"))
 APPDIR = EXE.parent
 FZ = ROOT / "out" / "fuzz"
 

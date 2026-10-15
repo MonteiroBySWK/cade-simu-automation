@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import os
 """Servidor MCP do cade-simu-automation (stdio).
 
 Expõe o .cad para qualquer agente (Claude Code, OpenCode, etc.):
@@ -186,7 +187,7 @@ def cad_test(path: str) -> str:
 # --- autoria do zero (símbolos + fios) --------------------------------------
 
 _LIB = None
-ACERVO = Path("/home/monteiro/Downloads/CADe_SIMU 4.0 [BR]/CADe_SIMU 4.0 [BR]/Atividades para Simular/115 arquivos CADe_SIMU/Arquivos .cad")
+ACERVO = Path(os.environ.get("CADE_ACERVO", "/home/monteiro/Downloads/CADe_SIMU 4.0 [BR]/CADe_SIMU 4.0 [BR]/Atividades para Simular/115 arquivos CADe_SIMU/Arquivos .cad"))
 
 
 def _lib():

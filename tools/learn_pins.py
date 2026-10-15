@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import os
 """Aprende a geometria dos pinos (nets A/B) a partir do acervo de .cad.
 
 Modelo: a conectividade do CADe_SIMU é dada por NETs (inteiros). Cada símbolo
@@ -19,7 +20,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from dissect import parse_ent, split_entities  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
-DEFAULT = Path("/home/monteiro/Downloads/CADe_SIMU 4.0 [BR]/CADe_SIMU 4.0 [BR]/Atividades para Simular/115 arquivos CADe_SIMU/Arquivos .cad")
+DEFAULT = Path(os.environ.get("CADE_ACERVO", "/home/monteiro/Downloads/CADe_SIMU 4.0 [BR]/CADe_SIMU 4.0 [BR]/Atividades para Simular/115 arquivos CADe_SIMU/Arquivos .cad"))
 WIRE = {"4000", "4018", "4009", "4001"}
 
 

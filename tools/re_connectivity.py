@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import os
 """RE da CONECTIVIDADE: nets (A/B) × geometria. Qual manda na simulação?
 
 Para cada .cad do acervo:
@@ -21,7 +22,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from dissect import parse_ent, split_entities  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
-ACERVO = Path("/home/monteiro/Downloads/CADe_SIMU 4.0 [BR]/CADe_SIMU 4.0 [BR]/Atividades para Simular/115 arquivos CADe_SIMU/Arquivos .cad")
+ACERVO = Path(os.environ.get("CADE_ACERVO", "/home/monteiro/Downloads/CADe_SIMU 4.0 [BR]/CADe_SIMU 4.0 [BR]/Atividades para Simular/115 arquivos CADe_SIMU/Arquivos .cad"))
 WIRE = {"4000", "4018", "4009"}
 PINS = json.loads((ROOT / "tools" / "symbol_pins.json").read_text())
 

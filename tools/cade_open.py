@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import os
 """Abre um .cad no CADe_SIMU (Wine) e digita a senha 4962 sozinho — rápido.
 
 Localiza a janela do teclado de senha (CADE SIMU 4.0, ~176x189) e clica os
@@ -12,7 +13,7 @@ import sys
 import time
 from pathlib import Path
 
-EXE_DIR = Path("/home/monteiro/Downloads/CADe_SIMU 4.0 [BR]/CADe_SIMU 4.0 [BR]")
+EXE_DIR = Path(os.environ.get("CADE_DIR", "/home/monteiro/Downloads/CADe_SIMU 4.0 [BR]/CADe_SIMU 4.0 [BR]"))
 EXE = "CADe_SIMU 4.0 [BR].exe"
 # frações (x,y) do teclado dentro da janela do diálogo — calibradas em 176x189
 TECLA = {

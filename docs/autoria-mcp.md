@@ -62,6 +62,7 @@ vez de substituir o 1º) — corrigido em `tools/cade_mcp.py`.
 
 ## Limites
 
-- Sem lógica ladder/PLC embutida: `cad_build` posiciona símbolos e fios; a
-  semântica de simulação (nets/rungs) ainda é montada pelo autor.
-- Sem roteamento automático de fios (o autor informa os segmentos).
+- Sem lógica ladder/PLC embutida: a semântica de simulação (nets/rungs) é
+  responsabilidade do autor da spec.
+- O roteamento de fios e os trilhos de fase (L1/L2/L3) existem (`tools/layout.py`,
+  `tools/build_spec.py`); o gate falha em curtos/cruzamentos. Ver `docs/dsl-layout.md`.

@@ -4,7 +4,7 @@
 # - copia p/ o dir do EXE (argv curto), unlock SENHA 4962 com retry, maximiza, Zoom Todo.
 set -u
 CAD="$1"; SHOT="$2"; ZOOMPLUS="${3:-0}"
-EXE_DIR="/home/monteiro/Downloads/CADe_SIMU 4.0 [BR]/CADe_SIMU 4.0 [BR]"
+EXE_DIR="${CADE_DIR:-/home/monteiro/Downloads/CADe_SIMU 4.0 [BR]/CADe_SIMU 4.0 [BR]}"
 EXE="CADe_SIMU 4.0 [BR].exe"
 BASE="$(basename "$CAD")"
 cp "$CAD" "$EXE_DIR/wv_tmp.cad"

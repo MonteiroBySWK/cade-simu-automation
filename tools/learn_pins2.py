@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import os
 """Aprende os pinos A/B por classe olhando onde os FIOS ENCOSTAM na caixa do símbolo.
 
 Mais confiável que correlação por net (funciona p/ símbolos multi-pino, como o
@@ -18,7 +19,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from dissect import parse_ent, split_entities  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
-ACERVO = Path("/home/monteiro/Downloads/CADe_SIMU 4.0 [BR]/CADe_SIMU 4.0 [BR]/Atividades para Simular/115 arquivos CADe_SIMU/Arquivos .cad")
+ACERVO = Path(os.environ.get("CADE_ACERVO", "/home/monteiro/Downloads/CADe_SIMU 4.0 [BR]/CADe_SIMU 4.0 [BR]/Atividades para Simular/115 arquivos CADe_SIMU/Arquivos .cad"))
 WIRE = {"4000", "4018", "4009"}
 TOL = 2
 

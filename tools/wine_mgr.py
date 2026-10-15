@@ -24,7 +24,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 LOGDIR = ROOT / "logs"
-EXE_DIR = Path("/home/monteiro/Downloads/CADe_SIMU 4.0 [BR]/CADe_SIMU 4.0 [BR]")
+EXE_DIR = Path(os.environ.get("CADE_DIR", "/home/monteiro/Downloads/CADe_SIMU 4.0 [BR]/CADe_SIMU 4.0 [BR]"))
 EXE = "CADe_SIMU 4.0 [BR].exe"
 # frações (x,y) do teclado 4962+OK dentro da janela do diálogo (176x189)
 TECLAS = {"4": (0.375, 0.598), "9": (0.665, 0.720), "6": (0.665, 0.598),
