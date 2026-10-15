@@ -85,7 +85,15 @@ def ncc(img, tpl):
     return r, th, tw
 
 def drawing_box(a):
-    """Área de desenho = maior região branca (folha; exclui chrome do app)."""
+    """Área de desenho = maior componente VERDE (moldura do cajetín; ignora paleta)."""
+    R, G, B = a[:, :, 0].astype(int), a[:, :, 1].astype(int), a[:, :, 2].astype(int)
+    g = (R < 150) & (G > 110) & (G - R > 30) & (G - B > 30)
+    comps = components(g, minpx=400)
+    if comps:
+        c = max(comps, key=lambda c: (c["x1"] - c["x0"]) * (c["y1"] - c["y0"]))
+        if (c["x1"] - c["x0"]) > 200 and (c["y1"] - c["y0"]) > 150:
+            return c["x0"] + 2, c["y0"] + 2, c["x1"] - 2, c["y1"] - 2
+    # fallback: maior região branca
     white = (np.min(a.astype(int), axis=-1) > 240)
     comps = components(white, minpx=1000)
     if not comps:
@@ -296,6 +304,54 @@ def detect(imagem):
                          "x": int(gx0 + (c["x0"] + c["x1"]) / 2),
                          "y": int(gy0 + (c["y0"] + c["y1"]) / 2), "escore": 0.9, "w": w, "h": h})
     return merge(dets)
+
+def detect_knn(imagem):
+    """Detecção por kNN: regras geram CANDIDATOS; o classificador decide a classe."""
+    import classifier
+    X, y, classes = classifier.load()
+    img = Image.open(imagem).convert("RGB")
+    a = np.asarray(img)
+    gx0, gy0, gx1, gy1 = drawing_box(a)
+    a = a[gy0:gy1 + 1, gx0:gx1 + 1]
+    R, G, B = a[:, :, 0].astype(int), a[:, :, 1].astype(int), a[:, :, 2].astype(int)
+    vermelho = (R > 120) & (R - G > 50) & (R - B > 50)
+    marca = (R > 150) & (B > 150)
+    tinta = (np.min(a, axis=-1) < 160) & ~vermelho & ~marca
+    dil = np.asarray(Image.fromarray(tinta).filter(ImageFilter.MaxFilter(7)))
+    dets = []
+    for g in components(dil > 0, minpx=60):
+        w, h = g["x1"] - g["x0"] + 1, g["y1"] - g["y0"] + 1
+        if not (12 <= w <= 210 and 12 <= h <= 210):
+            continue
+        crop = img.crop((gx0 + g["x0"], gy0 + g["y0"], gx0 + g["x1"] + 1, gy0 + g["y1"] + 1))
+        v = classifier.features(crop)
+        if v is None:
+            continue
+        d = np.linalg.norm(X[:, :-1] - v[:-1], axis=1) + 0.5 * np.abs(X[:, -1] - v[-1])
+        idx = np.argsort(d)[:5]
+        votos = {}
+        for i in idx:
+            votos[classes[y[i]]] = votos.get(classes[y[i]], 0) + 1.0 / (d[i] + 1e-6)
+        best = max(votos, key=votos.get)
+        conf = votos[best] / sum(votos.values())
+        if best != "0" and conf >= 0.5:
+            dets.append({"classe": best, "nome": NOMES[best],
+                         "x": int(gx0 + (g["x0"] + g["x1"]) / 2), "y": int(gy0 + (g["y0"] + g["y1"]) / 2),
+                         "escore": round(float(conf), 3), "w": w, "h": h})
+    for c in components(vermelho[gy0:gy1 + 1, gx0:gx1 + 1], minpx=60):
+        w, h = c["x1"] - c["x0"] + 1, c["y1"] - c["y0"] + 1
+        if 12 <= w <= 44 and 12 <= h <= 44 and 0.7 < w / h < 1.4 and c["n"] / (w * h) > 0.5:
+            dets.append({"classe": "9008", "nome": NOMES["9008"],
+                         "x": int(gx0 + (c["x0"] + c["x1"]) / 2),
+                         "y": int(gy0 + (c["y0"] + c["y1"]) / 2), "escore": 0.9, "w": w, "h": h})
+    # fusão agnóstica de classe: fragmentos do MESMO símbolo viram um só (maior escore)
+    dets.sort(key=lambda d: -d["escore"])
+    out = []
+    for d in dets:
+        if all(not (abs(q["x"] - d["x"]) < 55 and abs(q["y"] - d["y"]) < 45) for q in out):
+            out.append(d)
+    return out
+
 
 def verify(gray, dets, gx0, gy0):
     """Confirma cada proposta via NCC contra o template da classe (corta FP)."""
