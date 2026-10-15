@@ -333,8 +333,14 @@ def _rotear(ents, simbolos, conexoes, wire):
         a1 = (x1, y1 + s1 * g)
         b1 = (x2, y2 + s2 * g)
         pts = [(x1, y1), a1]
-        if a1[1] != b1[1]:
-            pts.append((x2, a1[1]))
+        if s1 == s2:
+            # mesmo lado: pivota no x do destino (não cruza o símbolo)
+            if a1[1] != b1[1]:
+                pts.append((x2, a1[1]))
+        else:
+            # lados opostos: pivota numa COLUNA DE DESVIO (fora do x do pino)
+            xm = x2 + (10 if x2 >= x1 else -10)
+            pts += [(xm, a1[1]), (xm, b1[1])]
         pts += [b1, (x2, y2)]
         for a, b in zip(pts, pts[1:]):
             if a == b:
