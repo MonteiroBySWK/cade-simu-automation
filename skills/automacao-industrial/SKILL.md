@@ -52,6 +52,13 @@ o que conecta é o net compartilhado (e a geometria — fio tocando o pino).
 `8017` A=(0,-3) B=(0,15); `9000` (bobina) A=(0,0) B=(0,12); `9008` A=(0,0) B=(0,12).
 Regerar: `python3 tools/learn_pins.py` (varre o acervo de 115 `.cad`).
 
+### Para SIMULAR (essencial)
+Um circuito **só simula com alimentação**. Além da lógica, inclua:
+- **Fonte**: `3004` (`-X`, rede) — pinos laterais `A=(0,0)`, `B=(6,0)`. Ligue `X.A → início da cadeia` e `X.B → retorno` (nó comum das bobinas).
+- **Alternativas**: `3002` (TERRA), `3003` (texto 127V), `3001`/`3005` (borne).
+- **Como testar no app**: toolbar `▶` (verde, ~x=503,y=32 da janela) entra em simulação (fios ficam finos; trecho energizado fica **vermelho**); clique nos botões (ex.: S1) — bobina/piloto ligam. `■` (vermelho) para.
+- Verificação sem GUI: `cad_test` (netlist) **não** substitui a simulação real — use os dois.
+
 ### Layout
 - Comando na faixa `x∈[40,320]`, `y∈[20,150]`; **potência abaixo** (`y≥160`).
 - **Símbolos de potência** (`6007` térmico, `6009`/`6010` DJ, `2001` contator, `1000` motor)
