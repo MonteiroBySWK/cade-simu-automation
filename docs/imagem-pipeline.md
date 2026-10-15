@@ -1,28 +1,35 @@
-# Pipeline imagem→JSON — baseline v0.1 (Fase 4)
+# Pipeline imagem→JSON
 
-## Fluxo
+## Fluxo (atual)
 
 ```
-PNG/JPG/BMP → tools/img2json.py → cade.json (meta + analise) → cade_cli new-from-json → .cad válido → preview PNG
+imagem → tools/img2cad.py (detector kNN) → cade.json (inventário de símbolos)
+       → tools/mk_dataset.py (monta .cad) → cade_cli validate → .cad válido
 ```
 
-## O que o baseline faz
+O baseline antigo (`tools/img2json.py`, projeções H/V) foi substituído pelo
+detector de símbolos em `tools/detect_symbols.py` + classificador
+`tools/classifier.py`. Ver `docs/detector-imagem.md` para o método e métricas.
 
-- `tools/img2json.py`: PIL+numpy, threshold 128, densidade de tinta + projeções H/V (>30%).
-- Saída `cade.json` em formato template-mínimo (`meta` + `analise`/`simbolos`/`fios`/`textos`).
-  `cade_cli new-from-json` aceita esse formato e gera `.cad` mínimo válido.
-- Preview: linhas H candidatas em vermelho, V em azul.
-- Log de decisões com `confianca` explícita (0.40 projeções, 0.0 classificação — honesto).
+## O detector de símbolos
 
-## Limites conhecidos (para Fase 4 completa)
+- Segmenta a tinta (remove fio vermelho e marca-d'água), acha componentes
+  conexos e classifica cada candidato por **kNN** sobre um dataset minerado dos
+  próprios `.cad` (ground-truth perfeito).
+- P/R honestos (leave-one-case-out, 221 símbolos): **P=0,88 / R=0,89** dentro do
+  domínio minerado.
+- `tools/img2cad.py` gera `cade.json` (inventário) e, se pedido, um `.cad`
+  colocando uma entidade doadora por símbolo; `cade_cli validate` confirma.
 
-- Bordas da imagem (ex: linhas 0–14) poluem as projeções — precisa crop de moldura.
-- Sem classificação de símbolos (contatos, bobinas, disjuntores): precisão atual ~0%,
-  longe dos 80% do critério F2. Próximo passo: template matching sobre recortes do
-  `Manual CADe_SIMU.pdf` ou dataset rotulado dos 115 `.cad` + PNGs de exemplo.
-- O `.cad` gerado do baseline **abre** (válido) mas **não simula** o circuito da foto —
-  contém só o header/template. Isso é parcial de propósito: a etapa
-  `cade.json→.cad` é determinística; falta a etapa `imagem→símbolos`.
+## Limites conhecidos
+
+- **Domínio:** o modelo é treinado no estilo/zoom do dataset minerado. Nos
+  `Exemplos/*.png` (lâmpadas preenchidas, marca-d'água, outro zoom) cai para
+  P≈0,2/R≈0,3. Fechar com dataset multi-estilo / augmentation de escala / rejeição
+  por novidade.
+- O `.cad` gerado tem os símbolos nas posições detectadas, mas ainda **sem a
+  fiação** (`fios`) inferida — a etapa `imagem→fios` não está implementada.
+- Sem classificação de texto/legenda.
 
 ## Exemplo verificado
 

@@ -25,7 +25,14 @@ Pipeline (`tools/detect_symbols.py`):
   | **kNN (dataset minerado)** | **0,88** | **0,89** |
 
   Curva de escala: com 76 símbolos → P=0,83/R=0,79; com 221 → **P=0,88/R=0,89**.
-  A meta de 80% (critério F2) é atingida e cresce com mais dados.
+  A meta de 80% é atingida **dentro do domínio minerado** (mesmo estilo/zoom do app).
+
+- **Limite de domínio (honesto):** nos `Exemplos/*.png` (estilo e zoom
+  diferentes — lâmpadas de painel *preenchidas*, marca-d'água do blog, chrome
+  da janela) o modelo cai para P≈0,2 / R≈0,3. O kNN generaliza dentro do estilo
+  em que foi treinado, não entre estilos. Caminhos para fechar isso: (a) incluir
+  os exemplos e variações de zoom/estilo no treino (augmentation de escala,
+  dataset multi-estilo), (b) rejeição por novidade (distância ao vizinho).
 
 - **Diagnóstico:** as regras puras atingem o teto por **falta de dados** (cada
   correção de falso positivo custa recall em outro símbolo). Com o dataset
