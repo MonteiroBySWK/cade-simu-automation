@@ -31,10 +31,28 @@ para (a) gerar `.cad` que **simulam de verdade** e (b) ter **teste 100% confiáv
 ### Modelo de objeto
 - O doc guarda entidades em **arrays paralelos** (SoA) indexados por entidade
   (ex.: `+0x2024` = id; `+0x5ea4`, `+0x7de4`, `+0x158a4` = outros campos; limite 2000).
-- Writers vistos: `FUN_00432710` (doc→arquivo), `FUN_00878080` (header),
-  `FUN_008907b0` (string de conexões), `FUN_008ab4a0`/`FUN_008aa1b0` (`.lib`).
+- Writers vistos: `FUN_00432710` (doc→arquivo — o `CCADe_SIMUDoc::Serialize`,
+  caminho de **store**), `FUN_00878080` (header), `FUN_008907b0`/`FUN_00886680`
+  (string de conexões), `FUN_008ab4a0`/`FUN_008aa1b0` (`.lib`).
 - RTTI: `CCADe_SIMUDoc`, `CCADe_SIMUView`. Módulos: `Dibujo.cpp`, `Editar_Cable.cpp`,
   `Librerias.cpp`, `SIMBOLOS.CPP`, `Simbolo.cpp`, `Presenta.cpp`, `Pilotos.cpp`…
+
+### Entidade: 2 variantes (`FUN_00432710`)
+- **Normal**: `*%d*%d#` + **10** rótulos + `*%d`×**23** + `#%s`
+- **Especial**: `*%d*%d#` + **11** rótulos + `*%d`×**24** + `#%s`
+  (IDs especiais: `0x41c`, `0x2903..0x2937`, `0x431`.)
+- O `#%s` final = **string de conexões** (pinos), presente nos **IDs tipo-conector**.
+
+### Conexões por símbolo (até 6 pinos nome→net)
+- Escrita por `FUN_00886680` / `FUN_008907b0` para um conjunto de IDs
+  **tipo-conector**: `0x274d`, `0x274e`, `1000`, `0x3e9(1001)`, `0x1b68(7016)`,
+  `0x1b6a(7018)`, `0x177f(6015)`, `0x1780(6016)`, `0x434(1076)`, `0x1b6b(7019)`.
+- Formato lido/gravado: `%2s-%d-` (até 6 pares) + preenchimento `  -0-`.
+- Os nets vêm de campos do **objeto do símbolo** (ex.: `+0xd44,+0xd48,+0xd74,+0xde4…`),
+  não só de `nums[21]/[22]`.
+- Exemplo real (só `corpus/CADe_S1.cad` traz a string):
+  `*2*7018#C1##A1#A2#1#2#3#4#5#6*…*# 5-1- 6-1-13-1-14-1-21-1-22-1-  -0-  -0-  -0`
+  → pinos `5,6,13,14,21,22` no net 1.
 
 ## O que isso muda para os nossos objetivos
 
@@ -51,11 +69,13 @@ para (a) gerar `.cad` que **simulam de verdade** e (b) ter **teste 100% confiáv
    pino** — que vive na biblioteca **embutida** (sem `.lib` externo no disco).
 
 ## Em aberto (próximos passos de RE)
-- [ ] Mapear os ~24 ints da entidade → quais são **os 6 nets** por símbolo.
+- [ ] Achar o **caminho de leitura** do `Serialize` (o parser `sscanf`/`strtok`) — o
+      store está mapeado (`FUN_00432710`), falta o load.
+- [ ] Mapear os **23/24 ints** da entidade → quais são os nets dos 6 pinos.
 - [ ] Achar a **biblioteca embutida** de símbolos (tabela de pinos por classe) —
       provavelmente em `SIMBOLOS.CPP`/`Simbolo.cpp` (dados no `.rdata`/`.data`).
-- [ ] Achar o **loader** (parser) e a **rotina de netlist/simulação** (o que o
-      "Simular" faz) para replicar fielmente as regras de conexão.
+- [ ] Achar a **rotina de netlist/simulação** (o que o "Simular" faz) para replicar
+      fielmente as regras de conexão (nets × geometria).
 
 ## Plano (após RE)
 1. **Pinos exatos** por classe (RE) → `tools/symbol_pins.json` corrigido.
