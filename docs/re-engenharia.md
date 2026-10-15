@@ -37,6 +37,17 @@ para (a) gerar `.cad` que **simulam de verdade** e (b) ter **teste 100% confiáv
 - RTTI: `CCADe_SIMUDoc`, `CCADe_SIMUView`. Módulos: `Dibujo.cpp`, `Editar_Cable.cpp`,
   `Librerias.cpp`, `SIMBOLOS.CPP`, `Simbolo.cpp`, `Presenta.cpp`, `Pilotos.cpp`…
 
+### Biblioteca de símbolos (embutida)
+- **`FUN_0087aca0`** = biblioteca/paleta: referencia **todos os nomes de símbolo**
+  ("Contactor", "Motor trifase", "Pulsador", "Cable fase", "Contacto NA/NC",
+  "Contactor I/II/III/IIII", "Motor Dahalander", "Contactos ON/OFF Delay"…).
+  Função grande (~2.6k linhas); marca os **pinos existentes** do símbolo em campos
+  do objeto (`+0xd84..0xd94`, `+0xdb8..0xdc0`, `+0xdcc/0xdd0/0xdd8`, `+0xde0`)
+  com 0/1 — é a "máscara de pinos" por tipo.
+- Funções por família: `FUN_0088e7f0` (cabos fase/neutro/PE/+/-), `FUN_00899910`
+  (contato auxiliar NA/NC), `FUN_008c8f40` (ON/OFF delay), `FUN_0089d050` (motores).
+  `Simbolo.cpp` aparece em `FUN_008b50c0`/`FUN_008b6350`.
+
 ### Entidade: 2 variantes (`FUN_00432710`)
 - **Normal**: `*%d*%d#` + **10** rótulos + `*%d`×**23** + `#%s`
 - **Especial**: `*%d*%d#` + **11** rótulos + `*%d`×**24** + `#%s`
