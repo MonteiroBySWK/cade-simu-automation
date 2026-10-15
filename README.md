@@ -21,6 +21,25 @@ texto/imagem  →  cade.json  →  cade_cli  →  .cad  →  Wine (confere)
 - `tools/validate_wine.sh`: abre o resultado no CADe_SIMU de verdade via Wine.
 - `skills/automacao-industrial`: o passo a passo reutilizável de tudo isso.
 
+## Via agente (OpenCode, Claude Code)
+
+Este repo é um **servidor MCP** (`tools/cade_mcp.py`, stdio): qualquer agente
+conecta e passa a validar, gerar, inspecionar e **ver** circuitos:
+
+```bash
+uv venv tools/.venv-mcp
+uv pip install --python tools/.venv-mcp/bin/python "mcp<2" pillow numpy
+cargo build --manifest-path src/cade_cli/Cargo.toml
+# claude mcp add cade-simu -- tools/.venv-mcp/bin/python tools/cade_mcp.py
+```
+
+Ferramentas expostas: `cad_validate`, `cad_parse`, `cad_emit` (com
+revalidação), `cad_new`, `cad_inspect` (entidades, IDs, rungs, nets) e
+`cad_preview` (o esquema como imagem — o agente VÊ o circuito).
+
+Regra do loop: o agente compõe `cade.json`, emite, valida e confere o
+preview — nunca escreve `*`/`#` na mão.
+
 ## Uso
 
 ```bash

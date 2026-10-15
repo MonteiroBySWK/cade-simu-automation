@@ -7,3 +7,4 @@ __pycache__/
 # atividade academica: resolucao e enunciados NAO sobem (manter local)
 pratica5/
 *.pdf
+tools/.venv-mcp/
