@@ -46,9 +46,20 @@ fio := "4000#" ... coordenadas...
 - IDs funcionais (1–2 ocorrências cada): `5000/5003#-F` (fusível?), `2001/2006/7000/7001/9000#Q` (contatos/bobinas?), `8000/8001#B` (botões?), `3001/3000/3002/3004/3005#-X` (bornes?), `6017#DJ`, `7018#C1`, `8100#B`.
 - Ver tabela completa em `docs/dicionario-simbolos.md`.
 
-## Próximos passos RE (baratos)
+## Achados RE (fuzzing diferencial, 15/10/2026)
 
-1. Copiar 10–15 `.cad` variados e comparar headers (`*0*` vs `*3*`, `3005` vs `6017`).
-2. Extrair todos os IDs `NNNN#` únicos do corpus → dicionário inicial.
-3. Cruzar com `Manual CADe_SIMU.pdf` (tabela de símbolos) + `Exemplos/*.png` (visão).
-4. Fuzzing diferencial: alterar 1 campo, abrir no Wine, observar erro/posição → inferir semântica.
+`tools/fuzz_cad.py`: 10 casos de 1 campo (modo 0→9, versão →9999, X+200,
+flag→9, fio +500, label ZZ, truncado, net→99, W→210). Resultado no app real:
+**9/10 abrem sem nenhum erro** — o parser não valida valores, só estrutura.
+Só **truncamento** (sem `$$$`) derruba o app (stack overflow, sem diálogo).
+Conclusão: o gate de validade é `CADe_SIMU*` + seções completas + `$$$`;
+coordenadas/flags/labels fora de faixa apenas deslocam o desenho.
+
+## Achados manuais (cruzamento com o Manual)
+
+O `Manual CADe_SIMU.pdf` (101 p lidas por thumbnail) é um tutorial passo a
+passo em espanhol, **sem tabela de simbologia**. A semântica dos IDs foi
+fechada por outras vias, todas registradas aqui: convenção IEC nos terminais
+(95-96 NF, 97-98 NA), pinagens 1-3-5/2-4-6, consistência entre 114 arquivos e
+fuzzing acima. Os `Exemplos/*.png` viraram o conjunto de avaliação do
+detector (`tools/detect_symbols.py --eval`).

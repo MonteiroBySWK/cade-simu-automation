@@ -22,8 +22,3 @@ Escolha: (1) agora, (2) como validação na fase 2.
 - `.cad` original nunca editado in-place; saída sempre em `out/`.
 - Amostras grandes ficam em Downloads; só 3–5 cópias mínimas em `corpus/`.
 
-## Próximo passo imediato (próxima sessão, aqui)
-
-1. `git init` + primeiro commit (pedir confirmação do nome `cade-automation`).
-2. Script `tools/extract_ids.py` no corpus → `docs/dicionario-simbolos.md`.
-3. Confirmar spec v0.1 → virar `spec/spec-v1.md` congelada.
