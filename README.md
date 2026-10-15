@@ -66,7 +66,7 @@ Detalhes do formato em `docs/formato-cad.md`, símbolos em
 
 - Editar `.cad` existente: funciona (round-trip + validação no app real).
 - Criar do zero via texto: funciona o esqueleto válido; circuito completo a partir de descrição livre ainda exige montar o `cade.json` na mão ou estender o detector.
-- Criar via imagem: baseline gera `.cad` válido mas template — a detecção de símbolos a 80% é trabalho futuro.
+- Criar via imagem: detector de símbolos (kNN sobre dataset minerado dos próprios `.cad`) com P=0,88/R=0,89 no domínio treinado; `tools/img2cad.py` → `cade.json` → `.cad` válido. Limite de domínio documentado em `docs/detector-imagem.md`.
 
 ## Nota
 
