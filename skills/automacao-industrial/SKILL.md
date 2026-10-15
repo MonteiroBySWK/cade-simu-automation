@@ -116,9 +116,12 @@ python3 tools/mcp_call.py cad_preview  '{"path":"out/x.cad"}'
 `9008` piloto · `1000` motor · `10050/10051/10060` ladder NA/NF/bobina.
 
 ## Validação Wine
-1. Copie o `.cad` p/ o dir do EXE (nome ASCII curto); rode com cwd=dir do EXE.
-2. Desbloqueio (senha 4962): **cliques** no teclado do diálogo (a busca por título `SENHA` falha — o diálogo não tem título). `tools/render_cad.sh` já encapsula.
-3. `Ver > Zoom Todo` / maximizar o filho; `import -window <id> shot.png`.
+1. **Abrir + desbloquear de uma vez (recomendado):**
+   `python3 tools/cade_open.py out/x.cad --display :1` — copia p/ o dir do EXE,
+   abre no Wine e **digita a senha 4962 sozinho** (~9s; sem cliques manuais).
+2. Alternativas: `tools/render_cad.sh out/x.cad out/x.png` (headless Xvfb, screenshot).
+3. Detalhe do diálogo de senha: a janela **não tem título**; o teclado aparece como
+   `CADE SIMU 4.0` (~176x189) — localize pela **geometria**, não pelo nome.
 
 ## Entregáveis
 - `out/<nome>.cad` validado (aceita no app) + nets coerentes (sem aviso de curto).
