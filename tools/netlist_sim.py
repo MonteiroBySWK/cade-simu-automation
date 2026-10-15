@@ -112,6 +112,25 @@ def tabela(path):
     return c
 
 
+def teste_casos(path, casos):
+    """Roda casos declarados na spec: [{"nome","entradas":{k:bool},"inicial":[...],
+    "esperado":[...]|null,"status":"OK"|"RACE"|null}]. True se todos passam."""
+    c = Circuito(path)
+    ok = 0
+    for cs in casos:
+        status, got = c.resolve(cs.get("entradas", {}), set(cs.get("inicial", [])))
+        cond = True
+        if cs.get("status") is not None:
+            cond = cond and status == cs["status"]
+        if cs.get("esperado") is not None:
+            cond = cond and got == set(cs["esperado"])
+        ok += cond
+        print(f"  [{'OK ' if cond else 'FALHA'}] {cs.get('nome', '?')}: KM={sorted(got)} status={status} "
+              f"esperado={cs.get('esperado')}")
+    print(f"RESULTADO: {ok}/{len(casos)} OK")
+    return bool(casos) and ok == len(casos)
+
+
 def teste(path):
     c = Circuito(path)
     ok = 0

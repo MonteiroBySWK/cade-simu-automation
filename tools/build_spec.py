@@ -16,6 +16,7 @@ def main(argv):
     if len(argv) < 2:
         print(__doc__); return 2
     spec = json.loads(Path(argv[0]).read_text())
+    testes = spec.get("testes") or spec.get("layout", {}).get("testes") or []
     if "layout" in spec or argv[0].endswith(".layout.json"):
         import layout  # motor de layout: spec topologica -> spec baixa
         spec = layout.compilar(spec.get("layout", spec))
@@ -29,9 +30,10 @@ def main(argv):
         "out_path": out,
     })
     print(res)
-    print(mcp_call.call("cad_test", {"path": out}))
-    # GATE: falha se houver aviso (curto/cruzamento) ou teste reprovado
-    problema = ("AVISO" in res) or ("FALHOU" in res) or ("OK" not in res)
+    teste = mcp_call.call("cad_test", {"path": out, "casos_json": json.dumps(testes)})
+    print(teste)
+    # GATE: reprova em aviso (curto), erro de build, ou teste que nao PASSOU
+    problema = ("AVISO" in res) or ("ERRO" in res) or ("OK" not in res) or not teste.startswith("PASSOU")
     if problema:
         print("GATE: REPROVADO (corrija antes de seguir)")
         return 1

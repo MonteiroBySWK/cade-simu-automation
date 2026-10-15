@@ -171,16 +171,29 @@ def cad_simulate(path: str, entradas_json: str = "{}", inicial_json: str = "[]")
 
 
 @mcp.tool()
-def cad_test(path: str) -> str:
-    """Roda a verificação funcional embutida (tabela-verdade) de um circuito de comando
-    com selo/intertravamento/térmico. Retorna OK/FALHA por caso."""
+def cad_test(path: str, casos_json: str = "[]") -> str:
+    """Verificação funcional (tabela-verdade) do comando via netlist.
+    casos_json: [{"nome","entradas":{"S1":true},"inicial":["KM1"],"esperado":["KM1"],"status":"OK|RACE"}].
+    Sem casos: usa a suite embutida SÓ se o circuito tiver bobinas KM1 e KM2 (intercalada);
+    senão retorna SEM_TESTES (o gate reprova — declare "testes" na spec)."""
     sys.path.insert(0, str(ROOT / "tools"))
     import netlist_sim as ns
     import io
     import contextlib
+    try:
+        casos = json.loads(casos_json)
+    except json.JSONDecodeError as e:
+        return f"ERRO json: {e}"
     buf = io.StringIO()
-    with contextlib.redirect_stdout(buf):
-        ok = ns.teste(path)
+    if not casos:
+        c = ns.Circuito(path)
+        if not {"KM1", "KM2"} <= set(c.bobinas):
+            return "SEM_TESTES: declare casos (chave \"testes\" na spec)"
+        with contextlib.redirect_stdout(buf):
+            ok = ns.teste(path)
+    else:
+        with contextlib.redirect_stdout(buf):
+            ok = ns.teste_casos(path, casos)
     return ("PASSOU\n" if ok else "FALHOU\n") + buf.getvalue()
 
 
