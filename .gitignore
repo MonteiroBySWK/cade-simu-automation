@@ -3,3 +3,7 @@ out/
 *.pyc
 __pycache__/
 .DS_Store
+
+# atividade academica: resolucao e enunciados NAO sobem (manter local)
+pratica5/
+*.pdf

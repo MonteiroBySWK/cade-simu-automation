@@ -1,45 +1,82 @@
-# cade-automation
+# cade-simu-automation
 
-Sistema para automatizar atividades de controle industrial sobre arquivos `.cad` do **CADe_SIMU 4.0 [BR]**.
+Automação de projetos elétricos do **CADe_SIMU 4.0** por código: parser round-trip
+do formato `.cad`, CLI para agentes de IA, verificação lógica de rungs Ladder e
+validação visual via Wine. Sem Ghidra, sem chute — engenharia reversa barata e
+determinística a partir do corpus.
 
-## Visão (2 frentes)
+> **EN:** Code-driven automation for CADe_SIMU 4.0 `.cad` files: byte-exact
+> round-trip parser, agent-friendly CLI, Ladder rung checker and Wine-based
+> visual validation.
 
-1. **Editar o existente:** abrir um `.cad`, modificar via código e gerar novo `.cad` válido que o próprio CADe_SIMU abre/simula.
-2. **Criar do zero via IA:** gerar `.cad` a partir de descrição texto + imagem (ênfase em imagem). Uso via OpenCode como executor.
+## Por que existe
 
-Estratégia: transformar `.cad` (texto proprietário com `*`/`#`) em formato IA-friendly (JSON) e voltar sem perda (round-trip).
+O `.cad` do CADe_SIMU é um formato proprietário sem especificação pública —
+mas **não é binário**: é texto ISO-8859 com delimitadores `*`/`#` e seções `$$$`.
+Este projeto transforma esse formato em algo que código (e IA) consegue manipular
+com segurança: parse → edita → emite, byte-idêntico quando nada muda.
 
-## Descobertas-chave (14/10/2026)
+## O que faz
 
-- `.cad` **não é binário**: é texto ISO-8859, sem quebras de linha, header `CADe_SIMU*...`. Ghidra é overkill para v1.
-- EXE é PE32 i386 VC++6 debug (MFC Doc/View: `CCADe_SIMUDoc`), string de serialização encontrada:
-  `CADe_SIMU*%1d*%1d*%1d*%1d*%1d*%1d*%1d*%1d*%3d*%3d*%0.4f*...$$$`
-- Fontes internas vazadas via strings: `Editar_Cable.cpp`, `Editar_NA_NC.cpp`, `EDITAR_PLC.cpp`, `EDITAR_ARDUINO.cpp`, `Simbolo.cpp`, `Librerias.cpp`, etc.
-- Corpus local: `~/Downloads/CADe_SIMU 4.0 [BR]/` com 115+ `.cad`, manual PDF, exemplos PNG/BMP.
-- Existe porte Linux: `KelvinNovais/CADe_SIMU-Linux` (AppImage, Wine). Relevante para automação headless.
-- Ghidra (fase 2): `analyzeHeadless` + Ghidrathon (Python3) + `pyghidra-mcp` como MCP para LLM.
+| Componente | O quê | Estado |
+|---|---|---|
+| `src/cade_core` (Rust) | `parse()` + `emit()` byte-fiéis do `.cad` | ✅ round-trip 114/114 arquivos |
+| `src/cade_cli` (Rust) | `validate\|parse\|emit\|new-from-json` — a ferramenta que o agente chama | ✅ e2e OK |
+| `tools/extract_ids.py` | dicionário de símbolos `NNNN#SUB` do corpus → `docs/dicionario-simbolos.md` | ✅ 56 IDs |
+| `tools/dissect.py` | disseca entidades (seq, ID, flags, X/Y/W/H, nets A/B) | ✅ |
+| `tools/cad_preview.py` | render esquemático p/ conferência geométrica | ✅ |
+| `tools/ladder_sim.py` | solver de rungs (NA=10050#, NF=10051#) p/ testes T1–T7 | ✅ |
+| `tools/img2json.py` | baseline imagem → `cade.json` + preview (PIL+numpy) | ✅ baseline |
+| `tools/validate_wine.sh` | smoke test: abre gerados no CADe_SIMU via Wine+Xvfb | ✅ |
+| `skills/automacao-industrial` | skill reutilizável: formato, nets, roteiro Wine, padrão de proteção | ✅ |
 
-## Stack proposta
+## Quickstart
 
-- `cade_core` em **Rust** (parser/serializer round-trip, validador) — `src/cade_core/`
-- `cade_cli` em Rust ou Go (CLI para OpenCode chamar) — `src/cade_cli/`
-- `C puro` só onde for gargalo (hot loop de parse), via FFI, não por padrão.
-- `Python/Lua` para automação: scripts Ghidra (Ghidrathon), conversor imagem→símbolos, glue OpenCode.
-- Render/validação: Wine + CADe_SIMU-Linux headless + screenshots diff.
+```bash
+# 1. validar um .cad
+cargo build --manifest-path src/cade_cli/Cargo.toml
+./src/cade_cli/target/debug/cade_cli validate meu.circuito.cad
 
-## Layout
+# 2. .cad -> JSON -> .cad (round-trip)
+./src/cade_cli/target/debug/cade_cli parse meu.circuito.cad -o out/a.json
+./src/cade_cli/target/debug/cade_cli emit out/a.json -o out/b.cad
+cmp meu.circuito.cad out/b.cad && echo BYTE-IDENTICO
 
-- `docs/` — contexto, formato `.cad`, pesquisa web
-- `plans/` — plano de execução
-- `spec/` — especificação das 2 frentes
-- `corpus/` — amostras `.cad` (3 iniciais, resto fica em Downloads)
-- `src/cade_core/`, `src/cade_cli/` — código futuro
-- `tools/ghidra/` — scripts Ghidra futuros
+# 3. testes do núcleo
+cargo test --manifest-path src/cade_core/Cargo.toml
 
-## Próxima sessão
+# 4. dicionário de símbolos do seu corpus
+python3 tools/extract_ids.py /caminho/*.cad > docs/dicionario-simbolos.md
+```
 
-Abra a sessão do OpenCode **nesta pasta** (`cade-automation/`). Leia nesta ordem:
-1. `docs/00-contexto.md`
-2. `docs/formato-cad.md`
-3. `spec/spec.md`
-4. `plans/plano.md`
+## Formato `.cad` em 30 segundos
+
+```
+CADe_SIMU*0*3005#220V#########*0*0*...   <- header (modo, versão, título)
+*1*6017#DJ##N#1#3#5#2#4#6#*1*...*48*63*...  <- entidade: SEQ*ID#SUB#labels#flags*X*Y...
+*5*4000##########*0*...*39*57*45*75*...     <- fio (X1*Y1*X2*Y2)
+...$$$&&&                                     <- fim de seção
+```
+
+Detalhes em [`docs/formato-cad.md`](docs/formato-cad.md),
+[`docs/dicionario-simbolos.md`](docs/dicionario-simbolos.md) e
+[`spec/spec-v1.md`](spec/spec-v1.md).
+
+## Validação
+
+- `cargo test`: 4 testes (round-trip no corpus + rejeições).
+- Round-trip byte-idêntico em **114/114** `.cad` do acervo + `validate` no CLI.
+- Abertura real no CADe_SIMU 4.0 via Wine sem erro (roteiro em `tools/validate_wine.sh`).
+
+## Aviso
+
+Projeto independente, sem afiliação com o autor do CADe_SIMU (shareware de
+Juan Luis Villanueva Montoto) nem com o "Ensinando Elétrica". Uso didático.
+Atividades acadêmicas resolvidas com estas ferramentas **não** são publicadas
+aqui (`pratica5/` e `*.pdf` estão no `.gitignore`) — publique seu próprio
+aprendizado, não a resposta pronta.
+
+## Licença
+
+GPLv3 — pode usar e modificar; obras derivadas precisam continuar abertas
+([LICENSE](LICENSE)).

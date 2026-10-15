@@ -1,0 +1,46 @@
+#!/usr/bin/env python3
+"""Disseca .cad em entidades e alinha campos por ID (probe RE — Fase Pratica5)."""
+import re, sys
+
+def split_entities(d):
+    # header até o primeiro '#*N*ID#' ; footer a partir do primeiro '$$$'
+    m = re.search(r'#(?=\*\d+\*\d{4}#)', d)
+    header, rest = d[:m.start()+1], d[m.start()+1:]
+    f = rest.find('$$$')
+    body, footer = rest[:f], rest[f:]
+    ents = re.split(r'#(?=\*\d+\*\d+#)', body)
+    return header, ents, footer
+
+def parse_ent(e):
+    m = re.match(r'\*(\d+)\*(\d+)#(.*)$', e, re.S)
+    if not m: return None
+    seq, idc, tail = m.group(1), m.group(2), m.group(3)
+    # sub e labels até o último '#' antes dos nums? heurística: campos alpha vs nums
+    # separa tail em blocos '#' e acha onde começam os nums '*n...'
+    parts = tail.split('#')
+    # o bloco de nums é o último bloco não-vazio começando com '*'
+    nums = []
+    labels = []
+    for i, p in enumerate(parts):
+        if p.startswith('*') and re.fullmatch(r'(\*-?\d+)+', p):
+            nums = p[1:].split('*')
+            labels = parts[:i]
+            break
+    else:
+        labels = parts
+    return {'seq': seq, 'id': idc, 'labels': labels, 'nums': nums, 'raw': e}
+
+def show_group(ents, idc, maxn=6):
+    g = [p for p in map(parse_ent, ents) if p and p['id'] == idc]
+    print(f'=== ID {idc} ({len(g)} ent)')
+    for p in g[:maxn]:
+        print(f"  seq={p['seq']} labels={p['labels']}")
+        print(f"    nums={p['nums']}")
+    return g
+
+if __name__ == '__main__':
+    d = open(sys.argv[1], 'rb').read().decode('latin1')
+    header, ents, footer = split_entities(d)
+    print('HEADER:', header[:200]); print('NENT:', len(ents)); print('FOOTER:', footer[:150])
+    for idc in sys.argv[2:]:
+        show_group(ents, idc)
