@@ -24,9 +24,13 @@ def main(argv):
         "out_path": out,
     })
     print(res)
-    if "OK" not in res:
-        return 1
     print(mcp_call.call("cad_test", {"path": out}))
+    # GATE: falha se houver aviso (curto/cruzamento) ou teste reprovado
+    problema = ("AVISO" in res) or ("FALHOU" in res) or ("OK" not in res)
+    if problema:
+        print("GATE: REPROVADO (corrija antes de seguir)")
+        return 1
+    print("GATE: OK (validado, sem curto, testes passando)")
     return 0
 
 

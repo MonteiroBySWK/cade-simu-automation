@@ -61,6 +61,10 @@ Um circuito **só simula com alimentação**. Além da lógica, inclua:
 
 ### Layout
 - Comando na faixa `x∈[40,320]`, `y∈[20,150]`; **potência abaixo** (`y≥160`).
+- **A folha é FIXA (~460 × 300 unidades)** e o zoom não se ajusta: **todo o conteúdo
+  tem de caber** (Ymax ≲ 300). Rodapé/legenda não redimensionam a folha.
+- **Sempre rode o gate antes de seguir:** `python3 tools/build_spec.py <spec>.json out/x.cad`
+  → imprime `GATE: OK` ou `GATE: REPROVADO` (falha em curto/cruzamento/teste).
 - **Símbolos de potência** (`6007` térmico, `6009`/`6010` DJ, `2001` contator, `1000` motor)
   têm os pinos A/B no **mesmo lado** → **empilhe na HORIZONTAL** (fileira com
   espaçamento ≥40 em `x`), nunca em cascata vertical (o roteador auto fecharia
