@@ -53,16 +53,22 @@ o que conecta é o net compartilhado (e a geometria — fio tocando o pino).
 Regerar: `python3 tools/learn_pins.py` (varre o acervo de 115 `.cad`).
 
 ### Layout
-- Faixa com boa visualização: `x∈[40,300]`, `y∈[20,180]`.
-- Contatos: `A` em cima, `B` embaixo. Comando acima; potência abaixo.
-- Ramos paralelos: deslocar em `x` (ex.: +50) e fechar pelos mesmos nós.
+- Comando na faixa `x∈[40,320]`, `y∈[20,150]`; **potência abaixo** (`y≥160`).
+- **Símbolos de potência** (`6007` térmico, `6009`/`6010` DJ, `2001` contator, `1000` motor)
+  têm os pinos A/B no **mesmo lado** → **empilhe na HORIZONTAL** (fileira com
+  espaçamento ≥40 em `x`), nunca em cascata vertical (o roteador auto fecharia
+  curto). Contatos de comando (`7000`/`7001`/`8000`/`8001`/`8017`) têm A em cima,
+  B embaixo (cascata vertical OK).
+- `cad_preview` recorta ao conteúdo (canvas automático) — layouts um pouco maiores ok.
 
 ### Autoria via MCP (regra de ouro: nunca escrever `*`/`#` na mão)
+Atenção: `cad_build` recebe **strings** (JSON escapado) — passe `simbolos_json`,
+`conexoes_json` e `fios_json` como *strings*, não arrays.
 ```bash
 python3 tools/mcp_call.py cad_symbols
 python3 tools/mcp_call.py cad_build '<json>'
 python3 tools/mcp_call.py cad_validate '{"path":"out/x.cad"}'
-python3 tools/mcp_call.py cad_inspect  '{"path":"out/x.cad"}'
+python3 tools/mcp_call.py cad_inspect  '{"path":"out/x.cad"}'   # traz nets A/B por símbolo
 python3 tools/mcp_call.py cad_preview  '{"path":"out/x.cad"}'
 ```
 `cad_build` aceita **conexões lógicas por nome/pino** (rota + net automáticos):
