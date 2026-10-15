@@ -15,11 +15,19 @@ Pipeline (`tools/detect_symbols.py`):
 
 ## Estado atual e limites
 
-- Avaliação nos 3 `Exemplos/*.png`: **P≈0,87 / R≈0,46**. Precisão alta,
-  recall baixo — a perda é de contatores/motores/térmicos fragmentados.
-- **Diagnóstico:** as regras atingiram o teto por **falta de dados** — cada
-  correção de falso positivo custa recall em outro símbolo (whack-a-mole).
-- Ground-truth embutido no script (`VERDADE`) é estimado à mão, não confiável.
+- Regras (forma geométrica) nos `Exemplos/*.png`: P≈0,87 / R≈0,46.
+- **Medição honesta (leave-one-case-out)** no dataset minerado (76 símbolos,
+  10 casos), `tools/eval_loo.py`:
+
+  | método | P | R |
+  |---|---|---|
+  | regras geométricas | 1,00 | 0,11 |
+  | **kNN (dataset minerado)** | **0,83** | **0,79** |
+
+- **Diagnóstico:** as regras puras atingem o teto por **falta de dados** (cada
+  correção de falso positivo custa recall em outro símbolo). Com o dataset
+  minerado, o kNN equilibra P/R e chega perto da meta de 80% — e cresce com
+  mais dados.
 
 ## Desbloqueio: minerar rótulos dos próprios `.cad`
 
@@ -36,6 +44,22 @@ símbolos existem, onde e de que tipo. Minerando renders rotulados:
 
 Com esse dataset: (a) medir P/R honesto em centenas de símbolos, (b) treinar um
 classificador pequeno (kNN/ONNX) OU calibrar as regras — sem mais chute.
+
+### Classificador kNN (`tools/classifier.py`)
+
+Regras geram **candidatos**; o kNN decide a classe (feature = máscara 20×20 +
+aspecto, distância vetorial, k=5 votos). Sem dependências (numpy puro).
+
+```bash
+python3 tools/mk_dataset.py gen 10          # .cad sintéticos + manifesto
+for c in out/ds/case-*.cad; do tools/render_cad.sh "$c" "${c%.cad}.png"; done
+python3 tools/label_dataset.py --sheet      # recorta rotulados + contact sheet
+python3 tools/classifier.py train           # treina -> out/model.npz
+python3 tools/label_dataset.py --detect --knn   # mede P/R do kNN
+python3 tools/label_dataset.py --detect         # mede P/R das regras
+python3 tools/eval_loo.py                        # LOO honesto (kNN)
+python3 tools/eval_loo.py --regras               # LOO honesto (regras)
+```
 
 ## Template library
 

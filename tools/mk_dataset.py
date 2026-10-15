@@ -28,11 +28,22 @@ def load_donor():
     d = DONOR.read_bytes().decode("latin1")
     header, ents, footer = split_entities(d)
     protos = {}
+    wire = None
     for e in ents:
         p = parse_ent(e)
-        if p and p["id"] in CLASSES and p["id"] not in protos:
+        if not p:
+            continue
+        if p["id"] in CLASSES and p["id"] not in protos:
             protos[p["id"]] = p
-    return header, protos, footer
+        if p["id"] == "4000" and wire is None:
+            wire = p
+    return header, protos, footer, wire
+
+
+def wire_at(proto, seq, x0, y0, x1, y1):
+    nums = list(proto["nums"])
+    nums[8], nums[9], nums[10], nums[11] = str(x0), str(y0), str(x1), str(y1)
+    return f"*{seq}*{proto['id']}#" + "#".join(proto["labels"]) + "#*" + "*".join(nums)
 
 
 def ent_at(proto, seq, x, y):
@@ -42,19 +53,21 @@ def ent_at(proto, seq, x, y):
     return f"*{seq}*{proto['id']}#" + "#".join(proto["labels"]) + "#*" + "*".join(nums)
 
 
-def build(placements, header, protos, footer):
-    body = "#".join(ent_at(protos[c], i + 1, x, y) for i, (c, x, y) in enumerate(placements))
+def build(placements, header, protos, footer, wire):
+    # âncoras de extensão (fios) p/ o Zoom Todo ter SEMPRE o mesmo enquadramento
+    anchors = [wire_at(wire, 1, 10, 10, 300, 10), wire_at(wire, 2, 10, 10, 10, 190)]
+    body = "#".join(anchors + [ent_at(protos[c], i + 3, x, y) for i, (c, x, y) in enumerate(placements)])
     return header + body + "#" + footer
 
 
 def main(argv):
-    header, protos, footer = load_donor()
+    header, protos, footer, wire = load_donor()
     DS.mkdir(parents=True, exist_ok=True)
     mode = argv[0] if argv else "gen"
     if mode == "probe":
         # 2 motores (1000) em cantos conhecidos da faixa visível p/ resolver escala+offset
         pl = [("1000", 50, 40), ("1000", 260, 150)]
-        (DS / "probe.cad").write_bytes(build(pl, header, protos, footer).encode("latin1"))
+        (DS / "probe.cad").write_bytes(build(pl, header, protos, footer, wire).encode("latin1"))
         (DS / "probe.json").write_text(json.dumps({"casos": [{"arq": "probe.cad",
             "simbolos": [{"classe": c, "x": x, "y": y} for c, x, y in pl]}]}, indent=1))
         print("probe.cad OK", pl)
@@ -70,7 +83,7 @@ def main(argv):
         picked = spots[:rng.randint(6, 9)]
         pl = [(rng.choice(CLASSES), x + rng.randint(-8, 8), y + rng.randint(-8, 8)) for x, y in picked]
         arq = f"case-{k:02d}.cad"
-        (DS / arq).write_bytes(build(pl, header, protos, footer).encode("latin1"))
+        (DS / arq).write_bytes(build(pl, header, protos, footer, wire).encode("latin1"))
         casos.append({"arq": arq, "simbolos": [{"classe": c, "x": x, "y": y} for c, x, y in pl]})
     (DS / "manifest.json").write_text(json.dumps({"casos": casos}, indent=1))
     tot = sum(len(c["simbolos"]) for c in casos)
