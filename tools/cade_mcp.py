@@ -131,5 +131,87 @@ def cad_from_image(path: str, out_json: str = "/tmp/cade_from_img.json") -> str:
     return (r.stdout or r.stderr).strip()[:4000]
 
 
+# --- autoria do zero (símbolos + fios) --------------------------------------
+
+_LIB = None
+
+
+def _lib():
+    """(header, protos, footer, wire): catálogo de entidades doadoras do corpus."""
+    global _LIB
+    if _LIB is None:
+        import mk_dataset as M
+        header, protos, footer, wire = M.load_donor()
+        for f in sorted((ROOT / "corpus").glob("*.cad")):
+            try:
+                _, ents, _ = split_entities(f.read_bytes().decode("latin1"))
+            except Exception:
+                continue
+            for e in ents:
+                p = parse_ent(e)
+                if p and p["id"] not in protos:
+                    protos[p["id"]] = p
+        _LIB = (header, protos, footer, wire)
+    return _LIB
+
+
+@mcp.tool()
+def cad_symbols() -> str:
+    """Lista as classes de símbolo disponíveis (ID + exemplo de rótulo) para montar do zero."""
+    _, protos, _, _ = _lib()
+    itens = []
+    for cid, p in sorted(protos.items()):
+        if cid in ("4000", "4001", "4002", "4009", "4010", "4011", "4003", "4004"):
+            continue  # conectores/cabos: use `fios`
+        lab = [x for x in p["labels"] if x]
+        itens.append({"classe": cid, "exemplo_rotulo": lab[0] if lab else ""})
+    return json.dumps({"simbolos": itens, "n": len(itens)}, ensure_ascii=False)
+
+
+@mcp.tool()
+def cad_build(titulo: str, simbolos_json: str, fios_json: str = "[]", out_path: str = "/tmp/novo.cad") -> str:
+    """CRIA UM .CAD DO ZERO (sem reusar arquivo). simbolos_json: lista de
+    {classe, x, y, rotulo?}; fios_json: lista de {x1, y1, x2, y2}. Grava out_path e valida.
+    Ex.: simbolos_json='[{"classe":"2001","x":60,"y":40,"rotulo":"-KM1"}]'."""
+    import mk_dataset as M
+    header, protos, footer, wire = _lib()
+    try:
+        simbolos = json.loads(simbolos_json)
+        fios = json.loads(fios_json)
+    except json.JSONDecodeError as e:
+        return f"ERRO json: {e}"
+    if not isinstance(simbolos, list):
+        return "ERRO: simbolos_json deve ser uma lista"
+    faltando = [s.get("classe") for s in simbolos if s.get("classe") not in protos]
+    if faltando:
+        return f"ERRO classe(s) inexistente(s): {faltando}. Use cad_symbols."
+    ents = []
+    seq = 1
+    for f in fios:
+        ents.append(M.wire_at(wire, seq, int(f["x1"]), int(f["y1"]), int(f["x2"]), int(f["y2"]))); seq += 1
+    for s in simbolos:
+        p = protos[s["classe"]]
+        e = M.ent_at(p, seq, int(s["x"]), int(s["y"]))
+        if s.get("rotulo"):
+            # substitui o 1º rótulo (logo após 'ID#')
+            head, _, rest = e.partition("#")          # head='*seq*ID', rest='l0#l1#...'
+            parts = rest.split("#", 1)
+            parts[0] = s["rotulo"]
+            e = head + "#" + (parts[0] + "#" + parts[1] if len(parts) > 1 else parts[0])
+        ents.append(e); seq += 1
+    if not ents:
+        ents = [M.ent_at(protos["8000"], 1, 60, 40)]
+    base = (ROOT / "corpus" / "Arranque_1.cad").read_bytes().decode("latin1")
+    import re
+    m = re.search(r"#(?=\*\d+\*\d+#)", base)
+    hdr = base[:m.start() + 1] if m else header
+    body = "#".join(ents)
+    cad = hdr + body + "#" + footer
+    Path(out_path).write_bytes(cad.encode("latin1"))
+    code, out = _run("validate", out_path)
+    return (f"{seq-1} entidades -> {out_path} | {out}" if code == 0
+            else f"ERRO ao validar: {out}")
+
+
 if __name__ == "__main__":
     mcp.run()
