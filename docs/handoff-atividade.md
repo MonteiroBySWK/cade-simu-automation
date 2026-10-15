@@ -58,8 +58,8 @@ CLI: `python3 tools/mcp_call.py cad_symbols | cad_inspect | cad_test | cad_previ
 3. **Folha fixa**: conteúdo em `x≲455`, `y≲295`.
 4. **Roteador**: escape do pino para fora; fio reto quando o x coincide e a coluna
    é livre; coluna de desvio fora de qualquer corpo.
-4. **Fonte**: `3004#-X` por fase (pino B → N); neutro `3002#TERRA` no N.
-5. **Nunca** altere o roteador/pinos sem rodar o **gate** antes e depois (foi a
+5. **Fonte**: `3004#-X` por fase (pino B → N); neutro `3002#TERRA` no N.
+6. **Nunca** altere o roteador/pinos sem rodar o **gate** antes e depois (foi a
    fonte de idas-e-vindas).
 
 ## Pendências (menores)
