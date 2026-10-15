@@ -4,7 +4,7 @@
 
 **Goal:** Fechar as Fases 1–5 do `plans/plano.md`: gramática `.cad`, `cade_core` Rust round-trip, `cade_cli`, imagem→JSON, validação Wine.
 
-**Architecture:** Texto-primeiro: parser Rust determinístico sobre corpus + `cade.json v1` como contrato IA↔`.cad`; Ghidra/Wine só como validação fase 5.
+**Architecture:** Texto-primeiro: parser Rust determinístico sobre corpus + `cade.json v1` como contrato IA↔`.cad`; Wine como validação fase 5.
 
 **Tech Stack:** Rust (cade_core/cade_cli), Python3 (tools/extract_ids.py, imagem), Wine + CADe_SIMU-Linux (validação).
 
@@ -78,11 +78,10 @@
 - [ ] **Step 2: Gerar `cade.json` + preview PNG**
 - [ ] **Step 3: Commit**
 
-### Task 5: Fase 5 — Validação Wine + Ghidra headless (se preciso)
+### Task 5: Fase 5 — Validação Wine
 
 **Files:**
-- Create: `tools/validate_wine.sh`, `tools/ghidra/*.py` (se ambiguidade restar)
+- Create: `tools/validate_wine.sh`
 
-- [ ] **Step 1: Abrir gerados no CADe_SIMU-Linux via Wine, screenshot/diff**
-- [ ] **Step 2: Só se gramática não fechar: script Ghidra nos `Serialize`**
-- [ ] **Step 3: Commit final + aviso de conclusão**
+- [ ] **Step 1: Abrir gerados no CADe_SIMU via Wine, conferir ausência de erro**
+- [ ] **Step 2: Commit final + aviso de conclusão**

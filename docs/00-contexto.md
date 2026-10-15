@@ -21,13 +21,12 @@ Automatizar controle industrial:
 - (2) criar `.cad` do zero a partir de descrição texto, imagem (ênfase) ou nada, via agente (OpenCode).
 - Colocar `.cad` num formato fácil de IA trabalhar (JSON intermediário).
 - Stack sugerida: Rust/Go + C puro onde for crítico, Lua/Python para automação.
-- Ghidra instalado, mas usuário considera pesado — delegar RE ao agente.
 - Tudo versionado em git, nesta pasta, para abrir sessão OpenCode aqui.
 
 ## Decisão arquitetural inicial
 
-Ghidra **não** é caminho crítico v1. O `.cad` é texto parseável. Prioridade:
-1. Gramática do `.cad` por corpus + strings do EXE (barato, determinístico).
+Análise de binário **não** é caminho crítico: o `.cad` é texto parseável. Prioridade:
+1. Gramática do `.cad` por corpus (barato, determinístico).
 2. Round-trip byte-idêntico (ou semanticamente idêntico) em Rust.
 3. JSON intermediário versionado (`cade.json v1`) como contrato IA↔`.cad`.
-4. Ghidra/headless + Wine + visão computacional só na fase 2 (validação de simulação e extração de comportamento).
+4. Validação no app real via Wine + geração de `cade.json` a partir de texto/imagem na fase 2.

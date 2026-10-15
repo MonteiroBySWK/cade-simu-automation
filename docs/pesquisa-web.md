@@ -6,12 +6,10 @@
 - Porte Linux: `github.com/KelvinNovais/CADe_SIMU-Linux` (AppImage, senha 4962). Base para automação Wine/headless sem Windows.
 - Manual local `Ajuda/Manual CADe_SIMU.pdf` é a melhor fonte de símbolos; `Scribd: CADe-SIMU-Manual-in-Practice` como backup.
 
-## Ghidra (fase 2, não v1)
+## Análise de binário (descartada)
 
-- `analyzeHeadless` em `support/`: roda análise sem GUI; pre/post-scripts possíveis.
-- Limite: Ghidra usa Jython (Python2). Para Python3 usar **Ghidrathon** (blog Google Threat Intel) ou **PyGhidra**.
-- `pyghidra-mcp` (clearbluejar): MCP server headless para análise multi-binária assistida por LLM — encaixa no pedido "você mexa no Ghidra melhor que eu".
-- Estratégia: só levar ao Ghidra as funções `Serialize`/`OnOpenDocument`/`Cdib` se o corpus não fechar a gramática.
+- Cogitada no início, descartada: o `.cad` é texto parseável, então RE por
+  corpus + Wine resolve sem precisar desmontar o EXE.
 
 ## Automação de GUI / validação
 

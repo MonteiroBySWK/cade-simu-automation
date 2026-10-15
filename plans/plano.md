@@ -2,11 +2,10 @@
 
 ## Abordagens consideradas
 
-1. **Texto-primeiro (recomendada):** parser Rust do `.cad` como texto + JSON + CLI. Barato, determinístico, sem Ghidra. Risco: algum campo obscuro.
-2. **Ghidra-primeiro:** RE completo do EXE antes de codar. Preciso, mas lento e pesado; usuário já achou overkill.
-3. **GUI-automation-primeiro:** pilotar o CADe via Wine/auto-click. Frágil, não dá formato IA-friendly.
+1. **Texto-primeiro (adotada):** parser Rust do `.cad` como texto + JSON + CLI. Barato, determinístico. Risco: algum campo obscuro (mitigado por corpus + Wine).
+2. **GUI-automation-primeiro:** pilotar o CADe via Wine/auto-click. Frágil, não dá formato IA-friendly (virou validação, não construção).
 
-Escolha: (1) agora, (2) e (3) como validação na fase 2.
+Escolha: (1) agora, (2) como validação na fase 2.
 
 ## Fases
 
@@ -15,7 +14,7 @@ Escolha: (1) agora, (2) e (3) como validação na fase 2.
 - [x] **Fase 2 — `cade_core` (Rust):** `parse()` + `emit()` + testes round-trip. ✅ 4 testes verdes; round-trip byte-idêntico em 114/114 `.cad` do acervo
 - [x] **Fase 3 — `cade_cli`:** `validate|parse|emit|new-from-json` e2e OK. ✅ 15/10/2026
 - [x] **Fase 4 — Imagem→JSON (baseline):** `tools/img2json.py` + `docs/imagem-pipeline.md`. ✅ gera `.cad` válido; classificação de símbolos (80%) fica p/ ML futuro
-- [x] **Fase 5 — Validação Wine:** `tools/validate_wine.sh` PASS (sem erro fatal; exit=124 = app segue aberto). ✅ 15/10/2026; Ghidra dispensado (gramática fechou sem ambiguidade)
+- [x] **Fase 5 — Validação Wine:** `tools/validate_wine.sh` PASS (sem erro fatal; exit=124 = app segue aberto). ✅ 15/10/2026
 
 ## Convenções
 
