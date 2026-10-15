@@ -28,10 +28,10 @@ Campos exatos mudam após gramática final; versão fixa em `v1`.
 
 ## Fora de escopo v1
 
-Simulação elétrica fiel, PLC/Arduino, pneumática completa, editor GUI próprio, plugin Ghidra completo.
+Simulação elétrica fiel, PLC/Arduino, pneumática completa, editor GUI próprio, análise de binário do EXE.
 
 ## Riscos
 
 - IDs `NNNN#` sem catálogo oficial → mitigar com dicionário extraído do corpus + manual.
 - Wine pode não rodar AppImage headless → fallback: validação só por parser + diff visual manual.
-- Ghidra pesado → só fase 2, com scripts prontos em `tools/ghidra/`.
+- Riscos de formato fecham por corpus + Wine; sem dependência de análise de binário.

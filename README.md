@@ -1,82 +1,57 @@
 # cade-simu-automation
 
-Automação de projetos elétricos do **CADe_SIMU 4.0** por código: parser round-trip
-do formato `.cad`, CLI para agentes de IA, verificação lógica de rungs Ladder e
-validação visual via Wine. Sem Ghidra, sem chute — engenharia reversa barata e
-determinística a partir do corpus.
+Reconstruo circuitos do **CADe_SIMU 4.0** a partir de texto ou imagem e entrego
+um `.cad` que abre e simula. O formato `.cad` é proprietário mas legível
+(texto ISO-8859 com `*`/`#`), então dá para manipular por código com segurança.
 
-> **EN:** Code-driven automation for CADe_SIMU 4.0 `.cad` files: byte-exact
-> round-trip parser, agent-friendly CLI, Ladder rung checker and Wine-based
-> visual validation.
+> **EN:** Rebuild CADe_SIMU 4.0 circuits from text or images into working `.cad`
+> files. The format is proprietary but parseable, so code (and AI) can edit it
+> reliably.
 
-## Por que existe
+## Como funciona
 
-O `.cad` do CADe_SIMU é um formato proprietário sem especificação pública —
-mas **não é binário**: é texto ISO-8859 com delimitadores `*`/`#` e seções `$$$`.
-Este projeto transforma esse formato em algo que código (e IA) consegue manipular
-com segurança: parse → edita → emite, byte-idêntico quando nada muda.
+```
+texto/imagem  →  cade.json  →  cade_cli  →  .cad  →  Wine (confere)
+```
 
-## O que faz
+- `src/cade_core` (Rust): parse/emit byte-fiel. Round-trip 114/114 arquivos.
+- `src/cade_cli`: `validate|parse|emit|new-from-json`. É por aqui que o agente trabalha — nunca editando `*`/`#` na mão.
+- `tools/img2json.py`: imagem → `cade.json` + preview (baseline; classificação de símbolos ainda é simples).
+- `tools/ladder_sim.py`: confere lógica de rungs (permissões, selos) antes de dizer que está pronto.
+- `tools/validate_wine.sh`: abre o resultado no CADe_SIMU de verdade via Wine.
+- `skills/automacao-industrial`: o passo a passo reutilizável de tudo isso.
 
-| Componente | O quê | Estado |
-|---|---|---|
-| `src/cade_core` (Rust) | `parse()` + `emit()` byte-fiéis do `.cad` | ✅ round-trip 114/114 arquivos |
-| `src/cade_cli` (Rust) | `validate\|parse\|emit\|new-from-json` — a ferramenta que o agente chama | ✅ e2e OK |
-| `tools/extract_ids.py` | dicionário de símbolos `NNNN#SUB` do corpus → `docs/dicionario-simbolos.md` | ✅ 56 IDs |
-| `tools/dissect.py` | disseca entidades (seq, ID, flags, X/Y/W/H, nets A/B) | ✅ |
-| `tools/cad_preview.py` | render esquemático p/ conferência geométrica | ✅ |
-| `tools/ladder_sim.py` | solver de rungs (NA=10050#, NF=10051#) p/ testes T1–T7 | ✅ |
-| `tools/img2json.py` | baseline imagem → `cade.json` + preview (PIL+numpy) | ✅ baseline |
-| `tools/validate_wine.sh` | smoke test: abre gerados no CADe_SIMU via Wine+Xvfb | ✅ |
-| `skills/automacao-industrial` | skill reutilizável: formato, nets, roteiro Wine, padrão de proteção | ✅ |
-
-## Quickstart
+## Uso
 
 ```bash
-# 1. validar um .cad
 cargo build --manifest-path src/cade_cli/Cargo.toml
-./src/cade_cli/target/debug/cade_cli validate meu.circuito.cad
+CLI=src/cade_cli/target/debug/cade_cli
 
-# 2. .cad -> JSON -> .cad (round-trip)
-./src/cade_cli/target/debug/cade_cli parse meu.circuito.cad -o out/a.json
-./src/cade_cli/target/debug/cade_cli emit out/a.json -o out/b.cad
-cmp meu.circuito.cad out/b.cad && echo BYTE-IDENTICO
+$CLI validate circuito.cad
+$CLI parse circuito.cad -o out/a.json
+$CLI emit out/a.json -o out/b.cad
+cmp circuito.cad out/b.cad && echo BYTE-IDENTICO
 
-# 3. testes do núcleo
-cargo test --manifest-path src/cade_core/Cargo.toml
-
-# 4. dicionário de símbolos do seu corpus
-python3 tools/extract_ids.py /caminho/*.cad > docs/dicionario-simbolos.md
+# do zero, a partir de descrição:
+echo '{"meta":{"titulo":"PARTIDA DIRETA","modo":"0","versao":"3000"}}' > out/m.json
+$CLI new-from-json out/m.json -o out/partida.cad
+$CLI validate out/partida.cad
 ```
 
-## Formato `.cad` em 30 segundos
+Detalhes do formato em `docs/formato-cad.md`, símbolos em
+`docs/dicionario-simbolos.md`, contrato em `spec/spec-v1.md`.
 
-```
-CADe_SIMU*0*3005#220V#########*0*0*...   <- header (modo, versão, título)
-*1*6017#DJ##N#1#3#5#2#4#6#*1*...*48*63*...  <- entidade: SEQ*ID#SUB#labels#flags*X*Y...
-*5*4000##########*0*...*39*57*45*75*...     <- fio (X1*Y1*X2*Y2)
-...$$$&&&                                     <- fim de seção
-```
+## Estado honesto
 
-Detalhes em [`docs/formato-cad.md`](docs/formato-cad.md),
-[`docs/dicionario-simbolos.md`](docs/dicionario-simbolos.md) e
-[`spec/spec-v1.md`](spec/spec-v1.md).
+- Editar `.cad` existente: funciona (round-trip + validação no app real).
+- Criar do zero via texto: funciona o esqueleto válido; circuito completo a partir de descrição livre ainda exige montar o `cade.json` na mão ou estender o detector.
+- Criar via imagem: baseline gera `.cad` válido mas template — a detecção de símbolos a 80% é trabalho futuro.
 
-## Validação
+## Nota
 
-- `cargo test`: 4 testes (round-trip no corpus + rejeições).
-- Round-trip byte-idêntico em **114/114** `.cad` do acervo + `validate` no CLI.
-- Abertura real no CADe_SIMU 4.0 via Wine sem erro (roteiro em `tools/validate_wine.sh`).
+Sem vínculo com o autor do CADe_SIMU (shareware, Juan Luis Villanueva
+Montoto) nem com o "Ensinando Elétrica". Uso didático. Resoluções de
+atividades e enunciados não são publicados (`pratica5/`, `*.pdf` no
+`.gitignore`).
 
-## Aviso
-
-Projeto independente, sem afiliação com o autor do CADe_SIMU (shareware de
-Juan Luis Villanueva Montoto) nem com o "Ensinando Elétrica". Uso didático.
-Atividades acadêmicas resolvidas com estas ferramentas **não** são publicadas
-aqui (`pratica5/` e `*.pdf` estão no `.gitignore`) — publique seu próprio
-aprendizado, não a resposta pronta.
-
-## Licença
-
-GPLv3 — pode usar e modificar; obras derivadas precisam continuar abertas
-([LICENSE](LICENSE)).
+Licença GPLv3 ([LICENSE](LICENSE)).

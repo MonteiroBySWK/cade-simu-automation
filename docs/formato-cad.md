@@ -21,7 +21,7 @@
 CADe_SIMU*%1d*%1d*%1d*%1d*%1d*%1d*%1d*%1d*%3d*%3d*%0.4f*%1d*%1d*%3d*%3d*%1d*%1d*%4d$$$
 ```
 
-→ cabeçalho fixo com 17 campos. Localizar em `CADe_SIMUDoc.cpp` / `Cdib.cpp` via Ghidra depois para mapear cada `%d`.
+→ cabeçalho fixo com 17 campos. Mapear cada `%d` por comparação de headers no corpus (modo/versão/título variando).
 
 ## Módulos (via strings `E:\C++\CADe_SIMU\*.cpp`)
 
@@ -46,10 +46,9 @@ fio := "4000#" ... coordenadas...
 - IDs funcionais (1–2 ocorrências cada): `5000/5003#-F` (fusível?), `2001/2006/7000/7001/9000#Q` (contatos/bobinas?), `8000/8001#B` (botões?), `3001/3000/3002/3004/3005#-X` (bornes?), `6017#DJ`, `7018#C1`, `8100#B`.
 - Ver tabela completa em `docs/dicionario-simbolos.md`.
 
-## Próximos passos RE (baratos, sem Ghidra)
+## Próximos passos RE (baratos)
 
 1. Copiar 10–15 `.cad` variados e comparar headers (`*0*` vs `*3*`, `3005` vs `6017`).
 2. Extrair todos os IDs `NNNN#` únicos do corpus → dicionário inicial.
 3. Cruzar com `Manual CADe_SIMU.pdf` (tabela de símbolos) + `Exemplos/*.png` (visão).
 4. Fuzzing diferencial: alterar 1 campo, abrir no Wine, observar erro/posição → inferir semântica.
-5. Só então Ghidra headless nos `Serialize()` de `CADe_SIMUDoc.cpp` se restar ambiguidade.
