@@ -72,15 +72,25 @@ def test_gate_intercalada():
 
 
 def test_gate_partida_direta_1_motor():
-    # cad_test e fixo p/ a intercalada: so os casos de KM1/RT1 se aplicam aqui.
+    # casos vem da chave "testes" da spec; o gate reprova se algum falhar
     with tempfile.TemporaryDirectory() as t:
         so, fo, rc, frc = _gate("partida_direta.layout.json", t)
         assert "GATE: OK" in so and rc == 0, so[-600:]
-        for caso in ("S1 liga KM1", "selo mantém KM1", "S0 desliga tudo",
-                     "sem auto-religamento", "RT1 aberto bloqueia:"):
-            linha = [l for l in so.splitlines() if caso in l]
-            assert linha and "[OK ]" in linha[0], (caso, linha)
+        assert "RESULTADO: 6/6 OK" in so
         assert frc == 0 and "FIOS: ok" in fo, fo
+
+
+def test_gate_reprova_sem_testes_e_com_teste_errado():
+    import json
+    base = json.loads((TOOLS / "examples" / "partida_direta.layout.json").read_text())
+    for nome, mut in (("sem", lambda d: d.__setitem__("testes", [])),
+                      ("errado", lambda d: d["testes"][1].__setitem__("esperado", []))):
+        d = json.loads(json.dumps(base)); mut(d)
+        with tempfile.TemporaryDirectory() as t:
+            f = Path(t) / f"{nome}.layout.json"; f.write_text(json.dumps(d))
+            r = subprocess.run([sys.executable, str(TOOLS / "build_spec.py"), str(f), str(Path(t) / "o.cad")],
+                               capture_output=True, text=True, timeout=600)
+            assert r.returncode == 1 and "REPROVADO" in r.stdout, (nome, r.stdout[-400:])
 
 
 if __name__ == "__main__":
