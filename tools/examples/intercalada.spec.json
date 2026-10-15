@@ -3,8 +3,20 @@
   "nota": "Layout compacto por BARRAMENTOS (L em cima, N embaixo) + ramos verticais. Tudo dentro de ~460x300. Regerar: python3 tools/build_spec.py tools/examples/intercalada.spec.json out/intercalada.cad",
   "rails": [
     {
-      "nome": "L",
-      "y": 18,
+      "nome": "L1",
+      "y": 14,
+      "x0": 25,
+      "x1": 395
+    },
+    {
+      "nome": "L2",
+      "y": 20,
+      "x0": 25,
+      "x1": 395
+    },
+    {
+      "nome": "L3",
+      "y": 26,
       "x0": 25,
       "x1": 395
     },
@@ -169,17 +181,38 @@
       "y": 205,
       "rotulo": "-M2",
       "id": "M2"
+    },
+    {
+      "classe": "3004",
+      "x": 30,
+      "y": 60,
+      "rotulo": "-X",
+      "id": "X1"
+    },
+    {
+      "classe": "3004",
+      "x": 36,
+      "y": 68,
+      "rotulo": "-X",
+      "id": "X2"
+    },
+    {
+      "classe": "3004",
+      "x": 42,
+      "y": 76,
+      "rotulo": "-X",
+      "id": "X3"
     }
   ],
   "conexoes": [
     {
       "de": [
-        "RT1",
-        "A"
+        "L1",
+        "rail"
       ],
       "para": [
-        "L",
-        "rail"
+        "RT1",
+        "A"
       ]
     },
     {
@@ -374,7 +407,7 @@
     },
     {
       "de": [
-        "L",
+        "L1",
         "rail"
       ],
       "para": [
@@ -414,7 +447,7 @@
     },
     {
       "de": [
-        "L",
+        "L2",
         "rail"
       ],
       "para": [
@@ -454,7 +487,7 @@
     },
     {
       "de": [
-        "L",
+        "L3",
         "rail"
       ],
       "para": [
@@ -504,7 +537,7 @@
     },
     {
       "de": [
-        "L",
+        "L1",
         "rail"
       ],
       "para": [
@@ -544,7 +577,7 @@
     },
     {
       "de": [
-        "L",
+        "L2",
         "rail"
       ],
       "para": [
@@ -584,7 +617,7 @@
     },
     {
       "de": [
-        "L",
+        "L3",
         "rail"
       ],
       "para": [
@@ -626,6 +659,66 @@
       "de": [
         "M2",
         "PE"
+      ],
+      "para": [
+        "N",
+        "rail"
+      ]
+    },
+    {
+      "de": [
+        "X1",
+        "A"
+      ],
+      "para": [
+        "L1",
+        "rail"
+      ]
+    },
+    {
+      "de": [
+        "X1",
+        "B"
+      ],
+      "para": [
+        "N",
+        "rail"
+      ]
+    },
+    {
+      "de": [
+        "X2",
+        "A"
+      ],
+      "para": [
+        "L2",
+        "rail"
+      ]
+    },
+    {
+      "de": [
+        "X2",
+        "B"
+      ],
+      "para": [
+        "N",
+        "rail"
+      ]
+    },
+    {
+      "de": [
+        "X3",
+        "A"
+      ],
+      "para": [
+        "L3",
+        "rail"
+      ]
+    },
+    {
+      "de": [
+        "X3",
+        "B"
       ],
       "para": [
         "N",
