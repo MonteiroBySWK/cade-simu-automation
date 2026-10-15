@@ -146,3 +146,92 @@ EXE="/home/monteiro/Downloads/CADe_SIMU 4.0 [BR]/CADe_SIMU 4.0 [BR]/CADe_SIMU 4.
 O CADe_SIMU é **shareware**. Este trabalho é de **interoperabilidade/formato** (para
 editar os próprios arquivos do usuário); **não redistribuir** o binário nem dados
 derivados dele. O RE fica documentado aqui para propósito de compatibilidade.
+
+---
+
+## 9. Resultados da RE dirigida (Ghidra) — 15/10/2026
+
+Método: `tools/ghidra/srv.java` (GhidraScript "REPL": mantém o programa e o
+decompilador abertos; comandos `dec/xref/str/dis/bytes/callers/callees/imm/immaddr/fn`
+via arquivos `*.cmd`). Evidência = endereços do EXE (imagem base 0x400000).
+
+### 9.1 Layout da entidade em memória (SoA) e mapeamento dos ints — CONFIANÇA ALTA
+Doc (`this`) guarda arrays de 2000 entradas (stride 0x1F40 bytes). Ordem exata de
+serialização (push dos args do `sprintf` em `FUN_00432710` @0x432e8d, formato
+normal `0xb4cdac`... e loader `FUN_0042c290`):
+
+| campo do .cad | array (+off) | significado |
+|---|---|---|
+| `*seq` | +0xe4 | índice original da entidade |
+| `*id` | +0x2024 | classe (id do símbolo) |
+| labels 0..9 (10, ou 11 p/ especiais) | +0x3f64, +0x21424, +0x465e4, +0x48524, +0x4a464, +0x4c3a4, +0x4e2e4, +0x50224, +0x52164, +0x540a4 (+0x55fe4) | rótulo/designação (label0), nomes dos pinos (label2..7 = pinos na ordem do desenho), etc. |
+| n0..n5 | +0x57f24,+0x59e64,+0x5bda4,+0x5dce4,+0x5fc24,+0x61b64 | flags "mostrar rótulo do pino k" (1 = mostra o nome; 0 = escondido) — NÃO são nets |
+| n6,n7 | +0x63aa4, +0x659e4 | flags/estado de usuário (ex.: posição de chave/seletor) |
+| n8,n9 | +0x5ea4, +0x7de4 | X, Y (origem do símbolo; 1 unidade = 1 px da grade) |
+| n10,n11 | +0x9d24, +0xbc64 | X2, Y2 (fios/linhas; símbolos 0) |
+| n12..n15 | +0xdba4,+0xfae4,+0x11a24,+0x13964 | caixa de seleção: dx, dy, w, h (relativos a X,Y) |
+| n16 | +0x177e4 | usado p/ id de imagem (classe 9 = figura) |
+| n17 | +0x19724 | **orientação**: 0..3 = rotação 0/90/180/270; 4..7 = idem espelhado (ver 9.4) |
+| n18 | +0x1b664 | variante/estado |
+| n19 | +0x1d5a4 | mostrar label0 (designação) |
+| n20 | +0x1f4e4 | mostrar 2º texto (valor) |
+| n21,n22 | +0x23364, +0x252a4 | "net" do fio (fios) / **índice do fio no pino A e B** em runtime (ver 9.3) |
+| n23 (só especiais) | +0x67924 | extra |
+| `#%s` final | +0x69864 | string livre (propriedades; só classes especiais/texto) |
+
+`FUN_0042c290` (Abrir arquivo, string `Archivos CADe_SIMU (*.cad)`) é um parser
+char-a-char (`atoi`) que apenas **preenche os arrays**; **não recalcula nets** ao abrir.
+Validação: só confere `CADe_` + `SIMU` no início (sem checagem de valores).
+
+### 9.2 Conectividade no Simular: GEOMETRIA, não nets do arquivo — CONFIANÇA ALTA
+- `FUN_0043d540` (Iniciar simulação, seta `+0xa1b60=1`): para toda entidade viva
+  (id>0, não apagada, id≠8) **zera n21 (se id≠1) e n22**, o char de fase (+0x7156c)
+  = '0', estados ON, etc. => **nets gravados no arquivo são descartados**.
+- `FUN_00869c80` (montagem dos nós): zera n21 dos "tipos fio" {4000, 4009, 4010,
+  4018, 4019, 10104/05/06, 10112} e dos marcadores 4001/4002/4003/4004/4012; contador
+  de net = 1; 2 passadas; para cada fio sem net: net novo + propagação
+  (`FUN_0086a4a0`, `FUN_0086b5a0`, `FUN_0086c4a0`, `FUN_0086bae0`).
+- Regras (decompiladas):
+  1. **Fio–fio**: une se algum **extremo** de um coincide com algum extremo do outro
+     (`FUN_0086a4a0`, comparações exatas de inteiros × zoom).
+  2. **Ponto de junção 4001 (e 4012)**: adota a net do fio cujo segmento
+     (horizontal ou vertical) **contém** o ponto (`x1<=px<=x2` com `y1==py`, ou
+     vice‑versa) e propaga para todos os fios com extremo no ponto (`FUN_0086b5a0`,
+     `FUN_0086bae0`). => **T / cruzamento só conecta se houver 4001 no ponto**;
+     fio encostando no meio de outro SEM 4001 NÃO conecta. O teste assume
+     x1<=x2 e y1<=y2 (normalizar ao gerar).
+  3. **Marcadores 4003/4004**: adotam a net do fio sob eles (`FUN_0086c4a0`).
+  4. **Pino de símbolo ↔ fio**: nas rotinas de desenho de cada classe, em modo
+     simulação, varre os fios e compara o **ponto-pino** com `(X1,Y1)` ou `(X2,Y2)`
+     do fio (igualdade exata, tipos 4000/4009/4010/4018/4019). **Pino no meio de um
+     fio não conecta**; só extremo. O fio achado dá o "char de fase" ('1','2','3',
+     'N','+','-','R','A','Z','0'); pares incompatíveis (1×2, 1×N, +×-...) ⇒ curto.
+- Conclusão: o simulador é por **geometria** (extremo-a-extremo + 4001). As nets
+  `nums[21..22]` do arquivo são **irrelevantes** para simular (só cosméticas até o
+  Simular recalcular). O teste `cad_test/netlist_sim` deve calcular nets por
+  geometria seguindo as regras acima, não ler nums[21/22].
+
+### 9.3 Semântica de n21/n22 — CONFIANÇA ALTA
+Fios: n21 = id da net (arquivo = último cálculo do editor). Símbolos: n21/n22 =
+nets dos pinos A e B (1º e 2º pinos) no momento do salvar; em runtime viram índice
+do fio. Pinos 3..6 não têm campo de net no arquivo (conexão só por geometria).
+
+### 9.4 Orientação (n17) — CONFIANÇA MÉDIA-ALTA
+Interpretador de desenho `FUN_008462f0` (comandos de 4 letras `PUNT LINE ELIP ARCO
+CUER POLI RELL NUME TEXT`, coords "+ddd" em **1/5 px**) aplica a cada ponto (x,y):
+`n17=0:(x,y)  1:(-y,x)  2:(-x,-y)  3:(y,-x)  4:(-x,y)`; 5..7 = espelho+rotação
+(não lidos linha a linha; ver incerteza). Exemplo no acervo: 3001 com n17=3 tem caixa
+(dx,dy,w,h)=(-9,-6,3,12) em vez de (-12,-9,6,3).
+
+### 9.5 Pinos nas rotinas de desenho — CONFIANÇA MÉDIA (método validado em 9008 e 9000)
+- Cada classe tem uma função de desenho (despachada por `FUN_0040d2b0` por
+  `if (id==X) call thunk`; tabela classe→thunk extraída do desassembly, ex.: 1000→
+  0x402581, 2001→0x4011ef, 3004→0x401a5a, 6007→0x4020e5, 6009→0x4032c9, 7000→
+  0x40169a, 8017→0x4016c2, 9000→0x4028ab, 9008→0x402fef).
+- O ponto-pino é o último `NUME,+xxx,+yyy` executado (globais `0xbd9660/0xbd9664`
+  setados em `FUN_008462f0`): **pino = (x'-5, y' se y'<=0 senão y'+15)** em 1/5 px,
+  ÷5 → px relativos a (X,Y) (rotação 0). Ex.: bobina 9000/lâmpada 9008:
+  `NUME,+005,+000`→(0,0); `NUME,+005,+045`→(0,60)/5=(0,12) ✓ (bate com o acervo).
+- Estatística do acervo (112 arquivos, endpoints de fio a ≤40 px) corrobora:
+  2001/6007: pinos em x∈{0,6,12}, y∈{0,12}; 6009: x∈{0,6,12}, y∈{0,21};
+  1000: x∈{0,6,12,18}, y=0 (U1,V1,W1,PE); contatos/botões 7000/8000/8001/8017: (0,0),(0,12).
