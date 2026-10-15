@@ -22,6 +22,8 @@ texto/imagem  →  cade.json  →  cade_cli  →  .cad  →  Wine (confere)
 - `skills/automacao-industrial`: o passo a passo reutilizável de tudo isso.
 - `docs/detector-imagem.md`: motor imagem→símbolos (machine vision + kNN),
   dataset minerado dos próprios `.cad` e métricas honestas.
+- `docs/re-engenharia.md`: engenharia reversa do formato/conectividade do CADe
+  (Ghidra headless) — formatos, biblioteca de símbolos, o que falta.
 
 ## Via agente (OpenCode, Claude Code)
 
