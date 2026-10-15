@@ -55,10 +55,42 @@ motor de layout calcular as posições.
 - Ramos paralelos e ramos de potência idênticos → layout **consistente**.
 - Mudar um símbolo não exige reposicionar nada.
 
-### Estado atual (para o próximo agente)
-- `cade_mcp.cad_build` já aceita `trilhos` (`rails_json`) e ligação **por nome de
-  pino** (`conexoes_json`) — falta o **motor de posicionamento** (esta DSL).
-- Pinos medidos em `tools/symbol_pins.json` (contator/térmico/DJ/motor com
-  `1-3-5`/`2-4-6`, motor `U1/V1/W1/PE`).
-- **Pendência de RE**: medir os pinos reais do `3004#-X` (o símbolo desenha ~3
-  terminais; os dados atuais só têm `A`/`B`).
+### Estado atual (implementado)
+- **Motor**: `tools/layout.py` (`compilar(spec)` -> spec baixa). CLI:
+  `python3 tools/layout.py in.layout.json [out.spec.json]`.
+- **Integração**: `build_spec.py` detecta a chave `"layout"` (ou extensão
+  `.layout.json`) e compila antes do build:
+  `python3 tools/build_spec.py tools/examples/intercalada.layout.json out/x.cad`.
+- **Dimensões**: `tools/symbol_dims.json` (w,h por classe, gerado do acervo via
+  `python3 tools/layout.py --gen-dims`); pinos vêm de `tools/symbol_pins.json`.
+- **Exemplos**: `intercalada.layout.json` (2 motores, equivalente à spec manual) e
+  `partida_direta.layout.json` (1 motor). Nenhuma coordenada na entrada.
+- **Testes**: `python3 -m pytest tools/test_layout.py` (folha, sobreposição,
+  alinhamento da potência, GATE e FIOS dos dois circuitos).
+
+### Forma efetivamente aceita (v1 real)
+Diferenças em relação à proposta acima:
+- `trilhos`: `{"L1":14,...,"N":290,"x0":25,"x1":395}` (o maior y é o neutro/base).
+- Símbolo = `[id, classe, rotulo]`; **ids únicos** (ex.: selo `selo1`, contato `nkm2`).
+- `comando[].serie` desce numa coluna (passo = h+20); cada **ramo** é uma
+  **fileira horizontal** (via ∥ selo, série, carga ∥ indica), fileiras empilhadas
+  com passo 60 (comprimido se não couber). Colunas de mesmo papel alinham em x
+  entre ramos (`dx = largura_max + 20`). Fileira (e não coluna ao lado) porque é
+  o que cabe na folha de 300 de altura e o roteador já validou.
+- `potencia[].colunas`: cada item vira 3 colunas (fases a 6 de distância);
+  pinos `1/3/5`->`2/4/6` ou `U1/V1/W1`; `PE` do motor ao neutro. Grupos de
+  motores ficam lado a lado (`largura + 20`).
+- `fontes`: uma `-X` por fase em escada logo abaixo dos trilhos, A->trilho da fase,
+  B->neutro. `terra`: `3002` encostado no neutro.
+- `msel_abre` e `entra` da proposta **não** são usados (ramos entram no fim da série).
+- O motor levanta `ValueError` se algo sair da folha (x>455, y>295) ou se dois
+  símbolos se sobrepuserem.
+
+### Limitações / pendências
+- Um único nível de ramos paralelos; sem ramos aninhados nem temporizadores.
+- Muitos ramos (>3) ou série longa estouram a folha (erro explícito, sem quebra
+  automática em colunas).
+- `cad_test` (netlist) é fixo para a intercalada: em outros circuitos reporta
+  FALHA nos casos KM2/RT2 e o gate ainda imprime OK (só procura `FALHOU`/`AVISO`).
+  Os testes novos conferem só os casos de KM1/RT1 na partida direta.
+- **Pendência de RE**: pinos reais do `3004#-X` (só `A`/`B` medidos).
