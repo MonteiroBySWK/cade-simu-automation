@@ -226,7 +226,7 @@ def cad_symbols() -> str:
 
 @mcp.tool()
 def cad_build(titulo: str, simbolos_json: str, fios_json: str = "[]", out_path: str = "/tmp/novo.cad",
-              auto_net: bool = True, conexoes_json: str = "[]") -> str:
+              auto_net: bool = True, conexoes_json: str = "[]", rails_json: str = "[]") -> str:
     """CRIA UM .CAD DO ZERO (sem reusar arquivo).
     simbolos_json: [{"classe","x","y","rotulo"?,"id"?}]
     conexoes_json: [{"de":["<id>","A|B"],"para":["<id>","A|B"]}] — liga pinos por NOME
@@ -239,6 +239,7 @@ def cad_build(titulo: str, simbolos_json: str, fios_json: str = "[]", out_path: 
         simbolos = json.loads(simbolos_json)
         fios = json.loads(fios_json)
         conexoes = json.loads(conexoes_json)
+        rails = json.loads(rails_json)
     except json.JSONDecodeError as e:
         return f"ERRO json: {e}"
     if not isinstance(simbolos, list):
@@ -262,8 +263,8 @@ def cad_build(titulo: str, simbolos_json: str, fios_json: str = "[]", out_path: 
         ents.append({"id": s["classe"], "labels": labs, "nums": n})
     if not ents:
         ents = [{"id": "8000", "labels": protos["8000"]["labels"], "nums": list(protos["8000"]["nums"])}]
-    if conexoes:
-        err = _rotear(ents, simbolos, conexoes, wire)
+    if conexoes or rails:
+        err = _rotear(ents, simbolos, conexoes, wire, rails)
         if err:
             return err
     if auto_net:
@@ -306,16 +307,57 @@ def _pin_coord(sym, pino):
     return (int(sym["x"]) + pins[pino][0], int(sym["y"]) + pins[pino][1])
 
 
-def _rotear(ents, simbolos, conexoes, wire):
-    """Liga pinos por nome: roteia fios em L e anexa como entidades 4000."""
+def _rotear(ents, simbolos, conexoes, wire, rails=None):
+    """Liga pinos por nome. Suporta TRILHOS (barramentos): um pino liga a um
+    trilho por fio vertical curto; o trilho sai em segmentos com vértice em cada
+    conexão (para os nets fecharem por coordenada)."""
+    rails = rails or []
+    rail_map = {r["nome"]: {"y": int(r["y"]), "x0": int(r["x0"]), "x1": int(r["x1"])} for r in rails}
+    vert = {n: {v["x0"], v["x1"]} for n, v in rail_map.items()}
     byid = {}
     for i, s in enumerate(simbolos):
         key = str(s.get("id") or s.get("rotulo") or f"#{i}")
         byid[key] = s
-    faltam = _pins()
-    for c in conexoes:
+
+    def emit(a, b):
+        if a == b:
+            return
+        n = list(wire["nums"])
+        n[8], n[9], n[10], n[11] = str(a[0]), str(a[1]), str(b[0]), str(b[1])
+        for k in range(8):
+            n[k] = "0"
+        ents.append({"id": "4000", "labels": wire["labels"], "nums": n})
+
+    for idx, c in enumerate(conexoes):
         de, para = c.get("de"), c.get("para")
-        if not de or not para or de[0] not in byid or para[0] not in byid:
+        if not de or not para:
+            return f"ERRO conexão inválida: {c}"
+        # 1) ligação a TRILHO
+        feito = False
+        for lado_v, outro_v in ((de, para), (para, de)):
+            if lado_v[0] in rail_map and outro_v[0] in byid:
+                s = byid[outro_v[0]]
+                p1 = _pin_coord(s, outro_v[1])
+                if p1 is None:
+                    return f"ERRO: sem geometria p/ {outro_v[0]}.{outro_v[1]}"
+                r = rail_map[lado_v[0]]
+                d_pin = _pins().get(s["classe"], {}).get(outro_v[1], [0, 0])[1]
+                s_esc = -1 if d_pin <= 0 else 1     # sai do corpo antes de virar
+                e1 = (p1[0], p1[1] + s_esc * 7)
+                emit(p1, e1)
+                via = c.get("via")
+                if via is not None:
+                    emit(e1, (int(via), e1[1]))
+                    emit((int(via), e1[1]), (int(via), r["y"]))
+                    vert[lado_v[0]].add(int(via))
+                else:
+                    emit(e1, (e1[0], r["y"]))
+                    vert[lado_v[0]].add(e1[0])
+                feito = True
+                break
+        if feito:
+            continue
+        if de[0] not in byid or para[0] not in byid:
             return f"ERRO conexão inválida: {c} (confira os ids)"
         p1 = _pin_coord(byid[de[0]], de[1])
         p2 = _pin_coord(byid[para[0]], para[1])
@@ -327,8 +369,8 @@ def _rotear(ents, simbolos, conexoes, wire):
         pins = _pins()
         d1 = pins.get(byid[de[0]]["classe"], {}).get(de[1], [0, 0])[1]
         d2 = pins.get(byid[para[0]]["classe"], {}).get(para[1], [0, 0])[1]
-        s1 = 1 if d1 >= 0 else -1     # pino "para baixo" escapa p/ baixo
-        s2 = 1 if d2 >= 0 else -1
+        s1 = -1 if d1 <= 0 else 1     # pino na borda de cima escapa p/ CIMA
+        s2 = -1 if d2 <= 0 else 1
         g = 7
         a1 = (x1, y1 + s1 * g)
         b1 = (x2, y2 + s2 * g)
@@ -338,18 +380,18 @@ def _rotear(ents, simbolos, conexoes, wire):
             if a1[1] != b1[1]:
                 pts.append((x2, a1[1]))
         else:
-            # lados opostos: pivota numa COLUNA DE DESVIO (fora do x do pino)
-            xm = x2 + (10 if x2 >= x1 else -10)
+            # lados opostos: COLUNA DE DESVIO única por conexão (evita que dois
+            # nets diferentes se encontrem num mesmo canto e fechem curto)
+            xm = x2 + (10 if x2 >= x1 else -10) + 3 * idx
             pts += [(xm, a1[1]), (xm, b1[1])]
         pts += [b1, (x2, y2)]
         for a, b in zip(pts, pts[1:]):
-            if a == b:
-                continue
-            n = list(wire["nums"])
-            n[8], n[9], n[10], n[11] = str(a[0]), str(a[1]), str(b[0]), str(b[1])
-            for k in range(8):
-                n[k] = "0"
-            ents.append({"id": "4000", "labels": wire["labels"], "nums": n})
+            emit(a, b)
+    # 2) emite os trilhos em segmentos (vértice em cada conexão -> nets fecham)
+    for nome, r in rail_map.items():
+        xs = sorted(vert[nome])
+        for a, b in zip(xs, xs[1:]):
+            emit((a, r["y"]), (b, r["y"]))
     return None
 
 

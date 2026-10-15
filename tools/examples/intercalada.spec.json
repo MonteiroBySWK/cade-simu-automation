@@ -1,6 +1,20 @@
 {
   "titulo": "PARTIDA INTERCALAR",
-  "nota": "Layout compacto: comando à esquerda (x 40-250), potencia à direita (x 300-450), tudo dentro da folha (~460x300). Regerar: python3 tools/build_spec.py tools/examples/intercalada.spec.json out/intercalada.cad",
+  "nota": "Layout por BARRAMENTOS (trilhos L/N) — padrão de esquema CADe. Regerar: python3 tools/build_spec.py tools/examples/intercalada.spec.json out/intercalada.cad",
+  "rails": [
+    {
+      "nome": "L",
+      "y": 12,
+      "x0": 25,
+      "x1": 455
+    },
+    {
+      "nome": "N",
+      "y": 295,
+      "x0": 25,
+      "x1": 455
+    }
+  ],
   "simbolos": [
     {
       "classe": "8017",
@@ -82,89 +96,92 @@
     {
       "classe": "9000",
       "x": 195,
-      "y": 278,
+      "y": 272,
       "rotulo": "-KM2",
       "id": "KM2"
     },
     {
       "classe": "9008",
       "x": 240,
-      "y": 278,
+      "y": 272,
       "rotulo": "-H2",
       "id": "H2"
     },
     {
+      "classe": "3002",
+      "x": 440,
+      "y": 285,
+      "rotulo": "TERRA",
+      "id": "PE"
+    },
+    {
       "classe": "6009",
-      "x": 300,
+      "x": 240,
       "y": 40,
       "rotulo": "-Q1",
       "id": "Q1"
     },
     {
       "classe": "6007",
-      "x": 372,
+      "x": 312,
       "y": 40,
       "rotulo": "-F1",
       "id": "F1"
     },
     {
       "classe": "2001",
-      "x": 444,
+      "x": 384,
       "y": 40,
       "rotulo": "-KM1",
       "id": "KM1p"
     },
     {
       "classe": "1000",
-      "x": 444,
+      "x": 420,
       "y": 105,
       "rotulo": "-M1",
       "id": "M1"
     },
     {
       "classe": "6009",
-      "x": 300,
+      "x": 240,
       "y": 175,
       "rotulo": "-Q2",
       "id": "Q2"
     },
     {
       "classe": "6007",
-      "x": 372,
+      "x": 312,
       "y": 175,
       "rotulo": "-F2",
       "id": "F2"
     },
     {
       "classe": "2001",
-      "x": 444,
+      "x": 384,
       "y": 175,
       "rotulo": "-KM2",
       "id": "KM2p"
     },
     {
       "classe": "1000",
-      "x": 444,
+      "x": 420,
       "y": 240,
       "rotulo": "-M2",
       "id": "M2"
-    },
-    {
-      "classe": "3004",
-      "x": 60,
-      "y": 8,
-      "rotulo": "-X",
-      "id": "X1"
-    },
-    {
-      "classe": "3002",
-      "x": 250,
-      "y": 288,
-      "rotulo": "TERRA",
-      "id": "PE"
     }
   ],
   "conexoes": [
+    {
+      "de": [
+        "RT1",
+        "A"
+      ],
+      "para": [
+        "L",
+        "rail"
+      ]
+    },
     {
       "de": [
         "RT1",
@@ -208,26 +225,6 @@
     {
       "de": [
         "S1",
-        "B"
-      ],
-      "para": [
-        "nkm2",
-        "A"
-      ]
-    },
-    {
-      "de": [
-        "nkm2",
-        "B"
-      ],
-      "para": [
-        "KM1",
-        "A"
-      ]
-    },
-    {
-      "de": [
-        "S1",
         "A"
       ],
       "para": [
@@ -247,6 +244,26 @@
     },
     {
       "de": [
+        "S1",
+        "B"
+      ],
+      "para": [
+        "nkm2",
+        "A"
+      ]
+    },
+    {
+      "de": [
+        "nkm2",
+        "B"
+      ],
+      "para": [
+        "KM1",
+        "A"
+      ]
+    },
+    {
+      "de": [
         "KM1",
         "A"
       ],
@@ -262,6 +279,37 @@
       ],
       "para": [
         "H1",
+        "B"
+      ]
+    },
+    {
+      "de": [
+        "KM1",
+        "B"
+      ],
+      "para": [
+        "N",
+        "rail"
+      ],
+      "via": 215
+    },
+    {
+      "de": [
+        "S2",
+        "A"
+      ],
+      "para": [
+        "selo2",
+        "A"
+      ]
+    },
+    {
+      "de": [
+        "S2",
+        "B"
+      ],
+      "para": [
+        "selo2",
         "B"
       ]
     },
@@ -287,26 +335,6 @@
     },
     {
       "de": [
-        "S2",
-        "A"
-      ],
-      "para": [
-        "selo2",
-        "A"
-      ]
-    },
-    {
-      "de": [
-        "S2",
-        "B"
-      ],
-      "para": [
-        "selo2",
-        "B"
-      ]
-    },
-    {
-      "de": [
         "KM2",
         "A"
       ],
@@ -327,13 +355,35 @@
     },
     {
       "de": [
-        "KM1",
+        "KM2",
         "B"
       ],
       "para": [
-        "KM2",
-        "B"
+        "N",
+        "rail"
+      ],
+      "via": 215
+    },
+    {
+      "de": [
+        "PE",
+        "A"
+      ],
+      "para": [
+        "N",
+        "rail"
       ]
+    },
+    {
+      "de": [
+        "Q1",
+        "A"
+      ],
+      "para": [
+        "L",
+        "rail"
+      ],
+      "via": 230
     },
     {
       "de": [
@@ -367,6 +417,28 @@
     },
     {
       "de": [
+        "M1",
+        "B"
+      ],
+      "para": [
+        "N",
+        "rail"
+      ],
+      "via": 452
+    },
+    {
+      "de": [
+        "Q2",
+        "A"
+      ],
+      "para": [
+        "L",
+        "rail"
+      ],
+      "via": 230
+    },
+    {
+      "de": [
         "Q2",
         "B"
       ],
@@ -397,33 +469,14 @@
     },
     {
       "de": [
-        "X1",
-        "A"
-      ],
-      "para": [
-        "RT1",
-        "A"
-      ]
-    },
-    {
-      "de": [
-        "X1",
+        "M2",
         "B"
       ],
       "para": [
-        "KM1",
-        "B"
-      ]
-    },
-    {
-      "de": [
-        "PE",
-        "A"
+        "N",
+        "rail"
       ],
-      "para": [
-        "KM1",
-        "B"
-      ]
+      "via": 452
     }
   ]
 }
