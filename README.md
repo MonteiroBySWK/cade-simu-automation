@@ -59,6 +59,26 @@ $CLI new-from-json out/m.json -o out/partida.cad
 $CLI validate out/partida.cad
 ```
 
+## Autoria do zero via MCP (agentes)
+
+`tools/cade_mcp.py` expõe um **servidor MCP** com autoria por símbolo/fio — o
+agente monta o circuito sem nunca escrever `*`/`#`:
+
+```bash
+python3 tools/mcp_call.py cad_symbols          # classes disponíveis
+python3 tools/mcp_call.py cad_build '{"titulo":"T","simbolos_json":"[{\"classe\":\"2001\",\"x\":80,\"y\":125,\"rotulo\":\"-KM1\"}]","fios_json":"[{\"x1\":50,\"y1\":120,\"x2\":250,\"y2\":120}]","out_path":"out/novo.cad"}'
+python3 tools/mcp_call.py cad_validate '{"path":"out/novo.cad"}'
+```
+
+Ferramentas: `cad_symbols`, `cad_build`, `cad_validate`, `cad_inspect`,
+`cad_preview`, `cad_from_image`, `cad_parse`, `cad_emit`, `cad_new`.
+Registrado em `~/.config/opencode/opencode.json` como servidor MCP `cade-simu`.
+
+Certificação: um agente (subagente com contexto zerado) montou um circuito de
+**partida intercalar de motores** do zero, só via `cad_symbols`+`cad_build` —
+41 entidades (23 símbolos + 18 fios) — e o `.cad` resultante **abre no CADe_SIMU**
+(validado no Wine). Ver `docs/autoria-mcp.md`.
+
 Detalhes do formato em `docs/formato-cad.md`, símbolos em
 `docs/dicionario-simbolos.md`, contrato em `spec/spec-v1.md`.
 
