@@ -84,10 +84,22 @@ Certificação: um agente (subagente com contexto zerado) montou um circuito de
 Detalhes do formato em `docs/formato-cad.md`, símbolos em
 `docs/dicionario-simbolos.md`, contrato em `spec/spec-v1.md`.
 
+## Início rápido
+
+```bash
+scripts/setup.sh   # build do cade_cli, venv MCP, gera out/intercalada.cad e roda o GATE
+```
+
+Gate: `tools/build_spec.py` (gera via `cad_build` + `cad_test`, falha em AVISO/curto) e `tools/wires_check.py`. Esperado: `GATE: OK`.
+
+Variáveis de ambiente (defaults = caminhos do autor): `CADE_ACERVO` (pasta de `.cad` de referência), `CADE_EXE` (CADe_SIMU .exe), `CADE_DIR` (pasta do exe).
+
+Ver `docs/handoff-atividade.md` e `docs/dsl-layout.md`.
+
 ## Estado honesto
 
 - Editar `.cad` existente: funciona (round-trip + validação no app real).
-- Criar do zero via texto: funciona o esqueleto válido; circuito completo a partir de descrição livre ainda exige montar o `cade.json` na mão ou estender o detector.
+- Criar do zero via texto: funciona o esqueleto válido; circuito completo via `cad_build`/specs JSON (ver `docs/autoria-mcp.md`), com roteador de fios e trilhos de fase automáticos; descrição livre depende do agente gerar a spec.
 - Criar via imagem: detector de símbolos (kNN sobre dataset minerado dos próprios `.cad`) com P=0,88/R=0,89 no domínio treinado; `tools/img2cad.py` → `cade.json` → `.cad` válido. Limite de domínio documentado em `docs/detector-imagem.md`.
 
 ## Nota
