@@ -1,0 +1,55 @@
+{
+  "titulo": "PARTIDA SEQUENCIAL",
+  "descricao": "M2 so parte com M1 ligado (NA de KM1 em serie com S2) e M1 so desliga depois de M2: S0 fica em paralelo com um NA de KM2, que o 'pula' enquanto KM2 estiver ligado.",
+  "layout": {
+    "trilhos": {"L1": 14, "L2": 20, "L3": 26, "N": 282, "x0": 25, "x1": 395, "PE": 291},
+    "fontes": [
+      {"id": "X1", "classe": "3007", "rotulo": "-X",
+       "pinos": {"L1": "L1", "L2": "L2", "L3": "L3", "N": "N", "PE": "PE"}}
+    ],
+    "comando": [
+      {"id": "c1", "de": "L1", "para": "N",
+       "rungs": [
+         {"serie": [
+           ["RT1", "8017", "-RT1"],
+           {"paralelo": [["S0", "8001", "-S0"], ["k2by", "7000", "-KM2"]]},
+           {"paralelo": [["S1", "8000", "-S1"], ["selo1", "7000", "-KM1"]]},
+           {"paralelo": [["KM1", "9000", "-KM1"], ["H1", "9008", "-H1"]]}
+         ]},
+         {"serie": [
+           ["RT2", "8017", "-RT2"],
+           ["S3", "8001", "-S3"],
+           ["k1ok", "7000", "-KM1"],
+           {"paralelo": [["S2", "8000", "-S2"], ["selo2", "7000", "-KM2"]]},
+           {"paralelo": [["KM2", "9000", "-KM2"], ["H2", "9008", "-H2"]]}
+         ]}
+       ]}
+    ],
+    "potencia": [
+      {"id": "m1", "fases": ["L1", "L2", "L3"], "neutro": "N", "pe": "PE",
+       "colunas": [["Q1", "6009", "-Q1"], ["F1", "6007", "-F1"], ["KM1p", "2001", "-KM1"], ["M1", "1000", "-M1"]]},
+      {"id": "m2", "fases": ["L1", "L2", "L3"], "neutro": "N", "pe": "PE",
+       "colunas": [["Q2", "6009", "-Q2"], ["F2", "6007", "-F2"], ["KM2p", "2001", "-KM2"], ["M2", "1000", "-M2"]]}
+    ]
+  },
+  "testes": [
+    {"nome": "repouso desligado", "entradas": {}, "esperado": [], "status": "OK"},
+    {"nome": "S1 liga KM1", "entradas": {"S1": true}, "esperado": ["KM1"], "esperado_lampadas": ["H1"], "status": "OK"},
+    {"nome": "S2 sozinho nao liga KM2", "entradas": {"S2": true}, "esperado": [], "status": "OK"},
+    {"nome": "S2 liga KM2 com KM1 ligado", "entradas": {"S2": true}, "inicial": ["KM1"], "esperado": ["KM1", "KM2"], "status": "OK"},
+    {"nome": "selos mantem os dois", "entradas": {}, "inicial": ["KM1", "KM2"], "esperado": ["KM1", "KM2"], "status": "OK"},
+    {"nome": "S0 desliga KM1 se KM2 desligado", "entradas": {"S0": true}, "inicial": ["KM1"], "esperado": [], "status": "OK"},
+    {"nome": "S0 nao desliga KM1 com KM2 ligado", "entradas": {"S0": true}, "inicial": ["KM1", "KM2"], "esperado": ["KM1", "KM2"], "status": "OK"},
+    {"nome": "S3 desliga so KM2", "entradas": {"S3": true}, "inicial": ["KM1", "KM2"], "esperado": ["KM1"], "status": "OK"},
+    {"nome": "ordem de desligamento: S3 depois S0", "inicial": ["KM1", "KM2"], "passos": [
+      {"entradas": {"S0": true}, "esperado": ["KM1", "KM2"]},
+      {"entradas": {"S3": true}, "esperado": ["KM1"]},
+      {"entradas": {}, "esperado": ["KM1"]},
+      {"entradas": {"S0": true}, "esperado": []},
+      {"entradas": {}, "esperado": []}
+    ], "status": "OK"},
+    {"nome": "RT1 aberto derruba os dois", "entradas": {"RT1": true}, "inicial": ["KM1", "KM2"], "esperado": [], "status": "OK"},
+    {"nome": "RT2 aberto derruba so KM2", "entradas": {"RT2": true}, "inicial": ["KM1", "KM2"], "esperado": ["KM1"], "status": "OK"},
+    {"nome": "sem auto-religamento", "entradas": {}, "esperado": [], "status": "OK"}
+  ]
+}

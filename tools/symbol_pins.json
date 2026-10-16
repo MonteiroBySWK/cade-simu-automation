@@ -3185,9 +3185,26 @@
    0
   ],
   "B_g": 2,
-  "fonte": "binario (A/B sobrescritos)",
+  "fonte": "binario (docs/pinos-binario.json: p1..p4; transformador -T, primario no topo, secundario na base)",
   "n": 2,
-  "pins": {}
+  "pins": {
+   "p1": [
+    0,
+    0
+   ],
+   "p2": [
+    9,
+    0
+   ],
+   "p3": [
+    0,
+    15
+   ],
+   "p4": [
+    9,
+    15
+   ]
+  }
  },
  "3013": {
   "A": [
