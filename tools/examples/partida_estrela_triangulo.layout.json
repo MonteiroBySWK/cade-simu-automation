@@ -1,0 +1,70 @@
+{
+  "titulo": "PARTIDA ESTRELA-TRIANGULO",
+  "descricao": "Partida automatica estrela-triangulo: S1 liga KM1 (rede), KM2 (estrela) e o temporizador KT1 (ON-delay 5 s). Passados 5 s KM2 cai e KM3 (triangulo) entra; KM2 e KM3 se intertravam por contatos NF (e o NF/NA temporizado de KT1 faz a troca).",
+  "layout": {
+    "trilhos": {"L1": 14, "L2": 20, "L3": 26, "N": 282, "x0": 25, "x1": 395, "PE": 291},
+    "fontes": [
+      {"id": "X1", "classe": "3007", "rotulo": "-X",
+       "pinos": {"L1": "L1", "L2": "L2", "L3": "L3", "N": "N", "PE": "PE"}}
+    ],
+    "comando": [
+      {"id": "c1", "de": "L1", "para": "N",
+       "rede": {"serie": [
+         ["RT1", "8017", "-RT1"],
+         ["S0", "8001", "-S0"],
+         {"paralelo": [["S1", "8000", "-S1"], ["selo1", "7000", "-KM1"]]},
+         {"paralelo": [
+            ["KM1", "9000", "-KM1"],
+            ["KT1", "9004", "-KT1", {"tempo": 5, "unidade": "0"}],
+            {"serie": [["nkm3", "7001", "-KM3"], ["ktnc", "7005", "-KT1"], ["KM2", "9000", "-KM2"]]},
+            {"serie": [["nkm2", "7001", "-KM2"], ["ktna", "7004", "-KT1"], ["KM3", "9000", "-KM3"]]}
+         ]}
+       ]}}
+    ],
+    "potencia": [
+      {"id": "m1", "fases": ["L1", "L2", "L3"], "neutro": "N", "pe": "PE",
+       "colunas": [
+         ["Q1", "6009", "-Q1"], ["F1", "6007", "-RT1"], ["KM1p", "2001", "-KM1"],
+         {"estrela_triangulo": {"motor": ["M1", "1001", "-M1"],
+                                "estrela": ["KM2p", "2001", "-KM2"],
+                                "triangulo": ["KM3p", "2001", "-KM3"]}}
+       ]}
+    ]
+  },
+  "testes": [
+    {"nome": "repouso desligado", "entradas": {}, "esperado": [], "status": "OK"},
+    {"nome": "S1 liga rede e estrela", "entradas": {"S1": true},
+     "esperado": ["KM1", "KM2"], "esperado_temporizadores": [], "status": "OK"},
+    {"nome": "estrela ate 4,9 s", "entradas": {"S1": true}, "avanca": 4.9,
+     "esperado": ["KM1", "KM2"], "esperado_temporizadores": [], "status": "OK"},
+    {"nome": "apos 5 s troca para triangulo", "entradas": {"S1": true}, "avanca": 5,
+     "esperado": ["KM1", "KM3"], "esperado_temporizadores": ["KT1"], "status": "OK"},
+    {"nome": "triangulo permanece (sem religar a estrela)", "entradas": {"S1": true}, "avanca": 60,
+     "esperado": ["KM1", "KM3"], "esperado_temporizadores": ["KT1"], "status": "OK"},
+    {"nome": "selo: solta S1 e a partida continua",
+     "passos": [{"entradas": {"S1": true}, "avanca": 0.3, "esperado": ["KM1", "KM2"]},
+                {"entradas": {}, "avanca": 4, "esperado": ["KM1", "KM2"]},
+                {"entradas": {}, "avanca": 1, "esperado": ["KM1", "KM3"]}],
+     "esperado": ["KM1", "KM3"], "esperado_temporizadores": ["KT1"], "status": "OK"},
+    {"nome": "S0 desliga em estrela",
+     "passos": [{"entradas": {"S1": true}, "avanca": 1, "esperado": ["KM1", "KM2"]},
+                {"entradas": {"S0": true}, "avanca": 0}],
+     "esperado": [], "esperado_temporizadores": [], "status": "OK"},
+    {"nome": "S0 desliga em triangulo e reinicia em estrela",
+     "passos": [{"entradas": {"S1": true}, "avanca": 6, "esperado": ["KM1", "KM3"]},
+                {"entradas": {"S0": true}, "avanca": 0, "esperado": []},
+                {"entradas": {}, "avanca": 10, "esperado": []},
+                {"entradas": {"S1": true}, "avanca": 1, "esperado": ["KM1", "KM2"]}],
+     "esperado": ["KM1", "KM2"], "esperado_temporizadores": [], "status": "OK"},
+    {"nome": "RT1 dispara em triangulo: tudo desliga",
+     "passos": [{"entradas": {"S1": true}, "avanca": 6, "esperado": ["KM1", "KM3"]},
+                {"entradas": {"RT1": true}, "avanca": 0}],
+     "esperado": [], "status": "OK"},
+    {"nome": "RT1 disparado impede a partida", "entradas": {"RT1": true, "S1": true}, "avanca": 10,
+     "esperado": [], "status": "OK"},
+    {"nome": "potencia sem curto em estrela (Q1 ligado)", "entradas": {"Q1": true, "S1": true}, "avanca": 1,
+     "esperado": ["KM1", "KM2"], "status": "OK"},
+    {"nome": "potencia sem curto em triangulo (Q1 ligado)", "entradas": {"Q1": true, "S1": true}, "avanca": 6,
+     "esperado": ["KM1", "KM3"], "status": "OK"}
+  ]
+}

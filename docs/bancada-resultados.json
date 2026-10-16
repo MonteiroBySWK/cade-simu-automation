@@ -1,0 +1,2304 @@
+{
+ "arquivos": {
+  "alternadores_01": {
+   "app": {
+    "casos": [],
+    "data": "2026-10-15",
+    "erro": "nao entrou em simulacao (Play)",
+    "executado": false,
+    "tempo_s": 18.3
+   },
+   "assinatura": "8fd45318ea5b",
+   "classes": [
+    "2003",
+    "2004",
+    "2005",
+    "2007",
+    "3000",
+    "3001",
+    "5000",
+    "5001",
+    "5002",
+    "5003",
+    "8008",
+    "8009",
+    "8010",
+    "8011",
+    "9008"
+   ],
+   "titulo": "Interruptores, seccionadores, fusiveis, disjuntores e seletores (clique alterna)"
+  },
+  "alternadores_02": {
+   "app": {
+    "casos": [
+     {
+      "erro": "nao entrou em simulacao (Play)",
+      "leituras": [],
+      "nome": "repouso",
+      "tempo_s": 5.5
+     },
+     {
+      "leituras": [
+       {
+        "nome": "apos 1 clique(s)",
+        "obtido": [
+         "-H10",
+         "-H11",
+         "-H12",
+         "-H13",
+         "-H14",
+         "-H15",
+         "-H16",
+         "-H17",
+         "-H18",
+         "-H19",
+         "-H20",
+         "-H21",
+         "-H22",
+         "-H23",
+         "-H24",
+         "-H5",
+         "-H6",
+         "-H7",
+         "-H8",
+         "-H9"
+        ],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_alternadores_02/cliques_sucessivos__todos__apos_1_clique_s_.png",
+        "t": 8.4
+       },
+       {
+        "nome": "apos 2 clique(s)",
+        "obtido": [
+         "-H1",
+         "-H2",
+         "-H3",
+         "-H4"
+        ],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_alternadores_02/cliques_sucessivos__todos__apos_2_clique_s_.png",
+        "t": 14.7
+       },
+       {
+        "nome": "apos 3 clique(s)",
+        "obtido": [
+         "-H10",
+         "-H11",
+         "-H12",
+         "-H13",
+         "-H14",
+         "-H15",
+         "-H16",
+         "-H17",
+         "-H18",
+         "-H19",
+         "-H20",
+         "-H21",
+         "-H22",
+         "-H23",
+         "-H24",
+         "-H5",
+         "-H6",
+         "-H7",
+         "-H8",
+         "-H9"
+        ],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_alternadores_02/cliques_sucessivos__todos__apos_3_clique_s_.png",
+        "t": 21.0
+       }
+      ],
+      "nome": "cliques sucessivos (todos)",
+      "tempo_s": 21.0
+     }
+    ],
+    "data": "2026-10-15",
+    "erro": null,
+    "executado": true,
+    "tempo_s": 43.1
+   },
+   "assinatura": "3cd14f58b561",
+   "classes": [
+    "3000",
+    "3001",
+    "5004",
+    "5005",
+    "5006",
+    "5007",
+    "5008",
+    "5009",
+    "6000",
+    "6001",
+    "6002",
+    "6003",
+    "9008"
+   ],
+   "titulo": "Interruptores, seccionadores, fusiveis, disjuntores e seletores (clique alterna)"
+  },
+  "alternadores_03": {
+   "app": {
+    "casos": [],
+    "data": "2026-10-15",
+    "erro": "nao entrou em simulacao (Play)",
+    "executado": false,
+    "tempo_s": 18.1
+   },
+   "assinatura": "f8f1b4847b82",
+   "classes": [
+    "3000",
+    "3001",
+    "6004",
+    "6005",
+    "6006",
+    "6008",
+    "6009",
+    "6010",
+    "6011",
+    "6012",
+    "6013",
+    "6014",
+    "9008"
+   ],
+   "titulo": "Interruptores, seccionadores, fusiveis, disjuntores e seletores (clique alterna)"
+  },
+  "alternadores_04": {
+   "app": {
+    "casos": [
+     {
+      "leituras": [
+       {
+        "nome": "repouso",
+        "obtido": [
+         "-H3",
+         "-H6",
+         "-H7"
+        ],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_alternadores_04/repouso_repouso.png",
+        "t": 2.8
+       }
+      ],
+      "nome": "repouso",
+      "tempo_s": 2.8
+     },
+     {
+      "leituras": [
+       {
+        "nome": "apos 1 clique(s)",
+        "obtido": [
+         "-H1",
+         "-H4",
+         "-H6",
+         "-H7"
+        ],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_alternadores_04/cliques_sucessivos__todos__apos_1_clique_s_.png",
+        "t": 4.5
+       },
+       {
+        "nome": "apos 2 clique(s)",
+        "obtido": [
+         "-H5",
+         "-H6",
+         "-H7"
+        ],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_alternadores_04/cliques_sucessivos__todos__apos_2_clique_s_.png",
+        "t": 6.9
+       },
+       {
+        "nome": "apos 3 clique(s)",
+        "obtido": [
+         "-H1",
+         "-H3",
+         "-H6",
+         "-H7"
+        ],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_alternadores_04/cliques_sucessivos__todos__apos_3_clique_s_.png",
+        "t": 9.3
+       }
+      ],
+      "nome": "cliques sucessivos (todos)",
+      "tempo_s": 9.3
+     }
+    ],
+    "data": "2026-10-15",
+    "erro": null,
+    "executado": true,
+    "tempo_s": 28.6
+   },
+   "assinatura": "d41d788d9746",
+   "classes": [
+    "3000",
+    "3001",
+    "8020",
+    "8021",
+    "8022",
+    "9008"
+   ],
+   "titulo": "Interruptores, seccionadores, fusiveis, disjuntores e seletores (clique alterna)"
+  },
+  "bobinas_01": {
+   "app": {
+    "casos": [
+     {
+      "leituras": [
+       {
+        "nome": "repouso",
+        "obtido": [
+         "-H2",
+         "-H4",
+         "-H6"
+        ],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_bobinas_01/repouso_repouso.png",
+        "t": 2.8
+       }
+      ],
+      "nome": "repouso",
+      "tempo_s": 2.8
+     },
+     {
+      "leituras": [
+       {
+        "nome": "-KB1 energizada",
+        "obtido": [
+         "-H2",
+         "-H4",
+         "-H6"
+        ],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_bobinas_01/9014__KB1__KB1_energizada.png",
+        "t": 2.8
+       },
+       {
+        "nome": "-KB1 solta",
+        "obtido": [
+         "-H2",
+         "-H4",
+         "-H6"
+        ],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_bobinas_01/9014__KB1__KB1_solta.png",
+        "t": 3.8
+       }
+      ],
+      "nome": "9014 -KB1",
+      "tempo_s": 3.8
+     },
+     {
+      "leituras": [
+       {
+        "nome": "1o pulso",
+        "obtido": [
+         "-H2",
+         "-H3",
+         "-H6"
+        ],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_bobinas_01/9002__KB2_1o_pulso.png",
+        "t": 3.1
+       },
+       {
+        "nome": "apos soltar",
+        "obtido": [
+         "-H2",
+         "-H3",
+         "-H6"
+        ],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_bobinas_01/9002__KB2_apos_soltar.png",
+        "t": 4.4
+       },
+       {
+        "nome": "2o pulso",
+        "obtido": [
+         "-H2",
+         "-H4",
+         "-H6"
+        ],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_bobinas_01/9002__KB2_2o_pulso.png",
+        "t": 5.5
+       },
+       {
+        "nome": "apos soltar 2",
+        "obtido": [
+         "-H2",
+         "-H4",
+         "-H6"
+        ],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_bobinas_01/9002__KB2_apos_soltar_2.png",
+        "t": 6.8
+       }
+      ],
+      "nome": "9002 -KB2",
+      "tempo_s": 6.8
+     },
+     {
+      "leituras": [
+       {
+        "nome": "amostra 0",
+        "obtido": [
+         "-H2",
+         "-H4",
+         "-H5"
+        ],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_bobinas_01/9015__KB3_amostra_0.png",
+        "t": 3.6
+       },
+       {
+        "nome": "amostra 1",
+        "obtido": [
+         "-H2",
+         "-H4",
+         "-H5"
+        ],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_bobinas_01/9015__KB3_amostra_1.png",
+        "t": 5.2
+       },
+       {
+        "nome": "amostra 2",
+        "obtido": [
+         "-H2",
+         "-H4",
+         "-H5"
+        ],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_bobinas_01/9015__KB3_amostra_2.png",
+        "t": 6.7
+       },
+       {
+        "nome": "amostra 3",
+        "obtido": [
+         "-H2",
+         "-H4",
+         "-H5"
+        ],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_bobinas_01/9015__KB3_amostra_3.png",
+        "t": 8.2
+       },
+       {
+        "nome": "amostra 4",
+        "obtido": [
+         "-H2",
+         "-H4",
+         "-H5"
+        ],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_bobinas_01/9015__KB3_amostra_4.png",
+        "t": 9.7
+       },
+       {
+        "nome": "amostra 5",
+        "obtido": [
+         "-H2",
+         "-H4",
+         "-H5"
+        ],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_bobinas_01/9015__KB3_amostra_5.png",
+        "t": 11.3
+       }
+      ],
+      "nome": "9015 -KB3",
+      "tempo_s": 11.6
+     }
+    ],
+    "data": "2026-10-15",
+    "erro": null,
+    "executado": true,
+    "tempo_s": 41.4
+   },
+   "assinatura": "91c88157d199",
+   "classes": [
+    "3000",
+    "3001",
+    "7000",
+    "7001",
+    "8000",
+    "9002",
+    "9008",
+    "9014",
+    "9015"
+   ],
+   "titulo": "Bobinas 9014/9002/9015 -> contatos 7000/7001 do mesmo rotulo"
+  },
+  "botoes_01": {
+   "app": {
+    "casos": [
+     {
+      "leituras": [
+       {
+        "nome": "repouso",
+        "obtido": [
+         "-H11",
+         "-H14",
+         "-H15",
+         "-H17",
+         "-H2",
+         "-H3",
+         "-H5",
+         "-H8",
+         "-H9"
+        ],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_botoes_01/repouso_repouso.png",
+        "t": 3.1
+       }
+      ],
+      "nome": "repouso",
+      "tempo_s": 3.1
+     },
+     {
+      "leituras": [
+       {
+        "nome": "8000 pressionado",
+        "obtido": [
+         "-H1",
+         "-H11",
+         "-H14",
+         "-H15",
+         "-H17",
+         "-H2",
+         "-H3",
+         "-H5",
+         "-H8",
+         "-H9"
+        ],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_botoes_01/segura_8000__D1__8000_pressionado.png",
+        "t": 3.0
+       },
+       {
+        "nome": "8000 solto",
+        "obtido": [
+         "-H11",
+         "-H14",
+         "-H15",
+         "-H17",
+         "-H2",
+         "-H3",
+         "-H5",
+         "-H8",
+         "-H9"
+        ],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_botoes_01/segura_8000__D1__8000_solto.png",
+        "t": 4.1
+       }
+      ],
+      "nome": "segura 8000 (D1)",
+      "tempo_s": 4.1
+     },
+     {
+      "leituras": [
+       {
+        "nome": "8001 pressionado",
+        "obtido": [
+         "-H11",
+         "-H14",
+         "-H15",
+         "-H17",
+         "-H3",
+         "-H5",
+         "-H8",
+         "-H9"
+        ],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_botoes_01/segura_8001__D2__8001_pressionado.png",
+        "t": 2.9
+       },
+       {
+        "nome": "8001 solto",
+        "obtido": [
+         "-H11",
+         "-H14",
+         "-H15",
+         "-H17",
+         "-H2",
+         "-H3",
+         "-H5",
+         "-H8",
+         "-H9"
+        ],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_botoes_01/segura_8001__D2__8001_solto.png",
+        "t": 4.1
+       }
+      ],
+      "nome": "segura 8001 (D2)",
+      "tempo_s": 4.1
+     },
+     {
+      "leituras": [
+       {
+        "nome": "8002 pressionado",
+        "obtido": [
+         "-H11",
+         "-H14",
+         "-H15",
+         "-H17",
+         "-H2",
+         "-H4",
+         "-H5",
+         "-H8",
+         "-H9"
+        ],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_botoes_01/segura_8002__D3__8002_pressionado.png",
+        "t": 3.0
+       },
+       {
+        "nome": "8002 solto",
+        "obtido": [
+         "-H11",
+         "-H14",
+         "-H15",
+         "-H17",
+         "-H2",
+         "-H3",
+         "-H5",
+         "-H8",
+         "-H9"
+        ],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_botoes_01/segura_8002__D3__8002_solto.png",
+        "t": 4.2
+       }
+      ],
+      "nome": "segura 8002 (D3)",
+      "tempo_s": 4.2
+     },
+     {
+      "leituras": [
+       {
+        "nome": "8003 pressionado",
+        "obtido": [
+         "-H11",
+         "-H14",
+         "-H15",
+         "-H17",
+         "-H2",
+         "-H3",
+         "-H6",
+         "-H8",
+         "-H9"
+        ],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_botoes_01/segura_8003__D4__8003_pressionado.png",
+        "t": 3.0
+       },
+       {
+        "nome": "8003 solto",
+        "obtido": [
+         "-H11",
+         "-H14",
+         "-H15",
+         "-H17",
+         "-H2",
+         "-H3",
+         "-H5",
+         "-H8",
+         "-H9"
+        ],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_botoes_01/segura_8003__D4__8003_solto.png",
+        "t": 4.1
+       }
+      ],
+      "nome": "segura 8003 (D4)",
+      "tempo_s": 4.1
+     },
+     {
+      "leituras": [
+       {
+        "nome": "8004 pressionado",
+        "obtido": [
+         "-H11",
+         "-H14",
+         "-H15",
+         "-H17",
+         "-H2",
+         "-H3",
+         "-H5",
+         "-H7",
+         "-H8",
+         "-H9"
+        ],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_botoes_01/segura_8004__D5__8004_pressionado.png",
+        "t": 3.0
+       },
+       {
+        "nome": "8004 solto",
+        "obtido": [
+         "-H11",
+         "-H14",
+         "-H15",
+         "-H17",
+         "-H2",
+         "-H3",
+         "-H5",
+         "-H8",
+         "-H9"
+        ],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_botoes_01/segura_8004__D5__8004_solto.png",
+        "t": 4.1
+       }
+      ],
+      "nome": "segura 8004 (D5)",
+      "tempo_s": 4.1
+     },
+     {
+      "leituras": [
+       {
+        "nome": "8005 pressionado",
+        "obtido": [
+         "-H11",
+         "-H14",
+         "-H15",
+         "-H17",
+         "-H2",
+         "-H3",
+         "-H5",
+         "-H9"
+        ],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_botoes_01/segura_8005__D6__8005_pressionado.png",
+        "t": 3.0
+       },
+       {
+        "nome": "8005 solto",
+        "obtido": [
+         "-H11",
+         "-H14",
+         "-H15",
+         "-H17",
+         "-H2",
+         "-H3",
+         "-H5",
+         "-H8",
+         "-H9"
+        ],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_botoes_01/segura_8005__D6__8005_solto.png",
+        "t": 4.2
+       }
+      ],
+      "nome": "segura 8005 (D6)",
+      "tempo_s": 4.2
+     },
+     {
+      "leituras": [
+       {
+        "nome": "8006 pressionado",
+        "obtido": [
+         "-H10",
+         "-H11",
+         "-H14",
+         "-H15",
+         "-H17",
+         "-H2",
+         "-H3",
+         "-H5",
+         "-H8"
+        ],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_botoes_01/segura_8006__D7__8006_pressionado.png",
+        "t": 3.0
+       },
+       {
+        "nome": "8006 solto",
+        "obtido": [
+         "-H11",
+         "-H14",
+         "-H15",
+         "-H17",
+         "-H2",
+         "-H3",
+         "-H5",
+         "-H8",
+         "-H9"
+        ],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_botoes_01/segura_8006__D7__8006_solto.png",
+        "t": 4.1
+       }
+      ],
+      "nome": "segura 8006 (D7)",
+      "tempo_s": 4.1
+     },
+     {
+      "leituras": [
+       {
+        "nome": "8007 pressionado",
+        "obtido": [
+         "-H12",
+         "-H14",
+         "-H15",
+         "-H17",
+         "-H2",
+         "-H3",
+         "-H5",
+         "-H8",
+         "-H9"
+        ],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_botoes_01/segura_8007__D8__8007_pressionado.png",
+        "t": 3.1
+       },
+       {
+        "nome": "8007 solto",
+        "obtido": [
+         "-H11",
+         "-H14",
+         "-H15",
+         "-H17",
+         "-H2",
+         "-H3",
+         "-H5",
+         "-H8",
+         "-H9"
+        ],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_botoes_01/segura_8007__D8__8007_solto.png",
+        "t": 4.3
+       }
+      ],
+      "nome": "segura 8007 (D8)",
+      "tempo_s": 4.3
+     },
+     {
+      "leituras": [
+       {
+        "nome": "8012 pressionado",
+        "obtido": [
+         "-H11",
+         "-H13",
+         "-H14",
+         "-H15",
+         "-H17",
+         "-H2",
+         "-H3",
+         "-H5",
+         "-H8",
+         "-H9"
+        ],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_botoes_01/segura_8012__D9__8012_pressionado.png",
+        "t": 2.9
+       },
+       {
+        "nome": "8012 solto",
+        "obtido": [
+         "-H11",
+         "-H14",
+         "-H15",
+         "-H17",
+         "-H2",
+         "-H3",
+         "-H5",
+         "-H8",
+         "-H9"
+        ],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_botoes_01/segura_8012__D9__8012_solto.png",
+        "t": 4.1
+       }
+      ],
+      "nome": "segura 8012 (D9)",
+      "tempo_s": 4.1
+     },
+     {
+      "leituras": [
+       {
+        "nome": "8013 pressionado",
+        "obtido": [
+         "-H11",
+         "-H15",
+         "-H17",
+         "-H2",
+         "-H3",
+         "-H5",
+         "-H8",
+         "-H9"
+        ],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_botoes_01/segura_8013__D10__8013_pressionado.png",
+        "t": 3.0
+       },
+       {
+        "nome": "8013 solto",
+        "obtido": [
+         "-H11",
+         "-H14",
+         "-H15",
+         "-H17",
+         "-H2",
+         "-H3",
+         "-H5",
+         "-H8",
+         "-H9"
+        ],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_botoes_01/segura_8013__D10__8013_solto.png",
+        "t": 4.1
+       }
+      ],
+      "nome": "segura 8013 (D10)",
+      "tempo_s": 4.1
+     },
+     {
+      "leituras": [
+       {
+        "nome": "8014 pressionado",
+        "obtido": [
+         "-H11",
+         "-H14",
+         "-H16",
+         "-H17",
+         "-H2",
+         "-H3",
+         "-H5",
+         "-H8",
+         "-H9"
+        ],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_botoes_01/segura_8014__D11__8014_pressionado.png",
+        "t": 3.0
+       },
+       {
+        "nome": "8014 solto",
+        "obtido": [
+         "-H11",
+         "-H14",
+         "-H15",
+         "-H17",
+         "-H2",
+         "-H3",
+         "-H5",
+         "-H8",
+         "-H9"
+        ],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_botoes_01/segura_8014__D11__8014_solto.png",
+        "t": 4.1
+       }
+      ],
+      "nome": "segura 8014 (D11)",
+      "tempo_s": 4.1
+     },
+     {
+      "leituras": [
+       {
+        "nome": "8015 pressionado",
+        "obtido": [
+         "-H11",
+         "-H14",
+         "-H15",
+         "-H18",
+         "-H2",
+         "-H3",
+         "-H5",
+         "-H8",
+         "-H9"
+        ],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_botoes_01/segura_8015__D12__8015_pressionado.png",
+        "t": 2.9
+       },
+       {
+        "nome": "8015 solto",
+        "obtido": [
+         "-H11",
+         "-H14",
+         "-H15",
+         "-H17",
+         "-H2",
+         "-H3",
+         "-H5",
+         "-H8",
+         "-H9"
+        ],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_botoes_01/segura_8015__D12__8015_solto.png",
+        "t": 4.1
+       }
+      ],
+      "nome": "segura 8015 (D12)",
+      "tempo_s": 4.1
+     }
+    ],
+    "data": "2026-10-15",
+    "erro": null,
+    "executado": true,
+    "tempo_s": 69.5
+   },
+   "assinatura": "b0ac0826ee2a",
+   "classes": [
+    "3000",
+    "3001",
+    "8000",
+    "8001",
+    "8002",
+    "8003",
+    "8004",
+    "8005",
+    "8006",
+    "8007",
+    "8012",
+    "8013",
+    "8014",
+    "8015",
+    "9008"
+   ],
+   "titulo": "Botoes e fins de curso (segurar = estado 1)"
+  },
+  "cargas_01": {
+   "app": {
+    "casos": [
+     {
+      "leituras": [
+       {
+        "nome": "energizado",
+        "obtido": [
+         "-HA",
+         "-HB",
+         "-HC",
+         "-HD",
+         "-HE",
+         "-HF",
+         "-HG",
+         "-KA",
+         "-KB",
+         "-KC",
+         "-KD",
+         "-KE",
+         "-KF",
+         "-KG",
+         "-KH",
+         "-KI",
+         "-KJ"
+        ],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_cargas_01/repouso__energizado_desde_o_Play__energizado.png",
+        "t": 2.8
+       }
+      ],
+      "nome": "repouso (energizado desde o Play)",
+      "tempo_s": 2.8
+     }
+    ],
+    "data": "2026-10-15",
+    "erro": null,
+    "executado": true,
+    "tempo_s": 19.3
+   },
+   "assinatura": "0faa1d7c4f53",
+   "classes": [
+    "3000",
+    "3001",
+    "8101",
+    "8103",
+    "9000",
+    "9001",
+    "9002",
+    "9003",
+    "9004",
+    "9005",
+    "9006",
+    "9007",
+    "9008",
+    "9009",
+    "9010",
+    "9011",
+    "9012",
+    "9013",
+    "9014",
+    "9015"
+   ],
+   "titulo": "Cargas diretas lidas pela cor (9008/9000 verificam; demais observam)"
+  },
+  "contatos_01": {
+   "app": {
+    "casos": [
+     {
+      "leituras": [
+       {
+        "nome": "repouso",
+        "obtido": [
+         "-H2",
+         "-H3",
+         "-H5"
+        ],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_contatos_01/repouso_repouso.png",
+        "t": 3.0
+       }
+      ],
+      "nome": "repouso",
+      "tempo_s": 3.0
+     },
+     {
+      "leituras": [
+       {
+        "nome": "-K1 energizada",
+        "obtido": [
+         "-H1",
+         "-H10",
+         "-H11",
+         "-H12",
+         "-H13",
+         "-H14",
+         "-H15",
+         "-H16",
+         "-H17",
+         "-H18",
+         "-H19",
+         "-H4",
+         "-H6",
+         "-H7",
+         "-H8",
+         "-H9"
+        ],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_contatos_01/_S1_segura__K1__K1_energizada.png",
+        "t": 3.1
+       },
+       {
+        "nome": "-K1 solta",
+        "obtido": [
+         "-H2",
+         "-H3",
+         "-H5"
+        ],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_contatos_01/_S1_segura__K1__K1_solta.png",
+        "t": 4.4
+       }
+      ],
+      "nome": "-S1 segura -K1",
+      "tempo_s": 4.4
+     }
+    ],
+    "data": "2026-10-15",
+    "erro": null,
+    "executado": true,
+    "tempo_s": 24.1
+   },
+   "assinatura": "ba8e7922355c",
+   "classes": [
+    "2000",
+    "2001",
+    "2002",
+    "2006",
+    "2008",
+    "3000",
+    "3001",
+    "7000",
+    "7001",
+    "7002",
+    "7003",
+    "8000",
+    "9000",
+    "9008"
+   ],
+   "titulo": "Contatos auxiliares e polos comandados por bobina 9000 (rotulo -K1)"
+  },
+  "fontes_01": {
+   "app": {
+    "casos": [
+     {
+      "leituras": [
+       {
+        "nome": "repouso",
+        "obtido": [
+         "-H1",
+         "-H10",
+         "-H11",
+         "-H2",
+         "-H5",
+         "-H6",
+         "-H7",
+         "-H8"
+        ],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_fontes_01/repouso_repouso.png",
+        "t": 3.0
+       }
+      ],
+      "nome": "repouso",
+      "tempo_s": 3.0
+     }
+    ],
+    "data": "2026-10-15",
+    "erro": null,
+    "executado": true,
+    "tempo_s": 29.3
+   },
+   "assinatura": "116da90f8392",
+   "classes": [
+    "3000",
+    "3001",
+    "3002",
+    "3003",
+    "3004",
+    "3005",
+    "3011",
+    "9008"
+   ],
+   "titulo": "Fontes (par de potenciais -> lampada)"
+  },
+  "fontes_02": {
+   "app": {
+    "casos": [
+     {
+      "leituras": [
+       {
+        "nome": "repouso",
+        "obtido": [
+         "-H1",
+         "-H10",
+         "-H11",
+         "-H2",
+         "-H3",
+         "-H5",
+         "-H6",
+         "-H7",
+         "-H8",
+         "-H9"
+        ],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_fontes_02/repouso_repouso.png",
+        "t": 3.0
+       }
+      ],
+      "nome": "repouso",
+      "tempo_s": 3.0
+     }
+    ],
+    "data": "2026-10-15",
+    "erro": null,
+    "executado": true,
+    "tempo_s": 20.1
+   },
+   "assinatura": "28f8451c288c",
+   "classes": [
+    "3001",
+    "3006",
+    "3007",
+    "3008",
+    "3009",
+    "3010",
+    "9008"
+   ],
+   "titulo": "Fontes (par de potenciais -> lampada)"
+  },
+  "motores_01": {
+   "app": {
+    "casos": [
+     {
+      "leituras": [
+       {
+        "nome": "energizado",
+        "obtido": [
+         "-M1",
+         "-M10",
+         "-M2",
+         "-M6",
+         "-M7",
+         "-M9"
+        ],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_motores_01/repouso__energizado_desde_o_Play__energizado.png",
+        "t": 2.8
+       }
+      ],
+      "nome": "repouso (energizado desde o Play)",
+      "tempo_s": 2.8
+     }
+    ],
+    "data": "2026-10-15",
+    "erro": null,
+    "executado": true,
+    "tempo_s": 19.3
+   },
+   "assinatura": "93c074061e9c",
+   "classes": [
+    "1000",
+    "1002",
+    "1003",
+    "1004",
+    "1005",
+    "1006",
+    "1007",
+    "1008",
+    "1009",
+    "1010",
+    "3003",
+    "3004",
+    "3010"
+   ],
+   "titulo": "Motores: fonte direta; energizado = enchimento cinza / vermelho"
+  },
+  "sensores_01": {
+   "app": {
+    "casos": [
+     {
+      "leituras": [
+       {
+        "nome": "repouso",
+        "obtido": [],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_sensores_01/repouso_repouso.png",
+        "t": 2.8
+       }
+      ],
+      "nome": "repouso",
+      "tempo_s": 2.8
+     },
+     {
+      "leituras": [
+       {
+        "nome": "7500 pressionado",
+        "obtido": [],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_sensores_01/segura_7500__D1__7500_pressionado.png",
+        "t": 2.8
+       },
+       {
+        "nome": "7500 solto",
+        "obtido": [],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_sensores_01/segura_7500__D1__7500_solto.png",
+        "t": 3.8
+       }
+      ],
+      "nome": "segura 7500 (D1)",
+      "tempo_s": 3.8
+     },
+     {
+      "leituras": [
+       {
+        "nome": "7503 pressionado",
+        "obtido": [],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_sensores_01/segura_7503__D2__7503_pressionado.png",
+        "t": 2.8
+       },
+       {
+        "nome": "7503 solto",
+        "obtido": [],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_sensores_01/segura_7503__D2__7503_solto.png",
+        "t": 3.9
+       }
+      ],
+      "nome": "segura 7503 (D2)",
+      "tempo_s": 3.9
+     },
+     {
+      "leituras": [
+       {
+        "nome": "7506 pressionado",
+        "obtido": [],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_sensores_01/segura_7506__D3__7506_pressionado.png",
+        "t": 2.8
+       },
+       {
+        "nome": "7506 solto",
+        "obtido": [],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_sensores_01/segura_7506__D3__7506_solto.png",
+        "t": 3.9
+       }
+      ],
+      "nome": "segura 7506 (D3)",
+      "tempo_s": 3.9
+     },
+     {
+      "leituras": [
+       {
+        "nome": "7509 pressionado",
+        "obtido": [],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_sensores_01/segura_7509__D4__7509_pressionado.png",
+        "t": 2.8
+       },
+       {
+        "nome": "7509 solto",
+        "obtido": [],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_sensores_01/segura_7509__D4__7509_solto.png",
+        "t": 3.9
+       }
+      ],
+      "nome": "segura 7509 (D4)",
+      "tempo_s": 3.9
+     },
+     {
+      "leituras": [
+       {
+        "nome": "7512 pressionado",
+        "obtido": [],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_sensores_01/segura_7512__D5__7512_pressionado.png",
+        "t": 2.8
+       },
+       {
+        "nome": "7512 solto",
+        "obtido": [],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_sensores_01/segura_7512__D5__7512_solto.png",
+        "t": 3.9
+       }
+      ],
+      "nome": "segura 7512 (D5)",
+      "tempo_s": 3.9
+     },
+     {
+      "leituras": [
+       {
+        "nome": "7515 pressionado",
+        "obtido": [],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_sensores_01/segura_7515__D6__7515_pressionado.png",
+        "t": 2.8
+       },
+       {
+        "nome": "7515 solto",
+        "obtido": [],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_sensores_01/segura_7515__D6__7515_solto.png",
+        "t": 3.9
+       }
+      ],
+      "nome": "segura 7515 (D6)",
+      "tempo_s": 3.9
+     },
+     {
+      "leituras": [
+       {
+        "nome": "7520 pressionado",
+        "obtido": [],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_sensores_01/segura_7520__D7__7520_pressionado.png",
+        "t": 2.8
+       },
+       {
+        "nome": "7520 solto",
+        "obtido": [],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_sensores_01/segura_7520__D7__7520_solto.png",
+        "t": 3.9
+       }
+      ],
+      "nome": "segura 7520 (D7)",
+      "tempo_s": 3.9
+     },
+     {
+      "leituras": [
+       {
+        "nome": "7523 pressionado",
+        "obtido": [],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_sensores_01/segura_7523__D8__7523_pressionado.png",
+        "t": 2.8
+       },
+       {
+        "nome": "7523 solto",
+        "obtido": [],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_sensores_01/segura_7523__D8__7523_solto.png",
+        "t": 3.9
+       }
+      ],
+      "nome": "segura 7523 (D8)",
+      "tempo_s": 3.9
+     },
+     {
+      "leituras": [
+       {
+        "nome": "7526 pressionado",
+        "obtido": [],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_sensores_01/segura_7526__D9__7526_pressionado.png",
+        "t": 2.8
+       },
+       {
+        "nome": "7526 solto",
+        "obtido": [],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_sensores_01/segura_7526__D9__7526_solto.png",
+        "t": 3.9
+       }
+      ],
+      "nome": "segura 7526 (D9)",
+      "tempo_s": 3.9
+     },
+     {
+      "leituras": [
+       {
+        "nome": "7529 pressionado",
+        "obtido": [],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_sensores_01/segura_7529__D10__7529_pressionado.png",
+        "t": 2.8
+       },
+       {
+        "nome": "7529 solto",
+        "obtido": [],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_sensores_01/segura_7529__D10__7529_solto.png",
+        "t": 3.9
+       }
+      ],
+      "nome": "segura 7529 (D10)",
+      "tempo_s": 3.9
+     },
+     {
+      "leituras": [
+       {
+        "nome": "7532 pressionado",
+        "obtido": [],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_sensores_01/segura_7532__D11__7532_pressionado.png",
+        "t": 2.8
+       },
+       {
+        "nome": "7532 solto",
+        "obtido": [],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_sensores_01/segura_7532__D11__7532_solto.png",
+        "t": 3.9
+       }
+      ],
+      "nome": "segura 7532 (D11)",
+      "tempo_s": 3.9
+     },
+     {
+      "leituras": [
+       {
+        "nome": "7535 pressionado",
+        "obtido": [],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_sensores_01/segura_7535__D12__7535_pressionado.png",
+        "t": 2.8
+       },
+       {
+        "nome": "7535 solto",
+        "obtido": [],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_sensores_01/segura_7535__D12__7535_solto.png",
+        "t": 3.9
+       }
+      ],
+      "nome": "segura 7535 (D12)",
+      "tempo_s": 3.9
+     },
+     {
+      "leituras": [
+       {
+        "nome": "7551 pressionado",
+        "obtido": [],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_sensores_01/segura_7551__D13__7551_pressionado.png",
+        "t": 2.8
+       },
+       {
+        "nome": "7551 solto",
+        "obtido": [],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_sensores_01/segura_7551__D13__7551_solto.png",
+        "t": 3.9
+       }
+      ],
+      "nome": "segura 7551 (D13)",
+      "tempo_s": 3.9
+     },
+     {
+      "leituras": [
+       {
+        "nome": "7552 pressionado",
+        "obtido": [],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_sensores_01/segura_7552__D14__7552_pressionado.png",
+        "t": 2.8
+       },
+       {
+        "nome": "7552 solto",
+        "obtido": [],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_sensores_01/segura_7552__D14__7552_solto.png",
+        "t": 3.9
+       }
+      ],
+      "nome": "segura 7552 (D14)",
+      "tempo_s": 3.9
+     },
+     {
+      "leituras": [
+       {
+        "nome": "7553 pressionado",
+        "obtido": [],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_sensores_01/segura_7553__D15__7553_pressionado.png",
+        "t": 2.8
+       },
+       {
+        "nome": "7553 solto",
+        "obtido": [],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_sensores_01/segura_7553__D15__7553_solto.png",
+        "t": 3.9
+       }
+      ],
+      "nome": "segura 7553 (D15)",
+      "tempo_s": 3.9
+     },
+     {
+      "leituras": [
+       {
+        "nome": "7556 pressionado",
+        "obtido": [],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_sensores_01/segura_7556__D16__7556_pressionado.png",
+        "t": 2.8
+       },
+       {
+        "nome": "7556 solto",
+        "obtido": [],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_sensores_01/segura_7556__D16__7556_solto.png",
+        "t": 3.9
+       }
+      ],
+      "nome": "segura 7556 (D16)",
+      "tempo_s": 3.9
+     },
+     {
+      "leituras": [
+       {
+        "nome": "7559 pressionado",
+        "obtido": [],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_sensores_01/segura_7559__D17__7559_pressionado.png",
+        "t": 2.8
+       },
+       {
+        "nome": "7559 solto",
+        "obtido": [],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_sensores_01/segura_7559__D17__7559_solto.png",
+        "t": 3.9
+       }
+      ],
+      "nome": "segura 7559 (D17)",
+      "tempo_s": 3.9
+     },
+     {
+      "leituras": [
+       {
+        "nome": "7562 pressionado",
+        "obtido": [],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_sensores_01/segura_7562__D18__7562_pressionado.png",
+        "t": 2.8
+       },
+       {
+        "nome": "7562 solto",
+        "obtido": [],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_sensores_01/segura_7562__D18__7562_solto.png",
+        "t": 3.9
+       }
+      ],
+      "nome": "segura 7562 (D18)",
+      "tempo_s": 3.9
+     },
+     {
+      "leituras": [
+       {
+        "nome": "7570 pressionado",
+        "obtido": [],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_sensores_01/segura_7570__D19__7570_pressionado.png",
+        "t": 2.8
+       },
+       {
+        "nome": "7570 solto",
+        "obtido": [],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_sensores_01/segura_7570__D19__7570_solto.png",
+        "t": 3.9
+       }
+      ],
+      "nome": "segura 7570 (D19)",
+      "tempo_s": 3.9
+     },
+     {
+      "leituras": [
+       {
+        "nome": "7573 pressionado",
+        "obtido": [],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_sensores_01/segura_7573__D20__7573_pressionado.png",
+        "t": 2.8
+       },
+       {
+        "nome": "7573 solto",
+        "obtido": [],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_sensores_01/segura_7573__D20__7573_solto.png",
+        "t": 3.9
+       }
+      ],
+      "nome": "segura 7573 (D20)",
+      "tempo_s": 3.9
+     },
+     {
+      "leituras": [
+       {
+        "nome": "7576 pressionado",
+        "obtido": [],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_sensores_01/segura_7576__D21__7576_pressionado.png",
+        "t": 2.8
+       },
+       {
+        "nome": "7576 solto",
+        "obtido": [],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_sensores_01/segura_7576__D21__7576_solto.png",
+        "t": 3.9
+       }
+      ],
+      "nome": "segura 7576 (D21)",
+      "tempo_s": 3.9
+     },
+     {
+      "leituras": [
+       {
+        "nome": "7579 pressionado",
+        "obtido": [],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_sensores_01/segura_7579__D22__7579_pressionado.png",
+        "t": 2.9
+       },
+       {
+        "nome": "7579 solto",
+        "obtido": [],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_sensores_01/segura_7579__D22__7579_solto.png",
+        "t": 4.1
+       }
+      ],
+      "nome": "segura 7579 (D22)",
+      "tempo_s": 4.1
+     },
+     {
+      "leituras": [
+       {
+        "nome": "7582 pressionado",
+        "obtido": [],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_sensores_01/segura_7582__D23__7582_pressionado.png",
+        "t": 2.9
+       },
+       {
+        "nome": "7582 solto",
+        "obtido": [],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_sensores_01/segura_7582__D23__7582_solto.png",
+        "t": 4.0
+       }
+      ],
+      "nome": "segura 7582 (D23)",
+      "tempo_s": 4.0
+     },
+     {
+      "leituras": [
+       {
+        "nome": "7585 pressionado",
+        "obtido": [],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_sensores_01/segura_7585__D24__7585_pressionado.png",
+        "t": 2.9
+       },
+       {
+        "nome": "7585 solto",
+        "obtido": [],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_sensores_01/segura_7585__D24__7585_solto.png",
+        "t": 4.1
+       }
+      ],
+      "nome": "segura 7585 (D24)",
+      "tempo_s": 4.1
+     }
+    ],
+    "data": "2026-10-15",
+    "erro": null,
+    "executado": true,
+    "tempo_s": 112.8
+   },
+   "assinatura": "fd9e4cc016e5",
+   "classes": [
+    "3000",
+    "3001",
+    "7500",
+    "7503",
+    "7506",
+    "7509",
+    "7512",
+    "7515",
+    "7520",
+    "7523",
+    "7526",
+    "7529",
+    "7532",
+    "7535",
+    "7551",
+    "7552",
+    "7553",
+    "7556",
+    "7559",
+    "7562",
+    "7570",
+    "7573",
+    "7576",
+    "7579",
+    "7582",
+    "7585",
+    "9008"
+   ],
+   "titulo": "Detectores 2 fios (clique segura = estado 1 segundo o RE)"
+  },
+  "sensores_02": {
+   "app": {
+    "casos": [
+     {
+      "leituras": [
+       {
+        "nome": "repouso",
+        "obtido": [
+         "-H1",
+         "-H2",
+         "-H5",
+         "-H6"
+        ],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_sensores_02/repouso_repouso.png",
+        "t": 2.9
+       }
+      ],
+      "nome": "repouso",
+      "tempo_s": 2.9
+     },
+     {
+      "leituras": [
+       {
+        "nome": "7588 pressionado",
+        "obtido": [
+         "-H2",
+         "-H5",
+         "-H6"
+        ],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_sensores_02/segura_7588__D25__7588_pressionado.png",
+        "t": 2.9
+       },
+       {
+        "nome": "7588 solto",
+        "obtido": [
+         "-H1",
+         "-H2",
+         "-H5",
+         "-H6"
+        ],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_sensores_02/segura_7588__D25__7588_solto.png",
+        "t": 4.1
+       }
+      ],
+      "nome": "segura 7588 (D25)",
+      "tempo_s": 4.1
+     },
+     {
+      "leituras": [
+       {
+        "nome": "7591 pressionado",
+        "obtido": [
+         "-H1",
+         "-H5",
+         "-H6"
+        ],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_sensores_02/segura_7591__D26__7591_pressionado.png",
+        "t": 3.0
+       },
+       {
+        "nome": "7591 solto",
+        "obtido": [
+         "-H1",
+         "-H2",
+         "-H5",
+         "-H6"
+        ],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_sensores_02/segura_7591__D26__7591_solto.png",
+        "t": 4.2
+       }
+      ],
+      "nome": "segura 7591 (D26)",
+      "tempo_s": 4.2
+     },
+     {
+      "leituras": [
+       {
+        "nome": "7594 pressionado",
+        "obtido": [
+         "-H1",
+         "-H2",
+         "-H3",
+         "-H5",
+         "-H6"
+        ],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_sensores_02/segura_7594__D27__7594_pressionado.png",
+        "t": 3.0
+       },
+       {
+        "nome": "7594 solto",
+        "obtido": [
+         "-H1",
+         "-H2",
+         "-H5",
+         "-H6"
+        ],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_sensores_02/segura_7594__D27__7594_solto.png",
+        "t": 4.2
+       }
+      ],
+      "nome": "segura 7594 (D27)",
+      "tempo_s": 4.2
+     },
+     {
+      "leituras": [
+       {
+        "nome": "7597 pressionado",
+        "obtido": [
+         "-H1",
+         "-H2",
+         "-H4",
+         "-H5",
+         "-H6"
+        ],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_sensores_02/segura_7597__D28__7597_pressionado.png",
+        "t": 3.0
+       },
+       {
+        "nome": "7597 solto",
+        "obtido": [
+         "-H1",
+         "-H2",
+         "-H5",
+         "-H6"
+        ],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_sensores_02/segura_7597__D28__7597_solto.png",
+        "t": 4.2
+       }
+      ],
+      "nome": "segura 7597 (D28)",
+      "tempo_s": 4.2
+     },
+     {
+      "leituras": [
+       {
+        "nome": "7600 pressionado",
+        "obtido": [
+         "-H1",
+         "-H2",
+         "-H6"
+        ],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_sensores_02/segura_7600__D29__7600_pressionado.png",
+        "t": 2.9
+       },
+       {
+        "nome": "7600 solto",
+        "obtido": [
+         "-H1",
+         "-H2",
+         "-H5",
+         "-H6"
+        ],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_sensores_02/segura_7600__D29__7600_solto.png",
+        "t": 4.1
+       }
+      ],
+      "nome": "segura 7600 (D29)",
+      "tempo_s": 4.1
+     },
+     {
+      "leituras": [
+       {
+        "nome": "7603 pressionado",
+        "obtido": [
+         "-H1",
+         "-H2",
+         "-H5"
+        ],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_sensores_02/segura_7603__D30__7603_pressionado.png",
+        "t": 3.0
+       },
+       {
+        "nome": "7603 solto",
+        "obtido": [
+         "-H1",
+         "-H2",
+         "-H5",
+         "-H6"
+        ],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_sensores_02/segura_7603__D30__7603_solto.png",
+        "t": 4.2
+       }
+      ],
+      "nome": "segura 7603 (D30)",
+      "tempo_s": 4.2
+     }
+    ],
+    "data": "2026-10-15",
+    "erro": null,
+    "executado": true,
+    "tempo_s": 44.7
+   },
+   "assinatura": "e842951872af",
+   "classes": [
+    "3000",
+    "3001",
+    "7588",
+    "7591",
+    "7594",
+    "7597",
+    "7600",
+    "7603",
+    "9008"
+   ],
+   "titulo": "Detectores 2 fios (clique segura = estado 1 segundo o RE)"
+  },
+  "temporizadores_01": {
+   "app": {
+    "casos": [
+     {
+      "leituras": [
+       {
+        "nome": "repouso",
+        "obtido": [
+         "-H10",
+         "-H11",
+         "-H13",
+         "-H3",
+         "-H4",
+         "-H6"
+        ],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_temporizadores_01/repouso_repouso.png",
+        "t": 2.8
+       }
+      ],
+      "nome": "repouso",
+      "tempo_s": 2.8
+     },
+     {
+      "leituras": [
+       {
+        "nome": "antes de T",
+        "obtido": [
+         "-H1",
+         "-H10",
+         "-H11",
+         "-H13",
+         "-H3",
+         "-H4",
+         "-H6"
+        ],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_temporizadores_01/9004__KT1_antes_de_T.png",
+        "t": 3.2
+       },
+       {
+        "nome": "apos T",
+        "obtido": [
+         "-H1",
+         "-H10",
+         "-H11",
+         "-H13",
+         "-H2",
+         "-H5",
+         "-H7"
+        ],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_temporizadores_01/9004__KT1_apos_T.png",
+        "t": 12.0
+       },
+       {
+        "nome": "desenergizado",
+        "obtido": [
+         "-H10",
+         "-H11",
+         "-H13",
+         "-H3",
+         "-H4",
+         "-H6"
+        ],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_temporizadores_01/9004__KT1_desenergizado.png",
+        "t": 13.6
+       }
+      ],
+      "nome": "9004 -KT1",
+      "tempo_s": 13.6
+     },
+     {
+      "leituras": [
+       {
+        "nome": "energizado",
+        "obtido": [
+         "-H12",
+         "-H14",
+         "-H3",
+         "-H4",
+         "-H6",
+         "-H8",
+         "-H9"
+        ],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_temporizadores_01/9005__KT2_energizado.png",
+        "t": 3.2
+       },
+       {
+        "nome": "solto (dentro de T)",
+        "obtido": [
+         "-H12",
+         "-H14",
+         "-H3",
+         "-H4",
+         "-H6",
+         "-H9"
+        ],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_temporizadores_01/9005__KT2_solto__dentro_de_T_.png",
+        "t": 4.5
+       },
+       {
+        "nome": "apos T",
+        "obtido": [
+         "-H10",
+         "-H11",
+         "-H13",
+         "-H3",
+         "-H4",
+         "-H6"
+        ],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_temporizadores_01/9005__KT2_apos_T.png",
+        "t": 13.2
+       }
+      ],
+      "nome": "9005 -KT2",
+      "tempo_s": 13.2
+     }
+    ],
+    "data": "2026-10-15",
+    "erro": null,
+    "executado": true,
+    "tempo_s": 46.1
+   },
+   "assinatura": "d4af48323b14",
+   "classes": [
+    "3000",
+    "3001",
+    "7000",
+    "7004",
+    "7005",
+    "7006",
+    "7007",
+    "7008",
+    "7009",
+    "7010",
+    "7011",
+    "8000",
+    "9004",
+    "9005",
+    "9008"
+   ],
+   "titulo": "Temporizadores 9004..9007 (T=4 s)"
+  },
+  "temporizadores_02": {
+   "app": {
+    "casos": [
+     {
+      "leituras": [
+       {
+        "nome": "repouso",
+        "obtido": [
+         "-H10",
+         "-H3",
+         "-H4",
+         "-H6"
+        ],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_temporizadores_02/repouso_repouso.png",
+        "t": 2.8
+       }
+      ],
+      "nome": "repouso",
+      "tempo_s": 2.8
+     },
+     {
+      "leituras": [
+       {
+        "nome": "antes de T",
+        "obtido": [
+         "-H1",
+         "-H10",
+         "-H3",
+         "-H4",
+         "-H6"
+        ],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_temporizadores_02/9006__KT3_antes_de_T.png",
+        "t": 3.2
+       },
+       {
+        "nome": "apos T",
+        "obtido": [
+         "-H1",
+         "-H10",
+         "-H2",
+         "-H5",
+         "-H7"
+        ],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_temporizadores_02/9006__KT3_apos_T.png",
+        "t": 12.0
+       },
+       {
+        "nome": "solto (dentro de T)",
+        "obtido": [
+         "-H10",
+         "-H2",
+         "-H5",
+         "-H7"
+        ],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_temporizadores_02/9006__KT3_solto__dentro_de_T_.png",
+        "t": 13.2
+       },
+       {
+        "nome": "apos T solto",
+        "obtido": [
+         "-H10",
+         "-H3",
+         "-H4",
+         "-H6"
+        ],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_temporizadores_02/9006__KT3_apos_T_solto.png",
+        "t": 21.9
+       }
+      ],
+      "nome": "9006 -KT3",
+      "tempo_s": 21.9
+     },
+     {
+      "leituras": [
+       {
+        "nome": "amostra 0",
+        "obtido": [
+         "-H3",
+         "-H4",
+         "-H6",
+         "-H8",
+         "-H9"
+        ],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_temporizadores_02/9007__KT4_amostra_0.png",
+        "t": 3.8
+       },
+       {
+        "nome": "amostra 1",
+        "obtido": [
+         "-H3",
+         "-H4",
+         "-H6",
+         "-H8",
+         "-H9"
+        ],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_temporizadores_02/9007__KT4_amostra_1.png",
+        "t": 5.5
+       },
+       {
+        "nome": "amostra 2",
+        "obtido": [
+         "-H10",
+         "-H3",
+         "-H4",
+         "-H6"
+        ],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_temporizadores_02/9007__KT4_amostra_2.png",
+        "t": 7.3
+       },
+       {
+        "nome": "amostra 3",
+        "obtido": [
+         "-H10",
+         "-H3",
+         "-H4",
+         "-H6"
+        ],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_temporizadores_02/9007__KT4_amostra_3.png",
+        "t": 9.0
+       },
+       {
+        "nome": "amostra 4",
+        "obtido": [
+         "-H3",
+         "-H4",
+         "-H6",
+         "-H8",
+         "-H9"
+        ],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_temporizadores_02/9007__KT4_amostra_4.png",
+        "t": 10.7
+       },
+       {
+        "nome": "amostra 5",
+        "obtido": [
+         "-H3",
+         "-H4",
+         "-H6",
+         "-H8",
+         "-H9"
+        ],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_temporizadores_02/9007__KT4_amostra_5.png",
+        "t": 12.4
+       },
+       {
+        "nome": "amostra 6",
+        "obtido": [
+         "-H3",
+         "-H4",
+         "-H6",
+         "-H8",
+         "-H9"
+        ],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_temporizadores_02/9007__KT4_amostra_6.png",
+        "t": 14.2
+       },
+       {
+        "nome": "amostra 7",
+        "obtido": [
+         "-H10",
+         "-H3",
+         "-H4",
+         "-H6"
+        ],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_temporizadores_02/9007__KT4_amostra_7.png",
+        "t": 15.9
+       }
+      ],
+      "nome": "9007 -KT4",
+      "tempo_s": 16.2
+     }
+    ],
+    "data": "2026-10-15",
+    "erro": null,
+    "executado": true,
+    "tempo_s": 57.4
+   },
+   "assinatura": "39bc8991aecf",
+   "classes": [
+    "3000",
+    "3001",
+    "7000",
+    "7004",
+    "7005",
+    "7012",
+    "7013",
+    "7014",
+    "7015",
+    "8000",
+    "9006",
+    "9007",
+    "9008"
+   ],
+   "titulo": "Temporizadores 9004..9007 (T=4 s)"
+  },
+  "termico_01": {
+   "app": {
+    "casos": [
+     {
+      "leituras": [
+       {
+        "nome": "repouso",
+        "obtido": [
+         "-H1",
+         "-H10",
+         "-H2",
+         "-H3",
+         "-H5",
+         "-H6",
+         "-H8"
+        ],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_termico_01/repouso_repouso.png",
+        "t": 2.8
+       }
+      ],
+      "nome": "repouso",
+      "tempo_s": 2.8
+     },
+     {
+      "leituras": [
+       {
+        "nome": "disparado",
+        "obtido": [
+         "-H1",
+         "-H10",
+         "-H2",
+         "-H3",
+         "-H4",
+         "-H7",
+         "-H9"
+        ],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_termico_01/disparo_por_clique_no_6007_disparado.png",
+        "t": 3.4
+       },
+       {
+        "nome": "rearmado",
+        "obtido": [
+         "-H1",
+         "-H10",
+         "-H2",
+         "-H3",
+         "-H5",
+         "-H6",
+         "-H8"
+        ],
+        "screenshot": "/home/monteiro/dev/codes/personal/cade-automation/.claude/worktrees/mcp-ai-automation-project-32fea4/out/app_sim/bancada_termico_01/disparo_por_clique_no_6007_rearmado.png",
+        "t": 4.6
+       }
+      ],
+      "nome": "disparo por clique no 6007",
+      "tempo_s": 4.6
+     }
+    ],
+    "data": "2026-10-15",
+    "erro": null,
+    "executado": true,
+    "tempo_s": 23.9
+   },
+   "assinatura": "e717bbcfbaae",
+   "classes": [
+    "3000",
+    "3001",
+    "6007",
+    "8016",
+    "8017",
+    "8018",
+    "8019",
+    "9008"
+   ],
+   "titulo": "Rele termico 6007 e contatos 8016..8019 (rotulo -F1) + 8017 com outro rotulo"
+  }
+ },
+ "data": "2026-10-15"
+}

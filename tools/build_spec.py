@@ -44,6 +44,8 @@ def normalizar(spec):
 
 def _classes_da_coluna(c):
     """Classes de um item de coluna: [id,cls,rot,...] ou {"paralelo":[item,...]} (reversao)."""
+    if isinstance(c, dict) and "estrela_triangulo" in c:
+        return [str(v[1]) for v in c["estrela_triangulo"].values() if isinstance(v, (list, tuple)) and len(v) > 1]
     if isinstance(c, dict):
         out = []
         for m in c.get("paralelo", []):

@@ -26,6 +26,13 @@ Comando v2 (rede serie-paralelo recursiva; ver docs/dsl-layout.md): no lugar de 
    "transformador":{"id":"T1","primario":["L1","L2"]},"fonte":{"id":"X2"}} cria outro par de
    trilhos. Nao cabendo na folha: serpentina (serie alta) / faixas amarradas (largura).
 
+Temporizadores (9004 ON-delay, 9005 OFF-delay, 9006 ON+OFF, 9007 intermitente) e seus contatos
+(7004..7015, rotulo IGUAL ao do temporizador) entram na rede como qualquer 2 terminais. O tempo vai
+num 4o elemento da folha (viram os rotulos 5/6 da entidade; ver tools/temporizador.py):
+   ["KT1","9004","-KT1",{"tempo":5,"unidade":"0"}]   ou   ["KT1","9004","-KT1",{"segundos":5}]
+Estrela-triangulo na potencia: estagio {"estrela_triangulo":{"motor":["M1","1001","-M1"],
+   "estrela":["KM2","2001","-KM2"],"triangulo":["KM3","2001","-KM3"]}} apos o contator de rede.
+
 Fonte unica multi-terminal (recomendado; estampa as fases certas no app):
    "fontes": [{"id":"X1","classe":"3007","rotulo":"-X",
                "pinos":{"L1":"L1","L2":"L2","L3":"L3","N":"N","PE":"PE"}}]
@@ -36,6 +43,8 @@ import sys
 from pathlib import Path
 
 TOOLS = Path(__file__).resolve().parent
+sys.path.insert(0, str(TOOLS))
+import temporizador as TM  # noqa: E402
 PINS = json.loads((TOOLS / "symbol_pins.json").read_text())
 def _sheet():
     """Limite superior util da folha (tools/sheet.json, medido no app: docs/folha.md).
@@ -118,6 +127,33 @@ class Layout:
             self.fios.append(f)
 
 
+_CHAVES_PARAMS = {"tempo", "unidade", "segundos", "rotulos", "params"}
+
+
+def _extrair_params(no, achados):
+    """Percorre a spec e tira o dict de PARAMETROS (tempo/unidade/segundos/rotulos) do 4o elemento de cada
+    folha [id, classe, rotulo, {...}]; devolve a copia limpa e preenche achados[id] = params. Outras chaves
+    do dict (ex.: "ordem" da potencia) ficam onde estao."""
+    if isinstance(no, dict):
+        return {k: _extrair_params(v, achados) for k, v in no.items()}
+    if isinstance(no, list):
+        if len(no) == 4 and all(isinstance(v, str) for v in no[:3]) and isinstance(no[3], dict) \
+                and set(no[3]) & _CHAVES_PARAMS:
+            d = dict(no[3])
+            par = {k: d.pop(k) for k in list(d) if k in _CHAVES_PARAMS}
+            if "params" in par:
+                inner = par.pop("params")
+                par.update(inner if isinstance(inner, dict) else {})
+            try:
+                TM.parametros_para_rotulos(no[1], par)
+            except ValueError as e:
+                raise ValueError(f"{no[0]} (classe {no[1]}): {e}")
+            achados[no[0]] = par
+            return list(no[:3]) + ([d] if d else [])
+        return [_extrair_params(v, achados) for v in no]
+    return no
+
+
 def _t(t):
     """[id, classe, rotulo?] -> (id, classe, rotulo)"""
     if len(t) < 2:
@@ -172,6 +208,10 @@ def compilar(spec):
 
 
 def _compilar(spec):
+    params = {}
+    spec = _extrair_params(spec, params)
+    for sid, par in (spec.get("parametros") or {}).items():       # alternativa: {"parametros": {"KT1": {...}}}
+        params.setdefault(sid, par)
     L = Layout(spec.get("titulo", "NOVO"))
     tr = dict(spec["trilhos"])
     x0, x1 = int(tr.pop("x0", 25)), int(tr.pop("x1", 395))
@@ -254,6 +294,14 @@ def _compilar(spec):
         L.con((t.get("id", "PE"), "A"), (t.get("neutro", "N"), "rail"))
 
     ctx.fechar()                            # ligacoes entre faixas + lista final de trilhos
+    ids = {x["id"] for x in L.simbolos}
+    for sid in params:
+        if sid not in ids:
+            raise ValueError(f"parametros: simbolo '{sid}' nao existe (ids: {sorted(ids)})")
+    for x in L.simbolos:
+        if x["id"] in params:
+            TM.parametros_para_rotulos(x["classe"], params[x["id"]])     # revalida (inclui "parametros" top-level)
+            x["params"] = dict(params[x["id"]])
     out = {"titulo": L.titulo, "rails": L.rails, "simbolos": L.simbolos,
            "conexoes": L.conexoes}
     if L.fios:
@@ -701,6 +749,10 @@ def _pot_largura(pw):
     mx = 0
     for c in pw.get("colunas", []):
         est = _estagio(c)
+        if isinstance(est, tuple):
+            yd = est[1]
+            mx = max(mx, _width(yd["motor"][1]) + YD_GAP_X + _width(yd["triangulo"][1]))
+            continue
         mx = max(mx, sum(max(_width(cl), PHASE_DX * (nf - 1) + 1) + GAP for _, cl, _, _ in est) - GAP)
     return mx
 
@@ -1004,6 +1056,12 @@ def _tops_bots(classe):
 def _estagio(c):
     """item de coluna -> lista de membros [(id, classe, rotulo, ordem|None)].
     Formas: [id,cls,rot] | [id,cls,rot,{"ordem":[fases]}] | {"paralelo":[item,...]}"""
+    if isinstance(c, dict) and "estrela_triangulo" in c:
+        yd = c["estrela_triangulo"]
+        falta = [k for k in ("motor", "estrela", "triangulo") if k not in yd]
+        if falta:
+            raise ValueError(f"estrela_triangulo: faltam {falta} (use motor, estrela e triangulo = [id, classe, rotulo])")
+        return ("yd", {k: _t(yd[k]) for k in ("motor", "estrela", "triangulo")})
     if isinstance(c, dict):
         out = []
         for m in c["paralelo"]:
@@ -1043,6 +1101,12 @@ def _potencia(L, pw, x, y0):
         return nomes
 
     for k, est in enumerate(estagios):
+        if isinstance(est, tuple):             # estrela-triangulo: motor de 6 terminais + 2 contatores
+            if nf != 3:
+                raise ValueError("estrela_triangulo exige 3 fases")
+            xend = max(xend, _estrela_triangulo(L, pid, fases, pw.get("pe", neutro), est[1], src, src_direto,
+                                                _src_x, src_y, x, y))
+            break
         n = len(est)
         # --- posicao dos membros ---
         xs_m = []
@@ -1113,6 +1177,80 @@ def _potencia(L, pw, x, y0):
 
 
 _src_x = []
+YD_GAP_X = 12     # folga horizontal entre o motor e o contator triangulo (passagem do fio PE)
+
+
+def _estrela_triangulo(L, pid, fases, pe, cfg, src, src_direto, src_x, src_y, x, y):
+    """Estagio estrela-triangulo (motor 1001 de 6 terminais + contatores 2001 de estrela e triangulo).
+
+    Ligacao (U1 V1 W1 vem do contator de rede; W2 U2 V2 sao os terminais inferiores do motor):
+      triangulo: U1-W2, V1-U2, W1-V2 (polos do contator `triangulo`)
+      estrela:   W2, U2 e V2 curto-circuitados pelo contator `estrela` (3 polos juntos num ponto)
+    Desenho (sem coordenadas do usuario): trilhos auxiliares `<pid>_yd_e1..3` (fases apos o contator de
+    rede), `<pid>_yd_dV/dU/dW` (nos W2/U2/V2) e `<pid>_yd_estrela` (ponto da estrela). O motor fica sob o
+    contator de rede, o triangulo a sua direita e a estrela sob o motor. Polos do triangulo em ordem
+    invertida para que os verticais nao cruzem trilhos de outra fase. -> x final."""
+    (mid, mcl, mrot), (sid2, cl2, rot2), (sid3, cl3, rot3) = cfg["motor"], cfg["estrela"], cfg["triangulo"]
+    pm = PINS.get(mcl, {}).get("pins") or {}
+    if not {"U1", "V1", "W1", "W2", "U2", "V2"} <= set(pm):
+        raise ValueError(f"{mid} (classe {mcl}): estrela_triangulo exige motor com U1 V1 W1 W2 U2 V2 "
+                         f"(classe 1001); pinos conhecidos: {sorted(pm)}")
+    top2, bot2, _ = _tops_bots(cl2)
+    top3, bot3, _ = _tops_bots(cl3)
+    if len(top2) < 3 or len(bot2) < 3 or len(top3) < 3 or len(bot3) < 3:
+        raise ValueError(f"{sid2}/{sid3}: estrela e triangulo precisam de contatores de 3 polos (classe 2001)")
+    pins_m = ["U1", "V1", "W1"]
+    mw = _width(mcl)
+    x3 = x + mw + YD_GAP_X
+    # --- origem das fases: trilhos auxiliares sob o contator de rede, ou os trilhos de entrada ---
+    if src_direto:
+        ry = [src_y + 11 + 6 * i for i in range(3)]
+        ym = ry[-1] + 10
+        e_nomes = [f"{pid}_yd_e{i + 1}" for i in range(3)]
+        for i in range(3):
+            xs = [src_x[i], x + pin_off(mcl, pins_m[i])[0], x3 + pin_off(cl3, top3[2 - i])[0]]
+            L.rails.append({"nome": e_nomes[i], "y": ry[i], "x0": min(xs), "x1": max(xs)})
+            L.con((src[i][0], src[i][1]), (e_nomes[i], "rail"))
+    else:
+        if any(s[1] != "rail" for s in src):
+            raise ValueError("estrela_triangulo: o estagio anterior deve ser um unico contator (ou os trilhos)")
+        e_nomes = [s[0] for s in src]
+        ym = y
+    # --- motor e triangulo lado a lado; ligados as fases ---
+    L.sym(mid, mcl, mrot, x, ym)
+    L.sym(sid3, cl3, rot3, x3, ym)
+    for i in range(3):
+        L.con((mid, pins_m[i]), (e_nomes[i], "rail"))
+        L.con((sid3, top3[2 - i]), (e_nomes[i], "rail"))     # polo 3 <- fase 1, polo 2 <- fase 2, polo 1 <- fase 3
+    L.con((mid, "PE"), (pe, "rail"))
+    # --- nos W2 / U2 / V2 (ordem de cima p/ baixo: V2, U2, W2 -> sem cruzar verticais do motor/triangulo) ---
+    y_base = ym + max(pin_off(mcl, "W2")[1], pin_off(cl3, bot3[0])[1])
+    nomes = {"V2": f"{pid}_yd_dV", "U2": f"{pid}_yd_dU", "W2": f"{pid}_yd_dW"}
+    ydn = {n: y_base + 11 + 6 * k for k, n in enumerate(("V2", "U2", "W2"))}
+    # polo j do triangulo (fase 3-j): polo 1 -> V2 (W1), polo 2 -> U2 (V1), polo 3 -> W2 (U1)
+    polo_no = {0: "V2", 1: "U2", 2: "W2"}
+    mot_x = {n: x + pin_off(mcl, n)[0] for n in ("W2", "U2", "V2")}
+    y2 = ydn["W2"] + 10                                           # estrela logo abaixo do ultimo trilho
+    ordem_estrela = ["W2", "U2", "V2"]                           # polo j da estrela = pino j do motor (reto)
+    for n in ("V2", "U2", "W2"):
+        xs = [mot_x[n]]
+        for j, no in polo_no.items():
+            if no == n:
+                xs.append(x3 + pin_off(cl3, bot3[j])[0])
+        xs.append(x + pin_off(cl2, top2[ordem_estrela.index(n)])[0])
+        L.rails.append({"nome": nomes[n], "y": ydn[n], "x0": min(xs), "x1": max(xs)})
+        L.con((mid, n), (nomes[n], "rail"))
+    for j, no in polo_no.items():
+        L.con((sid3, bot3[j]), (nomes[no], "rail"))
+    L.sym(sid2, cl2, rot2, x, y2)
+    for j, n in enumerate(ordem_estrela):
+        L.con((sid2, top2[j]), (nomes[n], "rail"))
+    ys = y2 + pin_off(cl2, bot2[0])[1] + 11
+    xe = [x + pin_off(cl2, b)[0] for b in bot2[:3]]
+    L.rails.append({"nome": f"{pid}_yd_estrela", "y": ys, "x0": min(xe), "x1": max(xe)})
+    for b in bot2[:3]:
+        L.con((sid2, b), (f"{pid}_yd_estrela", "rail"))
+    return max(x3 + _width(cl3), x + mw, x + _width(cl2))
 
 
 def _check_folha(spec):

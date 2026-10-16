@@ -188,6 +188,8 @@ def cad_test(path: str, casos_json: str = "[]") -> str:
 # --- autoria do zero (símbolos + fios) --------------------------------------
 
 _LIB = None
+# 7003 (aux. comutado), 7008 (OFF-delay NA) e 7012 (ON/OFF-delay NA) nao aparecem no acervo; mesma geometria dos irmaos
+_CLONES = {"7003": "8003", "7008": "7004", "7012": "7004"}
 ACERVO = Path(os.environ.get("CADE_ACERVO", "/home/monteiro/Downloads/CADe_SIMU 4.0 [BR]/CADe_SIMU 4.0 [BR]/Atividades para Simular/115 arquivos CADe_SIMU/Arquivos .cad"))
 
 
@@ -209,6 +211,9 @@ def _lib():
                 p = parse_ent(e)
                 if p and p["id"] not in protos:
                     protos[p["id"]] = p
+        for novo, irmao in _CLONES.items():     # classes sem exemplo no acervo: molde do irmao (mesma forma/pinos)
+            if novo not in protos and irmao in protos:
+                protos[novo] = dict(protos[irmao], id=novo)
         _LIB = (header, protos, footer, wire)
     return _LIB
 
@@ -459,6 +464,16 @@ def cad_build(titulo: str, simbolos_json: str, fios_json: str = "[]", out_path: 
         labs = list(p["labels"])
         if s.get("rotulo") and labs:
             labs[0] = s["rotulo"]
+        extra = {int(k): str(v) for k, v in (s.get("rotulos") or {}).items()}
+        if s.get("params"):                       # temporizador: {"tempo":5,"unidade":"0"} -> rotulos 6/5
+            import temporizador
+            try:
+                extra.update(temporizador.parametros_para_rotulos(s["classe"], s["params"]))
+            except ValueError as e:
+                return f"ERRO params de {s.get('id') or s['classe']}: {e}"
+        for k, v in extra.items():
+            labs.extend([""] * (k + 1 - len(labs)))
+            labs[k] = v
         ents.append({"id": s["classe"], "labels": labs, "nums": n})
     if not ents:
         ents = [{"id": "8000", "labels": protos["8000"]["labels"], "nums": list(protos["8000"]["nums"])}]

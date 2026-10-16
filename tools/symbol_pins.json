@@ -176,9 +176,38 @@
    0
   ],
   "B_g": 7,
-  "fonte": "binario (A/B sobrescritos)",
+  "fonte": "binario 4ac380 (p1..p7) + nomes do acervo PARTIDA ESTRELA TRIANGULO.cad (labels U1 V1 W1 PE W2 U2 V2)",
   "n": 10,
-  "pins": {}
+  "pins": {
+   "PE": [
+    18,
+    0
+   ],
+   "U1": [
+    0,
+    0
+   ],
+   "U2": [
+    6,
+    24
+   ],
+   "V1": [
+    6,
+    0
+   ],
+   "V2": [
+    12,
+    24
+   ],
+   "W1": [
+    12,
+    0
+   ],
+   "W2": [
+    0,
+    24
+   ]
+  }
  },
  "10010": {
   "A": [

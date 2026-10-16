@@ -112,7 +112,7 @@ def test_api_estado_e_resolve_compativeis(cads):
     assert c.resolve({}, {"KM1"}) == ("OK", {"KM1"})            # selo
     assert c.resolve({"S0": True}, {"KM1"}) == ("OK", set())
     assert c.resolve({"RT1": True, "S1": True}) == ("OK", set())
-    assert set(c.entradas) == {"S0", "S1", "RT1"} and set(c.bobinas) == {"KM1"}
+    assert set(c.entradas) == {"S0", "S1", "RT1", "Q1"} and set(c.bobinas) == {"KM1"}   # Q1: disjuntor
     assert set(c.lampadas) == {"H1"}
     assert isinstance(c.supply, int) and isinstance(c.ret, int)   # cad_simulate serializa em JSON
 
@@ -169,7 +169,8 @@ def test_lampadas_nos_exemplos_sao_validadas(cads):
         com = [t for t in spec["testes"] if t.get("esperado_lampadas") is not None]
         assert com, f"{nome}: lampadas sem esperado_lampadas"
         for t in com:
-            assert c.estado(t["entradas"], t.get("inicial"))["lampadas"] == sorted(t["esperado_lampadas"]), (nome, t["nome"])
+            _, e = ns.executar_caso(c, t)          # aceita `avanca`/`passos` (temporizadores)
+            assert e["lampadas"] == sorted(t["esperado_lampadas"]), (nome, t["nome"])
 
 
 def test_chaves_invalidas_sao_apontadas(cads):
@@ -219,17 +220,19 @@ def test_curto_na_potencia_por_inversao_de_fase(cads):
     papeis = ns.carregar_papeis()
     papeis["7001"] = {"papel": "polos", "modo": "FECHADO"}               # NF do intertravamento vira fio
     c = ns.Circuito(cads["reversao"], papeis=papeis)
-    e = c.estado({"S1": True, "S2": True})
+    e = c.estado(c.ligar_protecoes({"S1": True, "S2": True}))     # disjuntor Q1 comeca ABERTO: ligue-o
     assert set(e["bobinas"]) == {"KM1", "KM2"}
     assert e["status"] == "CURTO" and e["curtos"], e
+    assert c.estado({"S1": True, "S2": True})["status"] == "OK"   # com Q1 aberto nao ha tensao na potencia
     normal = ns.Circuito(cads["reversao"])
-    assert normal.estado({"S1": True}, ["KM1"])["status"] == "OK"
+    assert normal.estado(normal.ligar_protecoes({"S1": True}), ["KM1"])["status"] == "OK"
 
 
 def test_reversao_normal_nao_acusa_curto(cads):
     c = ns.Circuito(cads["reversao"])
     for ent, ini in itertools.product(({}, {"S1": True}, {"S2": True}, {"S0": True}), ([], ["KM1"], ["KM2"])):
         assert c.estado(ent, ini)["curtos"] == [], (ent, ini)
+        assert c.estado(c.ligar_protecoes(ent), ini)["curtos"] == [], (ent, ini)   # com Q1 fechado tambem
 
 
 # --- temporizadores (ON/OFF-delay) por passos de tempo ------------------------------------------

@@ -1,0 +1,57 @@
+{
+  "titulo": "PARTIDA COM RETARDO NA ENERGIZACAO",
+  "descricao": "S1 liga o temporizador -KT1 (9004, ON-delay 5 s, selo pelo proprio KT1). So 5 s depois o contato temporizado NA de KT1 energiza o contator -KM1 e a lampada -H1. S0 e o termico desligam tudo.",
+  "layout": {
+    "trilhos": {"L1": 14, "L2": 20, "L3": 26, "N": 282, "x0": 25, "x1": 395, "PE": 291},
+    "fontes": [
+      {"id": "X1", "classe": "3007", "rotulo": "-X",
+       "pinos": {"L1": "L1", "L2": "L2", "L3": "L3", "N": "N", "PE": "PE"}}
+    ],
+    "comando": [
+      {"id": "c1", "de": "L1", "para": "N",
+       "rungs": [
+         {"serie": [
+            ["RT1", "8017", "-RT1"],
+            ["S0", "8001", "-S0"],
+            {"paralelo": [["S1", "8000", "-S1"], ["selo1", "7000", "-KT1"]]},
+            ["KT1", "9004", "-KT1", {"tempo": 5, "unidade": "0"}]]},
+         {"serie": [
+            ["KT1a", "7004", "-KT1"],
+            {"paralelo": [["KM1", "9000", "-KM1"], ["H1", "9008", "-H1"]]}]}
+       ]}
+    ],
+    "potencia": [
+      {"id": "m1", "fases": ["L1", "L2", "L3"], "neutro": "N", "pe": "PE",
+       "colunas": [["Q1", "6009", "-Q1"], ["F1", "6007", "-RT1"], ["KM1p", "2001", "-KM1"], ["M1", "1000", "-M1"]]}
+    ]
+  },
+  "testes": [
+    {"nome": "repouso desligado", "entradas": {}, "esperado": [], "esperado_lampadas": [], "status": "OK"},
+    {"nome": "S1 inicia a contagem: nada liga ainda", "entradas": {"S1": true}, "avanca": 0,
+     "esperado": [], "esperado_lampadas": [], "esperado_temporizadores": [], "status": "OK"},
+    {"nome": "ainda nao deu 5 s", "entradas": {"S1": true}, "avanca": 4.9,
+     "esperado": [], "esperado_lampadas": [], "esperado_temporizadores": [], "status": "OK"},
+    {"nome": "apos 5 s liga KM1 e H1", "entradas": {"S1": true}, "avanca": 5,
+     "esperado": ["KM1"], "esperado_lampadas": ["H1"], "esperado_temporizadores": ["KT1"], "status": "OK"},
+    {"nome": "solta S1: selo mantem a contagem e liga no fim",
+     "passos": [{"entradas": {"S1": true}, "avanca": 0.5, "esperado": [], "esperado_lampadas": []},
+                {"entradas": {}, "avanca": 4, "esperado": [], "esperado_lampadas": []},
+                {"entradas": {}, "avanca": 0.5, "esperado": ["KM1"], "esperado_lampadas": ["H1"]}],
+     "esperado": ["KM1"], "esperado_lampadas": ["H1"], "esperado_temporizadores": ["KT1"], "status": "OK"},
+    {"nome": "S0 antes dos 5 s cancela",
+     "passos": [{"entradas": {"S1": true}, "avanca": 2},
+                {"entradas": {"S0": true}, "avanca": 0},
+                {"entradas": {}, "avanca": 10}],
+     "esperado": [], "esperado_lampadas": [], "esperado_temporizadores": [], "status": "OK"},
+    {"nome": "S0 apos ligar desliga tudo",
+     "passos": [{"entradas": {"S1": true}, "avanca": 6, "esperado": ["KM1"]},
+                {"entradas": {"S0": true}, "avanca": 0}],
+     "esperado": [], "esperado_lampadas": [], "esperado_temporizadores": [], "status": "OK"},
+    {"nome": "RT1 disparado impede a partida", "entradas": {"RT1": true, "S1": true}, "avanca": 10,
+     "esperado": [], "esperado_lampadas": [], "status": "OK"},
+    {"nome": "RT1 disparado derruba KM1",
+     "passos": [{"entradas": {"S1": true}, "avanca": 6, "esperado": ["KM1"]},
+                {"entradas": {"RT1": true}, "avanca": 0}],
+     "esperado": [], "esperado_lampadas": [], "status": "OK"}
+  ]
+}
