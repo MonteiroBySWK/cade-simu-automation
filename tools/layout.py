@@ -28,7 +28,17 @@ from pathlib import Path
 
 TOOLS = Path(__file__).resolve().parent
 PINS = json.loads((TOOLS / "symbol_pins.json").read_text())
-SHEET_X, SHEET_Y = 455, 295
+def _sheet():
+    """Limite superior util da folha (tools/sheet.json, medido no app: docs/folha.md).
+    So o MAXIMO e usado; os layouts partem do canto sup-esq ja validado visualmente."""
+    try:
+        d = json.loads((TOOLS / "sheet.json").read_text())
+        return int(d["x_seguro_max"]), int(d["y_seguro_max"])
+    except Exception:
+        return 455, 295       # fallback conservador
+
+
+SHEET_X, SHEET_Y = _sheet()
 GAP = 20          # folga entre colunas (dx = largura_max + GAP)
 PHASE_DX = 6      # distancia entre fases (pinos 1-3-5)
 ROW_PITCH = 60    # distancia entre ramos (fileiras) de comando
