@@ -469,13 +469,11 @@ def cad_build(titulo: str, simbolos_json: str, fios_json: str = "[]", out_path: 
     if auto_net:
         _assign_nets(ents)
     avisos = _shorts(ents)
-    base = (ROOT / "corpus" / "Arranque_1.cad").read_bytes().decode("latin1")
-    import re
-    m = re.search(r"#(?=\*\d+\*\d+#)", base)
-    hdr = base[:m.start() + 1] if m else header
-    body = "#".join(f"*{i+1}*{e['id']}#" + "#".join(e["labels"]) + "#*" + "*".join(e["nums"])
+    # A entidade 0 vive colada ao "CADe_SIMU" (seq 0). NAO reaproveite a do doador: ela era
+    # uma fonte 3004 solta em (93,45) em todo arquivo gerado (lixo). A 1a entidade nossa e a 0.
+    body = "#".join(f"*{i}*{e['id']}#" + "#".join(e["labels"]) + "#*" + "*".join(e["nums"])
                     for i, e in enumerate(ents))
-    cad = hdr + body + "#" + footer
+    cad = "CADe_SIMU" + body + "#" + footer
     Path(out_path).write_bytes(cad.encode("latin1"))
     code, out = _run("validate", out_path)
     msg = (f"{len(ents)} entidades -> {out_path} | {out}" if code == 0

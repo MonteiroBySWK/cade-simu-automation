@@ -11,6 +11,17 @@ def split_entities(d):
     ents = re.split(r'#(?=\*\d+\*\d+#)', body)
     return header, ents, footer
 
+def split_all(d):
+    """Como split_entities, mas a entidade 0 (serializada colada ao 'CADe_SIMU*') entra em ents.
+    A entidade 0 e uma entidade comum (seq 0): no acervo e o 1o simbolo/fonte do desenho."""
+    header, ents, footer = split_entities(d)
+    m = re.match(r'CADe_SIMU\*(\d+\*\d+#.*)#$', header, re.S)
+    if m:
+        ents = ['*' + m.group(1)] + ents
+        header = 'CADe_SIMU*'
+    return header, ents, footer
+
+
 def parse_ent(e):
     m = re.match(r'\*(\d+)\*(\d+)#(.*)$', e, re.S)
     if not m: return None

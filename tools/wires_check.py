@@ -11,7 +11,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from dissect import parse_ent, split_entities  # noqa: E402
+from dissect import parse_ent, split_all as split_entities  # noqa: E402
 
 WIRE = {"4000", "4018", "4009", "4001", "4010"}
 PINS = json.loads((Path(__file__).resolve().parent / "symbol_pins.json").read_text())
