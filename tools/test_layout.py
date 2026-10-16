@@ -80,6 +80,21 @@ def test_gate_partida_direta_1_motor():
         assert frc == 0 and "FIOS: ok" in fo, fo
 
 
+def test_geo_check_pega_curto_de_fase():
+    import geo_check
+    # PE da fonte ligado ao trilho N => estampas 'N' e 'P' na mesma net = CURTO
+    base = json.loads((TOOLS / "examples" / "partida_direta.layout.json").read_text())
+    base["layout"]["fontes"][0]["pinos"]["PE"] = "N"
+    with tempfile.TemporaryDirectory() as t:
+        f = Path(t) / "x.layout.json"; f.write_text(json.dumps(base))
+        out = Path(t) / "o.cad"
+        r = subprocess.run([sys.executable, str(TOOLS / "build_spec.py"), str(f), str(out)],
+                           capture_output=True, text=True, timeout=600)
+        curtos, _ = geo_check.analisar(str(out))
+        assert curtos and "N" in curtos[0] and "P" in curtos[0], curtos
+        assert r.returncode == 1 and "REPROVADO" in r.stdout
+
+
 def test_gate_reprova_sem_testes_e_com_teste_errado():
     import json
     base = json.loads((TOOLS / "examples" / "partida_direta.layout.json").read_text())

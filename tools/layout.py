@@ -16,6 +16,11 @@ Forma da entrada (ver docs/dsl-layout.md):
    "potencia":[{"id":"m1","fases":["L1","L2","L3"],"neutro":"N",
                 "colunas":[["Q1","6009","-Q1"], ..., ["M1","1000","-M1"]]}],
    "terra": {"id":"PE","classe":"3002","rotulo":"TERRA","neutro":"N"}}
+
+Fonte unica multi-terminal (recomendado; estampa as fases certas no app):
+   "fontes": [{"id":"X1","classe":"3007","rotulo":"-X",
+               "pinos":{"L1":"L1","L2":"L2","L3":"L3","N":"N","PE":"PE"}}]
+   + trilho "PE" e "pe":"PE" em cada grupo de potencia (PE do motor != neutro).
 """
 import json
 import sys
@@ -99,10 +104,14 @@ def compilar(spec):
     rails = {k: int(v) for k, v in tr.items()}
     for nome, y in rails.items():
         L.rails.append({"nome": nome, "y": y, "x0": x0, "x1": x1})
-    # trilho de baixo = maior y; cima = demais
-    y_cima = max(v for k, v in rails.items() if v < max(rails.values())) \
-        if len(rails) > 1 else min(rails.values())
-    y_baixo = max(rails.values())
+    # trilhos de cima (fases) = metade superior; de baixo (N, PE) = metade inferior.
+    # y_baixo = trilho "para" do comando (neutro), senao o mais alto da metade inferior.
+    meio = (min(rails.values()) + max(rails.values())) / 2
+    cima = [v for v in rails.values() if v <= meio]
+    baixo = [v for v in rails.values() if v > meio]
+    y_cima = max(cima) if cima else min(rails.values())
+    para = [b.get("para") for b in spec.get("comando", []) if b.get("para") in rails]
+    y_baixo = rails[para[0]] if para else (min(baixo) if baixo else max(rails.values()))
     top0 = y_cima + 14                      # primeira linha util sob os trilhos
 
     cursor = x0 + 5                         # proximo x livre (esquerda -> direita)
@@ -110,6 +119,14 @@ def compilar(spec):
     # ---- fontes: coladas aos trilhos, em escada na faixa da esquerda ----
     fx_max = cursor
     for f in spec.get("fontes", []):
+        if f.get("pinos"):
+            # fonte unica multi-terminal (ex.: 3007 = L1,L2,L3,N,PE): pino -> trilho
+            cl = f.get("classe", "3007")
+            L.sym(f["id"], cl, f.get("rotulo", "-X"), cursor, top0)
+            for pino, trilho in f["pinos"].items():
+                L.con((f["id"], pino), (trilho, "rail"))
+            fx_max = max(fx_max, cursor + _width(cl))
+            continue
         fases = f.get("fases") or []
         for i, fase in enumerate(fases):
             sid = f["id"] if len(fases) == 1 else f"{f['id']}_{fase}"
@@ -259,7 +276,7 @@ def _potencia(L, pw, x, y0):
                 L.con((prev[0], prev[1][i]), (sid, top[i]))
         prev = (sid, bot) if bot else None
         if pe:
-            L.con((sid, pe), (neutro, "rail"))
+            L.con((sid, pe), (pw.get("pe", neutro), "rail"))
         y += dim(cl)[1] + 20
         if not bot:
             break
