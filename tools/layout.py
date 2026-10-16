@@ -254,33 +254,118 @@ def _tops_bots(classe):
     return top, bot, None
 
 
+def _estagio(c):
+    """item de coluna -> lista de membros [(id, classe, rotulo, ordem|None)].
+    Formas: [id,cls,rot] | [id,cls,rot,{"ordem":[fases]}] | {"paralelo":[item,...]}"""
+    if isinstance(c, dict):
+        out = []
+        for m in c["paralelo"]:
+            out += _estagio(m)
+        return out
+    sid, cl, rot = _t(c)
+    ordem = None
+    if len(c) > 3 and isinstance(c[3], dict):
+        ordem = c[3].get("ordem")
+    return [(sid, cl, rot, ordem)]
+
+
 def _potencia(L, pw, x, y0):
+    """Grupo de potencia: estagios em cascata; um estagio pode ter varios contatores
+    em PARALELO (ex.: reversao). Cada membro pode permutar as fases de entrada
+    (`ordem`: nomes de fase na ordem dos pinos 1,3,5). Contatores em paralelo sao
+    unidos por trilhos auxiliares (entrada e saida) — fios so se encontram em
+    extremo, nunca em T sem junta."""
     fases = pw["fases"]
     neutro = pw.get("neutro", "N")
-    cols = [_t(c) for c in pw["colunas"]]
+    estagios = [_estagio(c) for c in pw["colunas"]]
     nf = len(fases)
-    # mapeia fase i -> indice de pino (1,3,5 / U1,V1,W1) pelos 3 primeiros
-    wgrupo = max(max(_width(c), PHASE_DX * (nf - 1) + 1) for _, c, _ in cols)
+    pid = pw.get("id", "P")
+    src = [(f, "rail") for f in fases]       # fonte de cada fase: pino (id,pino) ou trilho
+    src_y = None                              # y do pino de saida do estagio anterior
+    src_direto = False                        # src sao pinos de UM simbolo (id,pino)
     y = y0
-    prev = None
-    ys = []
-    for sid, cl, rot in cols:
-        top, bot, pe = _tops_bots(cl)
-        if len(top) < nf:
-            raise ValueError(f"{sid} ({cl}) tem {len(top)} pinos de topo < {nf} fases")
-        L.sym(sid, cl, rot, x, y)
-        for i, fase in enumerate(fases):
-            if prev is None:
-                L.con((fase, "rail"), (sid, top[i]))
-            else:
-                L.con((prev[0], prev[1][i]), (sid, top[i]))
-        prev = (sid, bot) if bot else None
-        if pe:
-            L.con((sid, pe), (pw.get("pe", neutro), "rail"))
-        y += dim(cl)[1] + 20
-        if not bot:
-            break
-    return x + wgrupo
+    xend = x
+
+    def mk_rails(prefixo, ys, xs_por_fase):
+        nomes = []
+        for i, yy in enumerate(ys):
+            nm = f"{pid}_{prefixo}{i + 1}"
+            xs = xs_por_fase[i]
+            L.rails.append({"nome": nm, "y": yy, "x0": min(xs), "x1": max(xs)})
+            nomes.append(nm)
+        return nomes
+
+    for k, est in enumerate(estagios):
+        n = len(est)
+        # --- posicao dos membros ---
+        xs_m = []
+        xc = x
+        for sid, cl, rot, _o in est:
+            xs_m.append(xc)
+            xc += max(_width(cl), PHASE_DX * (nf - 1) + 1) + GAP
+        # --- trilhos de entrada se >1 membro vem de pinos de um simbolo ---
+        if n > 1 and src_direto:
+            ry = [src_y + 11 + 6 * i for i in range(nf)]
+            # x de cada pino de origem
+            pxs = [p for p in _src_x]
+            tops = {}
+            for mi, (sid, cl, rot, ordem) in enumerate(est):
+                top, _, _ = _tops_bots(cl)
+                for pi in range(nf):
+                    fi = fases.index(ordem[pi]) if ordem else pi
+                    tops.setdefault(fi, []).append(xs_m[mi] + pin_off(cl, top[pi])[0])
+            xs = [[pxs[i]] + tops.get(i, []) for i in range(nf)]
+            nomes = mk_rails("e", ry, xs)
+            for i in range(nf):
+                L.con((src[i][0], src[i][1]), (nomes[i], "rail"))
+            src = [(nm, "rail") for nm in nomes]
+            src_direto = False
+            y = ry[-1] + 10
+        # --- coloca membros ---
+        ult_bots = []
+        for mi, (sid, cl, rot, ordem) in enumerate(est):
+            top, bot, pe = _tops_bots(cl)
+            if len(top) < nf:
+                raise ValueError(f"{sid} ({cl}) tem {len(top)} pinos de topo < {nf} fases")
+            L.sym(sid, cl, rot, xs_m[mi], y)
+            for pi in range(nf):
+                fi = fases.index(ordem[pi]) if ordem else pi
+                s = src[fi]
+                L.con((s[0], s[1]), (sid, top[pi]))
+            if pe:
+                L.con((sid, pe), (pw.get("pe", neutro), "rail"))
+            ult_bots.append((sid, cl, bot))
+            xend = max(xend, xs_m[mi] + max(_width(cl), PHASE_DX * (nf - 1) + 1))
+        h = max(dim(cl)[1] for _, cl, _, _ in est)
+        bots = ult_bots[0][2]
+        if not bots:
+            break                              # motor: fim da cascata
+        # --- saida do estagio ---
+        yb = y + pin_off(est[0][1], bots[0])[1]
+        if n == 1:
+            sid = est[0][0]
+            src = [(sid, bots[i]) for i in range(nf)]
+            src_direto = True
+            _src_x[:] = [xs_m[0] + pin_off(est[0][1], bots[i])[0] for i in range(nf)]
+            src_y = yb
+            y += h + 20
+        else:
+            ry = [yb + 11 + 6 * i for i in range(nf)]
+            xs = [[xs_m[mi] + pin_off(cl, b[i])[0] for mi, (_s, cl, b) in enumerate(ult_bots)]
+                  for i in range(nf)]
+            # o proximo estagio (alinhado ao 1o membro) tambem toca o trilho
+            xs = [v + [xs_m[0] + PHASE_DX * i] for i, v in enumerate(xs)]
+            nomes = mk_rails("s", ry, xs)
+            for mi, (sid, cl, b) in enumerate(ult_bots):
+                for i in range(nf):
+                    L.con((sid, b[i]), (nomes[i], "rail"))
+            src = [(nm, "rail") for nm in nomes]
+            src_direto = False
+            y = ry[-1] + 10
+    return xend
+
+
+_src_x = []
 
 
 def _check_folha(spec):

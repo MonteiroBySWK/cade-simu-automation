@@ -86,7 +86,27 @@ Diferenças em relação à proposta acima:
 - O motor levanta `ValueError` se algo sair da folha (x>455, y>295) ou se dois
   símbolos se sobrepuserem.
 
+### Contatores em paralelo e inversao de fases (reversao)
+Em `potencia[].colunas`, um item pode ser:
+- `[id, classe, rotulo]` — simbolo simples (como antes);
+- `[id, classe, rotulo, {"ordem": ["L3","L2","L1"]}]` — o pino 1/3/5 (ou U1/V1/W1) recebe
+  as fases nessa ordem (nomes de `fases`); permite inverter 2 fases;
+- `{"paralelo": [item, item, ...]}` — varios contatores lado a lado, no mesmo estagio,
+  ligados a mesma entrada e a mesma saida.
+
+O motor cria **trilhos auxiliares** por fase (`<id>_e1..3` na entrada, `<id>_s1..3` na saida,
+nomes reservados) para unir os membros: fio so se encontra com fio por extremo (regra de
+geometria), entao nao ha T sem junta nem cruzamento ambiguo. O estagio seguinte (motor) fica
+alinhado ao 1o membro. Exemplo: `tools/examples/reversao.layout.json` (KM1 direto, KM2 com
+`ordem` L3,L2,L1; intertravamento por NF cruzado e selo no `comando`; 13 testes).
+Verificado por netlist geometrico (`geo_check.analisar(path, redes)`) e no app (Wine):
+S1 energiza KM1 (selo mantem), S0 desliga, S2 energiza KM2, S1 com KM2 ligado nao liga KM1.
+Caixa do circuito: ~x 288, y 215 (cabe em 455x295). No app, fios nao mudam de cor por fase;
+a conferencia de fases e pela netlist (`test_reversao_fases_na_geometria`).
+
 ### Limitações / pendências
+- `paralelo` so em `potencia` (um nivel); `ordem` vale para qualquer estagio. Dois estagios
+  `paralelo` consecutivos reaproveitam os trilhos de saida como entrada.
 - Um único nível de ramos paralelos; sem ramos aninhados nem temporizadores.
 - Muitos ramos (>3) ou série longa estouram a folha (erro explícito, sem quebra
   automática em colunas).

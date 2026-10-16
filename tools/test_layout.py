@@ -11,7 +11,7 @@ sys.path.insert(0, str(TOOLS))
 import layout  # noqa: E402
 
 EX = TOOLS / "examples"
-CASOS = ["intercalada.layout.json", "partida_direta.layout.json"]
+CASOS = ["intercalada.layout.json", "partida_direta.layout.json", "reversao.layout.json"]
 
 
 def _low(nome):
@@ -78,6 +78,64 @@ def test_gate_partida_direta_1_motor():
         assert "GATE: OK" in so and rc == 0, so[-600:]
         assert "RESULTADO: 6/6 OK" in so
         assert frc == 0 and "FIOS: ok" in fo, fo
+
+
+def test_reversao_layout_paralelo_e_inversao_de_fases():
+    low = _low("reversao.layout.json")
+    pos = {s["id"]: s for s in low["simbolos"]}
+    assert pos["KM1p"]["y"] == pos["KM2p"]["y"] and pos["KM2p"]["x"] > pos["KM1p"]["x"]
+    assert pos["M1"]["x"] == pos["KM1p"]["x"] and pos["M1"]["y"] > pos["KM1p"]["y"]
+    rails = {r["nome"] for r in low["rails"]}
+    assert {"m1_e1", "m1_e2", "m1_e3", "m1_s1", "m1_s2", "m1_s3"} <= rails
+    cons = {(tuple(c["de"]), tuple(c["para"])) for c in low["conexoes"]}
+    # KM1: 1,3,5 <- fases em ordem; KM2: inverte L1 e L3 (1<-L3, 5<-L1)
+    assert (("m1_e1", "rail"), ("KM1p", "1")) in cons
+    assert (("m1_e3", "rail"), ("KM1p", "5")) in cons
+    assert (("m1_e3", "rail"), ("KM2p", "1")) in cons
+    assert (("m1_e2", "rail"), ("KM2p", "3")) in cons
+    assert (("m1_e1", "rail"), ("KM2p", "5")) in cons
+    # ambos os contatores alimentam o MESMO motor (via trilhos de saida)
+    assert (("KM1p", "2"), ("m1_s1", "rail")) in cons
+    assert (("KM2p", "2"), ("m1_s1", "rail")) in cons
+    assert (("m1_s1", "rail"), ("M1", "U1")) in cons
+
+
+def test_gate_reversao():
+    with tempfile.TemporaryDirectory() as t:
+        so, fo, rc, frc = _gate("reversao.layout.json", t)
+        assert "GATE: OK" in so and rc == 0, so[-600:]
+        assert "RESULTADO: 13/13 OK" in so
+        assert frc == 0 and "FIOS: ok" in fo, fo
+
+
+def test_reversao_fases_na_geometria():
+    """Netlist por geometria: KM1 liga L1,L2,L3 a 1,3,5; KM2 inverte L1<->L3;
+    saidas 2/4/6 dos dois contatores caem nos mesmos U1/V1/W1 do motor."""
+    import geo_check
+    with tempfile.TemporaryDirectory() as t:
+        out = Path(t) / "r.cad"
+        r = subprocess.run([sys.executable, str(TOOLS / "build_spec.py"),
+                            str(EX / "reversao.layout.json"), str(out)],
+                           capture_output=True, text=True, timeout=600)
+        assert r.returncode == 0, r.stdout[-400:]
+        redes = {}
+        geo_check.analisar(str(out), redes)
+    R = lambda rot, cid, pino: redes[(rot, cid, pino)]
+    X = lambda p: R("-X", "3007", p)
+    K1 = lambda p: R("-KM1", "2001", "p" + str(p))   # p1..p3 = 1,3,5 ; p4..p6 = 2,4,6
+    K2 = lambda p: R("-KM2", "2001", "p" + str(p))
+    M = lambda p: R("-M1", "1000", p)               # p1..p3 = U1,V1,W1
+    F = lambda p: R("-F1", "6007", p)               # p4..p6 = saidas 2,4,6 do rele termico
+    Q = lambda p: R("-Q1", "6009", p)
+    for i, f in enumerate(("L1", "L2", "L3"), 1):
+        assert X(f) == Q(f"p{i}")                   # fonte -> disjuntor
+    for i in (1, 2, 3):
+        assert F(f"p{i + 3}") == K1(i)              # KM1: ordem direta
+    assert F("p4") == K2(3) and F("p5") == K2(2) and F("p6") == K2(1)   # KM2: L1<->L3
+    for top, bot in ((1, 4), (2, 5), (3, 6)):
+        assert K1(bot) == K2(bot) == M(f"p{top}")
+    assert len({M("p1"), M("p2"), M("p3")}) == 3
+    assert X("PE") == M("p4")
 
 
 def test_geo_check_pega_curto_de_fase():
