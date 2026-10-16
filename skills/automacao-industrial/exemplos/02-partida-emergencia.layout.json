@@ -112,7 +112,8 @@
       "nome": "repouso desligado",
       "entradas": {},
       "status": "OK",
-      "esperado": []
+      "esperado": [],
+      "esperado_lampadas": []
     },
     {
       "nome": "S1 liga KM1",
@@ -122,6 +123,9 @@
       "status": "OK",
       "esperado": [
         "KM1"
+      ],
+      "esperado_lampadas": [
+        "H1"
       ]
     },
     {
@@ -130,6 +134,9 @@
       "status": "OK",
       "esperado": [
         "KM1"
+      ],
+      "esperado_lampadas": [
+        "H1"
       ],
       "inicial": [
         "KM1"
@@ -142,6 +149,7 @@
       },
       "status": "OK",
       "esperado": [],
+      "esperado_lampadas": [],
       "inicial": [
         "KM1"
       ]
@@ -153,6 +161,7 @@
       },
       "status": "OK",
       "esperado": [],
+      "esperado_lampadas": [],
       "inicial": [
         "KM1"
       ]
@@ -164,13 +173,15 @@
         "S1": true
       },
       "status": "OK",
-      "esperado": []
+      "esperado": [],
+      "esperado_lampadas": []
     },
     {
       "nome": "soltar emergencia nao religa",
       "entradas": {},
       "status": "OK",
-      "esperado": []
+      "esperado": [],
+      "esperado_lampadas": []
     },
     {
       "nome": "RT1 aberto bloqueia",
@@ -179,7 +190,8 @@
         "S1": true
       },
       "status": "OK",
-      "esperado": []
+      "esperado": [],
+      "esperado_lampadas": []
     }
   ],
   "descricao": "Partida direta com botao de EMERGENCIA (NF) em serie, primeiro da cadeia, antes do termico e do S0."

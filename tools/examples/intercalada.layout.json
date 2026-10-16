@@ -180,6 +180,7 @@
       "nome": "repouso = tudo desligado",
       "entradas": {},
       "esperado": [],
+      "esperado_lampadas": [],
       "status": "OK"
     },
     {
@@ -189,6 +190,9 @@
       },
       "esperado": [
         "KM1"
+      ],
+      "esperado_lampadas": [
+        "H1"
       ],
       "status": "OK"
     },
@@ -200,6 +204,9 @@
       "esperado": [
         "KM2"
       ],
+      "esperado_lampadas": [
+        "H2"
+      ],
       "status": "OK"
     },
     {
@@ -207,6 +214,9 @@
       "entradas": {},
       "esperado": [
         "KM1"
+      ],
+      "esperado_lampadas": [
+        "H1"
       ],
       "status": "OK",
       "inicial": [
@@ -218,6 +228,9 @@
       "entradas": {},
       "esperado": [
         "KM2"
+      ],
+      "esperado_lampadas": [
+        "H2"
       ],
       "status": "OK",
       "inicial": [
@@ -232,6 +245,9 @@
       "esperado": [
         "KM1"
       ],
+      "esperado_lampadas": [
+        "H1"
+      ],
       "status": "OK",
       "inicial": [
         "KM1"
@@ -245,6 +261,9 @@
       "esperado": [
         "KM2"
       ],
+      "esperado_lampadas": [
+        "H2"
+      ],
       "status": "OK",
       "inicial": [
         "KM2"
@@ -256,6 +275,7 @@
         "S0": true
       },
       "esperado": [],
+      "esperado_lampadas": [],
       "status": "OK",
       "inicial": [
         "KM1"
@@ -267,6 +287,7 @@
         "S0": true
       },
       "esperado": [],
+      "esperado_lampadas": [],
       "status": "OK",
       "inicial": [
         "KM2"
@@ -276,6 +297,7 @@
       "nome": "sem auto-religamento",
       "entradas": {},
       "esperado": [],
+      "esperado_lampadas": [],
       "status": "OK"
     },
     {
@@ -285,6 +307,7 @@
         "S1": true
       },
       "esperado": [],
+      "esperado_lampadas": [],
       "status": "OK"
     },
     {
@@ -294,6 +317,7 @@
         "S1": true
       },
       "esperado": [],
+      "esperado_lampadas": [],
       "status": "OK"
     },
     {
@@ -303,6 +327,7 @@
         "S2": true
       },
       "esperado": [],
+      "esperado_lampadas": [],
       "status": "OK"
     },
     {
@@ -312,6 +337,7 @@
         "S2": true
       },
       "esperado": [],
+      "esperado_lampadas": [],
       "status": "OK"
     },
     {

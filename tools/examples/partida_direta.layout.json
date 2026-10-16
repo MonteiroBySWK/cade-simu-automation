@@ -107,6 +107,7 @@
       "nome": "repouso desligado",
       "entradas": {},
       "esperado": [],
+      "esperado_lampadas": [],
       "status": "OK"
     },
     {
@@ -116,6 +117,9 @@
       },
       "esperado": [
         "KM1"
+      ],
+      "esperado_lampadas": [
+        "H1"
       ],
       "status": "OK"
     },
@@ -128,6 +132,9 @@
       "esperado": [
         "KM1"
       ],
+      "esperado_lampadas": [
+        "H1"
+      ],
       "status": "OK"
     },
     {
@@ -139,12 +146,14 @@
         "KM1"
       ],
       "esperado": [],
+      "esperado_lampadas": [],
       "status": "OK"
     },
     {
       "nome": "sem auto-religamento",
       "entradas": {},
       "esperado": [],
+      "esperado_lampadas": [],
       "status": "OK"
     },
     {
@@ -154,6 +163,7 @@
         "S1": true
       },
       "esperado": [],
+      "esperado_lampadas": [],
       "status": "OK"
     }
   ]

@@ -166,7 +166,8 @@
       "nome": "repouso desligado",
       "entradas": {},
       "status": "OK",
-      "esperado": []
+      "esperado": [],
+      "esperado_lampadas": []
     },
     {
       "nome": "S1 liga KM1",
@@ -176,6 +177,9 @@
       "status": "OK",
       "esperado": [
         "KM1"
+      ],
+      "esperado_lampadas": [
+        "H1"
       ]
     },
     {
@@ -186,6 +190,9 @@
       "status": "OK",
       "esperado": [
         "KM2"
+      ],
+      "esperado_lampadas": [
+        "H2"
       ]
     },
     {
@@ -198,6 +205,10 @@
       "esperado": [
         "KM1",
         "KM2"
+      ],
+      "esperado_lampadas": [
+        "H1",
+        "H2"
       ]
     },
     {
@@ -207,6 +218,10 @@
       "esperado": [
         "KM1",
         "KM2"
+      ],
+      "esperado_lampadas": [
+        "H1",
+        "H2"
       ],
       "inicial": [
         "KM1",
@@ -220,6 +235,7 @@
       },
       "status": "OK",
       "esperado": [],
+      "esperado_lampadas": [],
       "inicial": [
         "KM1",
         "KM2"
@@ -232,7 +248,8 @@
         "S1": true
       },
       "status": "OK",
-      "esperado": []
+      "esperado": [],
+      "esperado_lampadas": []
     },
     {
       "nome": "RT2 aberto bloqueia",
@@ -241,7 +258,8 @@
         "S2": true
       },
       "status": "OK",
-      "esperado": []
+      "esperado": [],
+      "esperado_lampadas": []
     }
   ],
   "descricao": "Dois motores com partida direta cada, SEM intertravamento (podem rodar juntos)."
