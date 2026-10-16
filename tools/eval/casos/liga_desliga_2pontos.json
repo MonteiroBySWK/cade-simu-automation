@@ -1,0 +1,164 @@
+{
+  "id": "liga_desliga_2pontos",
+  "titulo": "Liga/desliga de dois pontos para um motor",
+  "dificuldade": 2,
+  "enunciado": "Um motor trifasico -M1 (disjuntor -Q1, termico -F1, contator -KM1) deve poder ser ligado de dois lugares e desligado de dois lugares. Ligam: -S1 (local) e -S2 (painel remoto), ambos NA em paralelo entre si e com o contato auxiliar NA de -KM1 (selo). Desligam: -S0 (local) e -S3 (remoto), ambos NF em serie. O contato NF -RT1 do termico fica em serie no comando e a lampada -H1 sinaliza motor ligado (em paralelo com a bobina -KM1). Qualquer botao de desliga interrompe o comando; apertar um desliga impede a partida por qualquer liga.",
+  "restricoes": [
+    "Use UMA fonte trifasica multi-terminal (classe 3007) e trilho PE separado do neutro.",
+    "Ligue TODOS os terminais (nenhum pino solto; U1/V1/W1/PE do motor, 1-3-5/2-4-6 do contator).",
+    "Os rotulos dos simbolos devem ser exatamente os do enunciado (os testes usam esses nomes).",
+    "Os dois botoes de liga (-S1, -S2) e o selo ficam em PARALELO; os dois de desliga (-S0, -S3) e -RT1 em SERIE com eles.",
+    "A bobina -KM1 e a lampada -H1 ficam em paralelo, no fim do degrau, ligadas ao neutro."
+  ],
+  "obrigatorios": {
+    "classes": {
+      "1000": 1,
+      "2001": 1,
+      "6007": 1,
+      "7000": 1,
+      "8000": 2,
+      "8001": 2,
+      "8017": 1,
+      "9000": 1,
+      "9008": 1
+    },
+    "uma_de": [
+      [
+        "6009",
+        "6010"
+      ]
+    ],
+    "rotulos": [
+      "-F1",
+      "-H1",
+      "-KM1",
+      "-M1",
+      "-Q1",
+      "-RT1",
+      "-S0",
+      "-S1",
+      "-S2",
+      "-S3"
+    ]
+  },
+  "testes": [
+    {
+      "nome": "repouso desligado",
+      "entradas": {},
+      "esperado": [],
+      "status": "OK"
+    },
+    {
+      "nome": "S1 liga KM1",
+      "entradas": {
+        "S1": true
+      },
+      "esperado": [
+        "KM1"
+      ],
+      "esperado_lampadas": [
+        "H1"
+      ],
+      "status": "OK"
+    },
+    {
+      "nome": "S2 (2o ponto) liga KM1",
+      "entradas": {
+        "S2": true
+      },
+      "esperado": [
+        "KM1"
+      ],
+      "status": "OK"
+    },
+    {
+      "nome": "S1 e S2 juntos",
+      "entradas": {
+        "S1": true,
+        "S2": true
+      },
+      "esperado": [
+        "KM1"
+      ],
+      "status": "OK"
+    },
+    {
+      "nome": "selo mantem KM1",
+      "entradas": {},
+      "inicial": [
+        "KM1"
+      ],
+      "esperado": [
+        "KM1"
+      ],
+      "status": "OK"
+    },
+    {
+      "nome": "S0 desliga",
+      "entradas": {
+        "S0": true
+      },
+      "inicial": [
+        "KM1"
+      ],
+      "esperado": [],
+      "status": "OK"
+    },
+    {
+      "nome": "S3 (2o ponto) desliga",
+      "entradas": {
+        "S3": true
+      },
+      "inicial": [
+        "KM1"
+      ],
+      "esperado": [],
+      "status": "OK"
+    },
+    {
+      "nome": "S0 pressionado impede ligar",
+      "entradas": {
+        "S0": true,
+        "S1": true
+      },
+      "esperado": [],
+      "status": "OK"
+    },
+    {
+      "nome": "S3 pressionado impede ligar por S2",
+      "entradas": {
+        "S3": true,
+        "S2": true
+      },
+      "esperado": [],
+      "status": "OK"
+    },
+    {
+      "nome": "sem auto-religamento",
+      "entradas": {},
+      "esperado": [],
+      "status": "OK"
+    },
+    {
+      "nome": "RT1 aberto bloqueia a partida",
+      "entradas": {
+        "RT1": true,
+        "S1": true
+      },
+      "esperado": [],
+      "status": "OK"
+    },
+    {
+      "nome": "RT1 aberto derruba KM1",
+      "entradas": {
+        "RT1": true
+      },
+      "inicial": [
+        "KM1"
+      ],
+      "esperado": [],
+      "status": "OK"
+    }
+  ],
+  "golden": "liga_desliga_2pontos"
+}

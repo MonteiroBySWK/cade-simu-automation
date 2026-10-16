@@ -1,0 +1,159 @@
+{
+  "id": "tres_degraus_lampadas",
+  "titulo": "Tres degraus independentes com lampadas (monofasico)",
+  "dificuldade": 2,
+  "enunciado": "Em um circuito monofasico (fonte L-N, classe 3003) ha tres degraus independentes entre o mesmo par de trilhos L1 e N. Degrau 1: -S0 (NF) em serie com -S1 (NA) em paralelo com o selo NA de -KM1; carga: bobina -KM1 em paralelo com a lampada -H1. Degrau 2: -S3 (NF) em serie com -S2 (NA) em paralelo com o selo NA de -KM2; carga: bobina -KM2 em paralelo com a lampada -H2. Degrau 3: -S4 (NA) sem selo, que energiza a bobina -KM3 em paralelo com a lampada -H3 apenas enquanto estiver pressionado. Os degraus nao interferem entre si.",
+  "restricoes": [
+    "Use fonte monofasica 3003 (L e N), com trilhos L1 e N (nao ha PE nem potencia neste circuito).",
+    "Ligue TODOS os terminais (nenhum pino solto).",
+    "Os rotulos dos simbolos devem ser exatamente os do enunciado (os testes usam esses nomes).",
+    "Tres degraus sao tres redes independentes entre L1 e N (nenhum contato compartilhado entre eles).",
+    "Em cada degrau, bobina e lampada ficam em paralelo e ligadas ao neutro."
+  ],
+  "obrigatorios": {
+    "classes": {
+      "3003": 1,
+      "7000": 2,
+      "8000": 3,
+      "8001": 2,
+      "9000": 3,
+      "9008": 3
+    },
+    "rotulos": [
+      "-H1",
+      "-H2",
+      "-H3",
+      "-KM1",
+      "-KM2",
+      "-KM3",
+      "-S0",
+      "-S1",
+      "-S2",
+      "-S3",
+      "-S4"
+    ]
+  },
+  "testes": [
+    {
+      "nome": "repouso: tudo apagado",
+      "entradas": {},
+      "esperado": [],
+      "esperado_lampadas": [],
+      "status": "OK"
+    },
+    {
+      "nome": "S1 liga KM1 e H1",
+      "entradas": {
+        "S1": true
+      },
+      "esperado": [
+        "KM1"
+      ],
+      "esperado_lampadas": [
+        "H1"
+      ],
+      "status": "OK"
+    },
+    {
+      "nome": "S2 liga so o degrau 2",
+      "entradas": {
+        "S2": true
+      },
+      "esperado": [
+        "KM2"
+      ],
+      "esperado_lampadas": [
+        "H2"
+      ],
+      "status": "OK"
+    },
+    {
+      "nome": "S4 liga so o degrau 3",
+      "entradas": {
+        "S4": true
+      },
+      "esperado": [
+        "KM3"
+      ],
+      "esperado_lampadas": [
+        "H3"
+      ],
+      "status": "OK"
+    },
+    {
+      "nome": "degraus sao independentes",
+      "entradas": {
+        "S1": true,
+        "S4": true
+      },
+      "esperado": [
+        "KM1",
+        "KM3"
+      ],
+      "esperado_lampadas": [
+        "H1",
+        "H3"
+      ],
+      "status": "OK"
+    },
+    {
+      "nome": "selo 1 mantem KM1",
+      "entradas": {},
+      "inicial": [
+        "KM1"
+      ],
+      "esperado": [
+        "KM1"
+      ],
+      "esperado_lampadas": [
+        "H1"
+      ],
+      "status": "OK"
+    },
+    {
+      "nome": "S0 desliga so o degrau 1",
+      "entradas": {
+        "S0": true
+      },
+      "inicial": [
+        "KM1",
+        "KM2"
+      ],
+      "esperado": [
+        "KM2"
+      ],
+      "esperado_lampadas": [
+        "H2"
+      ],
+      "status": "OK"
+    },
+    {
+      "nome": "S3 desliga so o degrau 2",
+      "entradas": {
+        "S3": true
+      },
+      "inicial": [
+        "KM1",
+        "KM2"
+      ],
+      "esperado": [
+        "KM1"
+      ],
+      "esperado_lampadas": [
+        "H1"
+      ],
+      "status": "OK"
+    },
+    {
+      "nome": "degrau 3 nao tem selo",
+      "entradas": {},
+      "inicial": [
+        "KM3"
+      ],
+      "esperado": [],
+      "esperado_lampadas": [],
+      "status": "OK"
+    }
+  ],
+  "golden": "tres_degraus_lampadas"
+}

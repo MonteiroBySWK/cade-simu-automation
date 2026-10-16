@@ -1,0 +1,104 @@
+{
+  "id": "partida_trafo_comando",
+  "titulo": "Partida direta com comando alimentado por transformador",
+  "dificuldade": 3,
+  "enunciado": "Partida direta de um motor trifasico -M1 (disjuntor -Q1, termico -F1, contator -KM1). O comando nao usa os trilhos de potencia: ele fica em um par de trilhos proprio, C1 e C2, alimentado por um transformador -T1 cujo primario liga entre L1 e L2 e cujo secundario liga em C1/C2 (uma fonte monofasica -X2 tambem alimenta C1/C2 para a simulacao). No degrau C1->C2: -RT1 (NF) e -S0 (NF) em serie com -S1 (NA) em paralelo com o selo NA de -KM1; carga: bobina -KM1 em paralelo com a lampada -H1.",
+  "restricoes": [
+    "Use UMA fonte trifasica multi-terminal (classe 3007) e trilho PE separado do neutro na potencia.",
+    "Ligue TODOS os terminais (nenhum pino solto; os 4 do transformador, U1/V1/W1/PE do motor, 1-3-5/2-4-6 do contator).",
+    "Os rotulos dos simbolos devem ser exatamente os do enunciado (os testes usam esses nomes).",
+    "O comando fica entre C1 e C2 (par separado), NAO entre L1 e N.",
+    "O transformador (-T1, classe 3012) liga o primario em L1/L2 e o secundario em C1/C2."
+  ],
+  "obrigatorios": {
+    "classes": {
+      "1000": 1,
+      "2001": 1,
+      "3003": 1,
+      "3012": 1,
+      "6007": 1,
+      "7000": 1,
+      "8000": 1,
+      "8001": 1,
+      "8017": 1,
+      "9000": 1,
+      "9008": 1
+    },
+    "uma_de": [
+      [
+        "6009",
+        "6010"
+      ]
+    ],
+    "rotulos": [
+      "-F1",
+      "-H1",
+      "-KM1",
+      "-M1",
+      "-Q1",
+      "-RT1",
+      "-S0",
+      "-S1",
+      "-T1"
+    ]
+  },
+  "testes": [
+    {
+      "nome": "repouso desligado",
+      "entradas": {},
+      "esperado": [],
+      "status": "OK"
+    },
+    {
+      "nome": "S1 liga KM1",
+      "entradas": {
+        "S1": true
+      },
+      "esperado": [
+        "KM1"
+      ],
+      "esperado_lampadas": [
+        "H1"
+      ],
+      "status": "OK"
+    },
+    {
+      "nome": "selo mantem KM1",
+      "entradas": {},
+      "inicial": [
+        "KM1"
+      ],
+      "esperado": [
+        "KM1"
+      ],
+      "status": "OK"
+    },
+    {
+      "nome": "S0 desliga",
+      "entradas": {
+        "S0": true
+      },
+      "inicial": [
+        "KM1"
+      ],
+      "esperado": [],
+      "status": "OK"
+    },
+    {
+      "nome": "RT1 aberto bloqueia a partida",
+      "entradas": {
+        "RT1": true,
+        "S1": true
+      },
+      "esperado": [],
+      "status": "OK"
+    },
+    {
+      "nome": "sem auto-religamento",
+      "entradas": {},
+      "esperado": [],
+      "status": "OK"
+    }
+  ],
+  "golden": "partida_trafo_comando"
+}

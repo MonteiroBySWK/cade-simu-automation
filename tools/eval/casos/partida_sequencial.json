@@ -1,0 +1,223 @@
+{
+  "id": "partida_sequencial",
+  "titulo": "Partida sequencial de dois motores com desligamento em ordem",
+  "dificuldade": 3,
+  "enunciado": "Dois motores trifasicos -M1 e -M2, cada um com disjuntor (-Q1/-Q2), termico (-F1/-F2) e contator (-KM1/-KM2). Partida sequencial: -S1 liga -KM1; -S2 so liga -KM2 se -KM1 ja estiver ligado (contato NA de -KM1 em serie com -S2). Desligamento em ordem: -S3 (NF) desliga apenas -KM2; -S0 (NF) so desliga -KM1 se -KM2 estiver desligado, porque um contato NA de -KM2 fica em paralelo com -S0 e o contorna enquanto -KM2 estiver ligado. Cada motor tem selo proprio e uma lampada (-H1/-H2) em paralelo com a bobina; os termicos -RT1 e -RT2 ficam cada um no seu degrau. Se -RT1 atuar, os dois motores caem (porque -KM1 cai).",
+  "restricoes": [
+    "Use UMA fonte trifasica multi-terminal (classe 3007) e trilho PE separado do neutro.",
+    "Ligue TODOS os terminais (nenhum pino solto; U1/V1/W1/PE dos motores, 1-3-5/2-4-6 dos contatores).",
+    "Os rotulos dos simbolos devem ser exatamente os do enunciado (os testes usam esses nomes).",
+    "Dois grupos de potencia completos (3 fases por motor).",
+    "-S0 em paralelo com o NA de -KM2 (nao em serie): e isso que impede desligar -M1 antes de -M2.",
+    "Os dois degraus de comando ficam entre os mesmos trilhos L1 e N."
+  ],
+  "obrigatorios": {
+    "classes": {
+      "1000": 2,
+      "2001": 2,
+      "6007": 2,
+      "7000": 4,
+      "8000": 2,
+      "8001": 2,
+      "8017": 2,
+      "9000": 2,
+      "9008": 2
+    },
+    "uma_de": [
+      [
+        "6009",
+        "6010"
+      ]
+    ],
+    "rotulos": [
+      "-F1",
+      "-F2",
+      "-H1",
+      "-H2",
+      "-KM1",
+      "-KM2",
+      "-M1",
+      "-M2",
+      "-Q1",
+      "-Q2",
+      "-RT1",
+      "-RT2",
+      "-S0",
+      "-S1",
+      "-S2",
+      "-S3"
+    ]
+  },
+  "testes": [
+    {
+      "nome": "repouso desligado",
+      "entradas": {},
+      "esperado": [],
+      "status": "OK"
+    },
+    {
+      "nome": "S1 liga KM1",
+      "entradas": {
+        "S1": true
+      },
+      "esperado": [
+        "KM1"
+      ],
+      "esperado_lampadas": [
+        "H1"
+      ],
+      "status": "OK"
+    },
+    {
+      "nome": "S2 sozinho nao liga KM2",
+      "entradas": {
+        "S2": true
+      },
+      "esperado": [],
+      "status": "OK"
+    },
+    {
+      "nome": "S2 liga KM2 com KM1 ligado",
+      "entradas": {
+        "S2": true
+      },
+      "inicial": [
+        "KM1"
+      ],
+      "esperado": [
+        "KM1",
+        "KM2"
+      ],
+      "status": "OK"
+    },
+    {
+      "nome": "selos mantem os dois",
+      "entradas": {},
+      "inicial": [
+        "KM1",
+        "KM2"
+      ],
+      "esperado": [
+        "KM1",
+        "KM2"
+      ],
+      "status": "OK"
+    },
+    {
+      "nome": "S0 desliga KM1 se KM2 desligado",
+      "entradas": {
+        "S0": true
+      },
+      "inicial": [
+        "KM1"
+      ],
+      "esperado": [],
+      "status": "OK"
+    },
+    {
+      "nome": "S0 nao desliga KM1 com KM2 ligado",
+      "entradas": {
+        "S0": true
+      },
+      "inicial": [
+        "KM1",
+        "KM2"
+      ],
+      "esperado": [
+        "KM1",
+        "KM2"
+      ],
+      "status": "OK"
+    },
+    {
+      "nome": "S3 desliga so KM2",
+      "entradas": {
+        "S3": true
+      },
+      "inicial": [
+        "KM1",
+        "KM2"
+      ],
+      "esperado": [
+        "KM1"
+      ],
+      "status": "OK"
+    },
+    {
+      "nome": "ordem de desligamento: S3 depois S0",
+      "inicial": [
+        "KM1",
+        "KM2"
+      ],
+      "passos": [
+        {
+          "entradas": {
+            "S0": true
+          },
+          "esperado": [
+            "KM1",
+            "KM2"
+          ]
+        },
+        {
+          "entradas": {
+            "S3": true
+          },
+          "esperado": [
+            "KM1"
+          ]
+        },
+        {
+          "entradas": {},
+          "esperado": [
+            "KM1"
+          ]
+        },
+        {
+          "entradas": {
+            "S0": true
+          },
+          "esperado": []
+        },
+        {
+          "entradas": {},
+          "esperado": []
+        }
+      ],
+      "status": "OK"
+    },
+    {
+      "nome": "RT1 aberto derruba os dois",
+      "entradas": {
+        "RT1": true
+      },
+      "inicial": [
+        "KM1",
+        "KM2"
+      ],
+      "esperado": [],
+      "status": "OK"
+    },
+    {
+      "nome": "RT2 aberto derruba so KM2",
+      "entradas": {
+        "RT2": true
+      },
+      "inicial": [
+        "KM1",
+        "KM2"
+      ],
+      "esperado": [
+        "KM1"
+      ],
+      "status": "OK"
+    },
+    {
+      "nome": "sem auto-religamento",
+      "entradas": {},
+      "esperado": [],
+      "status": "OK"
+    }
+  ],
+  "golden": "partida_sequencial"
+}

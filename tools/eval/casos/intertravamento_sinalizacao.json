@@ -1,0 +1,201 @@
+{
+  "id": "intertravamento_sinalizacao",
+  "titulo": "Intertravamento de dois motores com sinalizacao por contatos auxiliares NA e NF",
+  "dificuldade": 4,
+  "enunciado": "Dois motores trifasicos (-M1/-M2 com -Q1/-Q2, -F1/-F2, -KM1/-KM2) intertravados: -S1 liga -KM1, -S2 liga -KM2, cada um com selo (NA do proprio contator) e lampada (-H1/-H2) em paralelo com a bobina; o contato NF de -KM2 fica em serie no ramo de -KM1 e o NF de -KM1 no ramo de -KM2 (so um motor por vez). O termico -RT1 e o desliga -S0 (NF) sao comuns aos dois ramos e ficam antes deles. Dois degraus de sinalizacao com contatos auxiliares: o NA de -KM1 energiza o rele -KA3 em paralelo com a lampada -H3 (KM1 ligado); os NF de -KM1 e -KM2 em serie energizam o rele -KA4 em paralelo com a lampada -H4 (nenhum motor ligado).",
+  "restricoes": [
+    "Use UMA fonte trifasica multi-terminal (classe 3007) e trilho PE separado do neutro.",
+    "Ligue TODOS os terminais (nenhum pino solto; U1/V1/W1/PE dos motores, 1-3-5/2-4-6 dos contatores).",
+    "Os rotulos dos simbolos devem ser exatamente os do enunciado (os testes usam esses nomes).",
+    "Cada contator aparece com contato NA (selo e sinalizacao) e NF (intertravamento/sinalizacao) no comando.",
+    "Os degraus de sinalizacao (-KA3, -KA4) ficam entre os mesmos trilhos L1 e N dos de comando."
+  ],
+  "obrigatorios": {
+    "classes": {
+      "1000": 2,
+      "2001": 2,
+      "6007": 2,
+      "7000": 3,
+      "7001": 4,
+      "8000": 2,
+      "8001": 1,
+      "8017": 1,
+      "9000": 4,
+      "9008": 4
+    },
+    "uma_de": [
+      [
+        "6009",
+        "6010"
+      ]
+    ],
+    "rotulos": [
+      "-F1",
+      "-F2",
+      "-H1",
+      "-H2",
+      "-H3",
+      "-H4",
+      "-KA3",
+      "-KA4",
+      "-KM1",
+      "-KM2",
+      "-M1",
+      "-M2",
+      "-Q1",
+      "-Q2",
+      "-RT1",
+      "-S0",
+      "-S1",
+      "-S2"
+    ]
+  },
+  "testes": [
+    {
+      "nome": "repouso: NF de KM1 e KM2 fechados -> KA4",
+      "entradas": {},
+      "esperado": [
+        "KA4"
+      ],
+      "esperado_lampadas": [
+        "H4"
+      ],
+      "status": "OK"
+    },
+    {
+      "nome": "S1 liga KM1 (KA3 acende, KA4 apaga)",
+      "entradas": {
+        "S1": true
+      },
+      "esperado": [
+        "KM1",
+        "KA3"
+      ],
+      "esperado_lampadas": [
+        "H1",
+        "H3"
+      ],
+      "status": "OK"
+    },
+    {
+      "nome": "S2 liga KM2 (KA4 apaga)",
+      "entradas": {
+        "S2": true
+      },
+      "esperado": [
+        "KM2"
+      ],
+      "esperado_lampadas": [
+        "H2"
+      ],
+      "status": "OK"
+    },
+    {
+      "nome": "selo KM1",
+      "entradas": {},
+      "inicial": [
+        "KM1"
+      ],
+      "esperado": [
+        "KM1",
+        "KA3"
+      ],
+      "status": "OK"
+    },
+    {
+      "nome": "selo KM2",
+      "entradas": {},
+      "inicial": [
+        "KM2"
+      ],
+      "esperado": [
+        "KM2"
+      ],
+      "status": "OK"
+    },
+    {
+      "nome": "KM2 bloqueado com KM1 ligado",
+      "entradas": {
+        "S2": true
+      },
+      "inicial": [
+        "KM1"
+      ],
+      "esperado": [
+        "KM1",
+        "KA3"
+      ],
+      "status": "OK"
+    },
+    {
+      "nome": "KM1 bloqueado com KM2 ligado",
+      "entradas": {
+        "S1": true
+      },
+      "inicial": [
+        "KM2"
+      ],
+      "esperado": [
+        "KM2"
+      ],
+      "status": "OK"
+    },
+    {
+      "nome": "S0 desliga KM1 e volta KA4",
+      "entradas": {
+        "S0": true
+      },
+      "inicial": [
+        "KM1"
+      ],
+      "esperado": [
+        "KA4"
+      ],
+      "status": "OK"
+    },
+    {
+      "nome": "S0 desliga KM2 e volta KA4",
+      "entradas": {
+        "S0": true
+      },
+      "inicial": [
+        "KM2"
+      ],
+      "esperado": [
+        "KA4"
+      ],
+      "status": "OK"
+    },
+    {
+      "nome": "RT1 aberto bloqueia S1",
+      "entradas": {
+        "RT1": true,
+        "S1": true
+      },
+      "esperado": [
+        "KA4"
+      ],
+      "status": "OK"
+    },
+    {
+      "nome": "RT1 aberto bloqueia S2 (RT comum)",
+      "entradas": {
+        "RT1": true,
+        "S2": true
+      },
+      "esperado": [
+        "KA4"
+      ],
+      "status": "OK"
+    },
+    {
+      "nome": "S1+S2 simultaneo = corrida",
+      "entradas": {
+        "S1": true,
+        "S2": true
+      },
+      "status": "RACE"
+    }
+  ],
+  "golden": "intertravamento_sinalizacao"
+}
