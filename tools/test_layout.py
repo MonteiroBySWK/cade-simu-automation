@@ -125,7 +125,7 @@ def test_reversao_fases_na_geometria():
     K1 = lambda p: R("-KM1", "2001", "p" + str(p))   # p1..p3 = 1,3,5 ; p4..p6 = 2,4,6
     K2 = lambda p: R("-KM2", "2001", "p" + str(p))
     M = lambda p: R("-M1", "1000", p)               # p1..p3 = U1,V1,W1
-    F = lambda p: R("-F1", "6007", p)               # p4..p6 = saidas 2,4,6 do rele termico
+    F = lambda p: R("-RT1", "6007", p)               # p4..p6 = saidas 2,4,6 do rele termico
     Q = lambda p: R("-Q1", "6009", p)
     for i, f in enumerate(("L1", "L2", "L3"), 1):
         assert X(f) == Q(f"p{i}")                   # fonte -> disjuntor

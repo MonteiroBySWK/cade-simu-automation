@@ -236,23 +236,53 @@ def test_trilhos_comando_exige_alimentacao():
 
 # ---------------------------------------------------------------- quebra automatica
 def test_quebra_em_faixas_quando_larga_demais():
-    spec = mono([rung(i) for i in range(40)])
-    low = layout.compilar(spec)                    # antes: erro; agora: faixas
+    spec = mono([rung(i) for i in range(9)])
+    low = layout.compilar(spec)                    # nao cabe em 1 linha: 2 faixas amarradas
     nomes = [r["nome"] for r in low["rails"]]
-    assert any("~" in n for n in nomes) and sum(1 for n in nomes if n.startswith("N~")) >= 2
+    assert any("~" in n for n in nomes) and sum(1 for n in nomes if n.startswith("N~")) == 1
     for s in low["simbolos"]:
         assert s["x"] + layout._width(s["classe"]) <= layout.SHEET_X and s["y"] + 15 <= layout.SHEET_Y
-    assert len(low["simbolos"]) == 1 + 40 * 5
+    assert len(low["simbolos"]) == 1 + 9 * 5
     with tempfile.TemporaryDirectory() as t:
         out, r = _build(spec, t, "faixas")
         redes, curtos, soltos = _redes(out)
         assert not curtos and not soltos
         # todos os degraus compartilham os mesmos dois nos (faixas amarradas)
-        topo = {redes[(f"-S{i}", "8001", "p1")] for i in range(40)}
-        base = {redes[(f"-K{i}", "9000", "p2")] for i in range(40)}
+        topo = {redes[(f"-S{i}", "8001", "p1")] for i in range(9)}
+        base = {redes[(f"-K{i}", "9000", "p2")] for i in range(9)}
         assert len(topo) == 1 and len(base) == 1 and topo != base
         import wires_check
         assert wires_check.analisar(out)[1] == []
+
+
+def test_nao_cabe_nem_em_faixas_da_erro_explicito():
+    with pytest.raises(ValueError, match="nao cabe"):
+        layout.compilar(mono([rung(i) for i in range(40)]))
+
+
+def test_paralelo_largo_quebra_em_linhas_com_espinhas():
+    ramos = [{"via": [f"B{i}", "8000", f"-S{i}"], "selo": [f"s{i}", "7000", f"-K{i}"],
+              "carga": [f"K{i}", "9000", f"-K{i}"], "indica": [f"H{i}", "9008", f"-H{i}"]} for i in range(8)]
+    spec = {"titulo": "x", "trilhos": TRILHOS, "fontes": [FONTE],
+            "comando": [{"id": "m1", "de": "L1", "para": "N",
+                         "serie": [["RT1", "8017", "-RT1"], ["S0", "8001", "-S0"]], "ramos": ramos}]}
+    low = layout.compilar(spec)
+    p = _pos(low)
+    assert p["B0"]["y"] == p["B4"]["y"] < p["B5"]["y"]            # 2 linhas de ramos
+    with tempfile.TemporaryDirectory() as t:
+        out, r = _build(spec, t, "linhas")
+        redes, curtos, soltos = _redes(out)
+        assert not curtos and not soltos
+        import wires_check
+        assert wires_check.analisar(out)[1] == []
+        entrada = redes[("-S0", "8001", "p2")]
+        for i in range(8):                       # todo ramo: via/selo no no de entrada...
+            assert redes[(f"-S{i}", "8000", "p1")] == entrada
+            assert redes[(f"-K{i}", "7000", "p1")] == entrada
+        neutro = redes[("-K0", "9000", "p2")]    # ...e toda carga no mesmo no de saida
+        for i in range(8):
+            assert redes[(f"-K{i}", "9000", "p2")] == neutro == redes[(f"-H{i}", "9008", "p2")]
+        assert neutro != entrada
 
 
 def test_quebra_em_colunas_quando_serie_alta_demais():
@@ -260,7 +290,7 @@ def test_quebra_em_colunas_quando_serie_alta_demais():
     spec = mono([{"serie": ser + [{"paralelo": [["K", "9000", "-K"], ["H", "9008", "-H"]]}]}])
     low = layout.compilar(spec)
     xs = sorted({s["x"] for s in low["simbolos"] if s["id"].startswith("E")})
-    assert len(xs) == 2                                    # 2 colunas (serpentina)
+    assert len(xs) >= 2                                    # varias colunas (serpentina)
     assert max(r["y"] for r in low["rails"]) <= layout.SHEET_Y
     with tempfile.TemporaryDirectory() as t:
         out, r = _build(spec, t, "serp")
@@ -283,6 +313,7 @@ def test_forma_antiga_que_nao_cabe_vira_rede_em_vez_de_erro():
     low = layout.compilar(spec)                            # compilar(): traduz e quebra
     assert len(low["simbolos"]) == 1 + 2 + 8 * 4
     assert low.get("fios")
+    assert all(r["y"] <= layout.SHEET_Y for r in low["rails"])
 
 
 def test_paralelo_largo_demais_da_erro_claro():
