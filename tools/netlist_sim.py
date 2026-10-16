@@ -17,6 +17,12 @@ Fidelidade (docs/re-engenharia.md 9.2):
 - Sem fonte no desenho (ladder 10050/10051/10060): cai no modelo legado (1o contato = fase, retorno comum
   das bobinas).
 
+Esquema aceito em docs/classes-papeis.json ({"classes": {"<id>": {...}}}), por classe:
+  papel: contato|bobina|lampada|polos|contato_temp (aliases: na, nc, nf, ton, tof, sinalizador)
+  modo: NA|NC|FECHADO      pinos: [pinoA, pinoB] (default: 2 primeiros do binario)
+  tipo: ton|tof (contato_temp)   tempo: segundos fixos | tempo_label/tempo_num: indice do campo do .cad
+  O tempo tambem pode vir do caso ("tempos": {rotulo: s}); sem valor, 0 s.
+
 Estado de entradas: {chave: bool} (True = acionado: botao pressionado / termico disparado).
 
 API:
