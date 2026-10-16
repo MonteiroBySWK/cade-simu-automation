@@ -166,6 +166,24 @@ def test_gate_reprova_sem_testes_e_com_teste_errado():
             assert r.returncode == 1 and "REPROVADO" in r.stdout, (nome, r.stdout[-400:])
 
 
+def test_sem_entidade_orfa_do_doador():
+    """Regressao: a entidade 0 (colada ao 'CADe_SIMU*') era uma 3004 solta em (93,45)."""
+    from dissect import parse_ent, split_all
+    with tempfile.TemporaryDirectory() as t:
+        out = Path(t) / "o.cad"
+        r = subprocess.run([sys.executable, str(TOOLS / "build_spec.py"),
+                            str(TOOLS / "examples" / "partida_direta.layout.json"), str(out)],
+                           capture_output=True, text=True, timeout=600)
+        assert "GATE: OK" in r.stdout, r.stdout[-400:]
+        d = out.read_bytes().decode("latin1")
+        assert d.startswith("CADe_SIMU*0*3007#"), d[:60]       # a 1a entidade e a nossa fonte
+        _, ents, _ = split_all(d)
+        ps = [p for p in map(parse_ent, ents) if p]
+        assert [p["seq"] for p in ps][:3] == ["0", "1", "2"]
+        assert not [p for p in ps if p["id"] == "3004"], "fonte 3004 solta de doador"
+        assert not [p for p in ps if p["nums"][8:10] == ["93", "45"]]
+
+
 if __name__ == "__main__":
     import pytest
     raise SystemExit(pytest.main([__file__, "-q"]))
