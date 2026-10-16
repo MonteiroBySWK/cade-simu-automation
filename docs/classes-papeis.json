@@ -6432,9 +6432,9 @@
    "unidade": "label4",
    "ver": "_modelo.temporizador"
   },
-  "nota": "retardo na desenergização",
+  "nota": "OFF-delay (FUN_0062f4e0): borda de energização => estado=1, saida=1, contador=T; desenergizou => estado=0 e, enquanto estado==0 && saida==1, contador-- por tick; <1 => saida=0. Contatos 7008..7011 recebem saida",
   "evidencia": "desenho/sim FUN_0062f4e0; nome FUN_0087aca0",
-  "confianca": "media"
+  "confianca": "alta"
  },
  "9006": {
   "nome": "Temporizador a la conexión desconexión",
@@ -6452,9 +6452,9 @@
    "unidade": "label4",
    "ver": "_modelo.temporizador"
   },
-  "nota": "retardo na energização e na desenergização",
+  "nota": "ON+OFF-delay (FUN_00630d40), mesmo T nos dois sentidos: energizado conta até saida=1; desenergizado conta até saida=0. Contatos 7012..7015 recebem saida",
   "evidencia": "desenho/sim FUN_00630d40; nome FUN_0087aca0",
-  "confianca": "media"
+  "confianca": "alta"
  },
  "9007": {
   "nome": "Temporizador intermitente",
@@ -6472,7 +6472,7 @@
    "unidade": "label4",
    "ver": "_modelo.temporizador"
   },
-  "nota": "pisca (alterna a saída a cada período)",
+  "nota": "intermitente (FUN_00632a20): energizado, o ESTADO alterna 1/0 a cada T ticks (meio-período = T); copia estado a polos e a 7000..7015 de mesmo rótulo",
   "evidencia": "desenho/sim FUN_00632a20; nome FUN_0087aca0",
   "confianca": "media"
  },

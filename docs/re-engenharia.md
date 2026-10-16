@@ -315,6 +315,13 @@ despacho `FUN_0040d2b0` + as nomeadas nos diálogos). Gerado por
   `contador = atoi(label5) × mult(label4)`; a cada tick `contador--`; quando `<1`,
   `saida(+0x30e24)=1`. Desenergizou: `estado=saida=contador=0` (reset imediato). Contatos
   7004.. recebem `saida`; contatos instantâneos 7000..7003 e polos recebem `estado`.
+- 9005 OFF-delay (`FUN_0062f4e0`): borda de energização ⇒ `estado=1`, `saida=1`,
+  `contador=T`; desenergizou ⇒ `estado=0` e, enquanto `estado==0 && saida==1`, `contador--`;
+  `<1` ⇒ `saida=0` (contatos 7008..7011). Reenergizar recarrega T.
+- 9006 ON+OFF (`FUN_00630d40`): mesmo T nos dois sentidos (energizado conta até `saida=1`;
+  desenergizado conta até `saida=0`; contatos 7012..7015).
+- 9007 intermitente (`FUN_00632a20`): energizado, o **estado** alterna 1/0 a cada T ticks e é
+  copiado a polos e a 7000..7015 de mesmo rótulo (confiança média).
 - **Tempo** = label5 (6º rótulo; no `.cad` `#A1#A2#0#5#` → unidade `0`, tempo `5`).
   **Unidade** = label4 ∈ `'3'`→×1, `'0'`→×10, `'1'`→×100, `'2'`→×1000 ticks; diálogo
   (`FUN_008c8f40`, rádios) mostra "x 0,1 Seg / x 1 Seg / x 10 Seg / x 60 Seg" ⇒ com tick de
@@ -334,7 +341,8 @@ despacho `FUN_0040d2b0` + as nomeadas nos diálogos). Gerado por
 | bobina 9000 / lâmpada 9008: energiza c/ tensão entre pinos | alta | decompilado |
 | lâmpada meia-luz em série | média | decompilado parcialmente |
 | temporizador 9004 (borda, contador, label4/5, tick) | alta | `FUN_0062dbe0`, `FUN_008691f0` |
-| 9005/9006/9007 (OFF/ON-OFF/intermitente) | média | mesma estrutura (sem), não lidos linha a linha |
+| 9005/9006 (OFF / ON-OFF delay) | alta | `FUN_0062f4e0`, `FUN_00630d40` decompilados |
+| 9007 intermitente | média | `FUN_00632a20` decompilado (lógica de alternância densa) |
 | 6007 polos sempre fechados; clique propaga a 8016-8019 | alta | `FUN_005727b0`, `FUN_0043ee20` |
 | disjuntores/seccionadores iniciam abertos | média | CMP `==1` + zeragem no Play; falta prova no app |
 | motores 1000.. (gira com fases distintas) | média | campo 0x7a9dc, não lido linha a linha |
