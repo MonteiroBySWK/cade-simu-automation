@@ -53,11 +53,17 @@ o que conecta é o net compartilhado (e a geometria — fio tocando o pino).
 Regerar: `python3 tools/learn_pins.py` (varre o acervo de 115 `.cad`).
 
 ### Para SIMULAR (essencial)
-Um circuito **só simula com alimentação**. Além da lógica, inclua:
-- **Fonte**: `3004` (`-X`, rede) — pinos laterais `A=(0,0)`, `B=(6,0)`. Ligue `X.A → início da cadeia` e `X.B → retorno` (nó comum das bobinas).
-- **Alternativas**: `3002` (TERRA), `3003` (texto 127V), `3001`/`3005` (borne).
-- **Como testar no app**: toolbar `▶` (verde, ~x=503,y=32 da janela) entra em simulação (fios ficam finos; trecho energizado fica **vermelho**); clique nos botões (ex.: S1) — bobina/piloto ligam. `■` (vermelho) para.
-- Verificação sem GUI: `cad_test` (netlist) **não** substitui a simulação real — use os dois.
+- **A conectividade é GEOMETRIA** (binário, docs/re-engenharia.md §9): fio liga a fio só por
+  **extremo**; pino liga a fio só no **extremo**; T/cruzamento só com `4001`. Os nets gravados em
+  `nums[21/22]` são descartados ao simular.
+- Um circuito **só simula com alimentação**. Use **uma fonte multi-terminal**:
+  `3007` = `L1,L2,L3,N,PE` (offsets 0,6,12,18,24), `3006` = L1,L2,L3,N, `3003` = L,N,
+  `3004` = só L1,L2,L3. Cada pino **estampa uma fase** (1/2/3/N/P); duas estampas na mesma
+  net = **curto**. **Nunca** ligue PE ao trilho N — use **trilho PE** próprio
+  (`"pe":"PE"` no grupo de potência).
+- Teste no app: `▶` (~504,32), clique/segure o botão; trecho energizado fica vermelho.
+- Verificação sem GUI: `cad_test` (lógica) + `tools/geo_check.py` (fases/curto/pino solto);
+  nenhum substitui a simulação real.
 
 ### Pinos NOMEADOS (multi-terminal) — obrigatório para potência
 `tools/symbol_pins.json` guarda, além de `A`/`B`, um dicionário `pins` por classe:
@@ -76,9 +82,9 @@ o `PE` do motor desce ao trilho N. Ramos verticais com pinos alinhados → fio *
 1. **Medir** pinos nos dados reais: `python3 tools/learn_pins2.py` (endpoints de fio por símbolo).
 2. **Aplicar** em `tools/symbol_pins.json` (nunca estimar "no olho").
 3. **Construir + validar**: `python3 tools/build_spec.py <spec>.json out/x.cad`
-   → tem de imprimir `GATE: OK` (valida + sem curto + `cad_test`).
+   → tem de imprimir `GATE: OK` (valida + `cad_test` com `"testes"` da spec + `geo_check`: sem curto de fase/pino solto). **Prefira** specs `*.layout.json` (sem x/y; `tools/layout.py`).
 4. **Estética**: `python3 tools/wires_check.py out/x.cad` → tem de dar `FIOS: ok`.
-5. **Caber na folha**: conteúdo em x≲455, y≲295 (folha fixa ~460×300).
+5. **Caber na folha**: o motor limita a 455×295 (conservador; o gabarito do curso usa y até 440).
 6. **Ver** no app (`tools/wine_mgr.py up/max/shot`) antes de declarar pronto.
 
 ### Roteador (regras que já estão no `cad_build`)
