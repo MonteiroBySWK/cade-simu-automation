@@ -1,0 +1,8 @@
+Partida DIRETA COM REVERSAO de um motor trifasico: -S1 liga o sentido horario (-KM1) e -S2 o anti-horario (-KM2). Os dois contatores alimentam o MESMO motor -M1; -KM2 inverte duas fases (L1<->L3) em relacao a -KM1. Intertravamento eletrico: com um sentido ligado o outro nao entra (NF cruzado); para reverter e preciso desligar com -S0. Termico -RT1 em serie, selos e lampadas -H1/-H2. Disjuntor -Q1 e termico -F1 comuns aos dois sentidos.
+
+Restricoes:
+- Use UMA fonte trifasica multi-terminal (classe 3007) e trilho PE separado do neutro.
+- Ligue TODOS os terminais (nenhum pino solto; U1/V1/W1/PE do motor, 1-3-5/2-4-6 do contator).
+- Os rotulos dos simbolos devem ser exatamente os do enunciado (os testes usam esses nomes).
+- Dois contatores de potencia no MESMO motor; inversao de fases feita pela ordem dos pinos 1-3-5 de -KM2.
+- Nunca ligue os dois contatores a fases iguais sem inverter (curto entre fases pelo motor).
