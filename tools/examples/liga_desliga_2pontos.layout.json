@@ -2,38 +2,240 @@
   "titulo": "LIGA/DESLIGA DE 2 PONTOS",
   "descricao": "Um motor ligado de dois lugares (S1 e S2 em paralelo com o selo) e desligado de dois lugares (S0 e S3 em serie).",
   "layout": {
-    "trilhos": {"L1": 14, "L2": 20, "L3": 26, "N": 282, "x0": 25, "x1": 395, "PE": 291},
+    "trilhos": {
+      "L1": 14,
+      "L2": 20,
+      "L3": 26,
+      "N": 282,
+      "x0": 25,
+      "x1": 395,
+      "PE": 291
+    },
     "fontes": [
-      {"id": "X1", "classe": "3007", "rotulo": "-X",
-       "pinos": {"L1": "L1", "L2": "L2", "L3": "L3", "N": "N", "PE": "PE"}}
+      {
+        "id": "X1",
+        "classe": "3007",
+        "rotulo": "-X",
+        "pinos": {
+          "L1": "L1",
+          "L2": "L2",
+          "L3": "L3",
+          "N": "N",
+          "PE": "PE"
+        }
+      }
     ],
     "comando": [
-      {"id": "c1", "de": "L1", "para": "N",
-       "rede": {"serie": [
-         ["RT1", "8017", "-RT1"],
-         ["S0", "8001", "-S0"],
-         ["S3", "8001", "-S3"],
-         {"paralelo": [["S1", "8000", "-S1"], ["S2", "8000", "-S2"], ["selo1", "7000", "-KM1"]]},
-         {"paralelo": [["KM1", "9000", "-KM1"], ["H1", "9008", "-H1"]]}
-       ]}}
+      {
+        "id": "c1",
+        "de": "L1",
+        "para": "N",
+        "rede": {
+          "serie": [
+            [
+              "RT1",
+              "8017",
+              "-RT1"
+            ],
+            [
+              "S0",
+              "8001",
+              "-S0"
+            ],
+            [
+              "S3",
+              "8001",
+              "-S3"
+            ],
+            {
+              "paralelo": [
+                [
+                  "S1",
+                  "8000",
+                  "-S1"
+                ],
+                [
+                  "S2",
+                  "8000",
+                  "-S2"
+                ],
+                [
+                  "selo1",
+                  "7000",
+                  "-KM1"
+                ]
+              ]
+            },
+            {
+              "paralelo": [
+                [
+                  "KM1",
+                  "9000",
+                  "-KM1"
+                ],
+                [
+                  "H1",
+                  "9008",
+                  "-H1"
+                ]
+              ]
+            }
+          ]
+        }
+      }
     ],
     "potencia": [
-      {"id": "m1", "fases": ["L1", "L2", "L3"], "neutro": "N", "pe": "PE",
-       "colunas": [["Q1", "6009", "-Q1"], ["F1", "6007", "-F1"], ["KM1p", "2001", "-KM1"], ["M1", "1000", "-M1"]]}
+      {
+        "id": "m1",
+        "fases": [
+          "L1",
+          "L2",
+          "L3"
+        ],
+        "neutro": "N",
+        "pe": "PE",
+        "colunas": [
+          [
+            "Q1",
+            "6009",
+            "-Q1"
+          ],
+          [
+            "F1",
+            "6007",
+            "-RT1"
+          ],
+          [
+            "KM1p",
+            "2001",
+            "-KM1"
+          ],
+          [
+            "M1",
+            "1000",
+            "-M1"
+          ]
+        ]
+      }
     ]
   },
   "testes": [
-    {"nome": "repouso desligado", "entradas": {}, "esperado": [], "status": "OK"},
-    {"nome": "S1 liga KM1", "entradas": {"S1": true}, "esperado": ["KM1"], "esperado_lampadas": ["H1"], "status": "OK"},
-    {"nome": "S2 (2o ponto) liga KM1", "entradas": {"S2": true}, "esperado": ["KM1"], "status": "OK"},
-    {"nome": "S1 e S2 juntos", "entradas": {"S1": true, "S2": true}, "esperado": ["KM1"], "status": "OK"},
-    {"nome": "selo mantem KM1", "entradas": {}, "inicial": ["KM1"], "esperado": ["KM1"], "status": "OK"},
-    {"nome": "S0 desliga", "entradas": {"S0": true}, "inicial": ["KM1"], "esperado": [], "status": "OK"},
-    {"nome": "S3 (2o ponto) desliga", "entradas": {"S3": true}, "inicial": ["KM1"], "esperado": [], "status": "OK"},
-    {"nome": "S0 pressionado impede ligar", "entradas": {"S0": true, "S1": true}, "esperado": [], "status": "OK"},
-    {"nome": "S3 pressionado impede ligar por S2", "entradas": {"S3": true, "S2": true}, "esperado": [], "status": "OK"},
-    {"nome": "sem auto-religamento", "entradas": {}, "esperado": [], "status": "OK"},
-    {"nome": "RT1 aberto bloqueia a partida", "entradas": {"RT1": true, "S1": true}, "esperado": [], "status": "OK"},
-    {"nome": "RT1 aberto derruba KM1", "entradas": {"RT1": true}, "inicial": ["KM1"], "esperado": [], "status": "OK"}
+    {
+      "nome": "repouso desligado",
+      "entradas": {},
+      "esperado": [],
+      "status": "OK"
+    },
+    {
+      "nome": "S1 liga KM1",
+      "entradas": {
+        "S1": true
+      },
+      "esperado": [
+        "KM1"
+      ],
+      "esperado_lampadas": [
+        "H1"
+      ],
+      "status": "OK"
+    },
+    {
+      "nome": "S2 (2o ponto) liga KM1",
+      "entradas": {
+        "S2": true
+      },
+      "esperado": [
+        "KM1"
+      ],
+      "status": "OK"
+    },
+    {
+      "nome": "S1 e S2 juntos",
+      "entradas": {
+        "S1": true,
+        "S2": true
+      },
+      "esperado": [
+        "KM1"
+      ],
+      "status": "OK"
+    },
+    {
+      "nome": "selo mantem KM1",
+      "entradas": {},
+      "inicial": [
+        "KM1"
+      ],
+      "esperado": [
+        "KM1"
+      ],
+      "status": "OK"
+    },
+    {
+      "nome": "S0 desliga",
+      "entradas": {
+        "S0": true
+      },
+      "inicial": [
+        "KM1"
+      ],
+      "esperado": [],
+      "status": "OK"
+    },
+    {
+      "nome": "S3 (2o ponto) desliga",
+      "entradas": {
+        "S3": true
+      },
+      "inicial": [
+        "KM1"
+      ],
+      "esperado": [],
+      "status": "OK"
+    },
+    {
+      "nome": "S0 pressionado impede ligar",
+      "entradas": {
+        "S0": true,
+        "S1": true
+      },
+      "esperado": [],
+      "status": "OK"
+    },
+    {
+      "nome": "S3 pressionado impede ligar por S2",
+      "entradas": {
+        "S3": true,
+        "S2": true
+      },
+      "esperado": [],
+      "status": "OK"
+    },
+    {
+      "nome": "sem auto-religamento",
+      "entradas": {},
+      "esperado": [],
+      "status": "OK"
+    },
+    {
+      "nome": "RT1 aberto bloqueia a partida",
+      "entradas": {
+        "RT1": true,
+        "S1": true
+      },
+      "esperado": [],
+      "status": "OK"
+    },
+    {
+      "nome": "RT1 aberto derruba KM1",
+      "entradas": {
+        "RT1": true
+      },
+      "inicial": [
+        "KM1"
+      ],
+      "esperado": [],
+      "status": "OK"
+    }
   ]
 }

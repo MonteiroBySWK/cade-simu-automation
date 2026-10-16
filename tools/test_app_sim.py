@@ -80,9 +80,9 @@ def test_entradas_termico_exige_mesmo_rotulo(tmp_path):
     cad = A.Cad(cad_path)
     ents = cad.entradas()
     assert ents["S1"]["modo"] == "segurar" and ents["S0"]["modo"] == "segurar"
-    assert ents["F1"]["modo"] == "alternar"            # 6007: clique dispara
-    assert ents["RT1"]["simbolo"] is None              # 8017 -RT1 sem 6007 -RT1: o app nao o aciona
-    assert "MESMO rotulo" in ents["RT1"]["nota"]
+    # 6007 e contato 8017 com o MESMO rotulo (-RT1): o clique no 6007 dispara e o contato segue
+    assert ents["RT1"]["modo"] == "alternar"
+    assert ents["RT1"]["simbolo"] is not None
 
 
 def test_cli_sem_display_nao_quebra_importacao():

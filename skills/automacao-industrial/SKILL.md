@@ -81,6 +81,7 @@ Série só passa se fechada; paralelo liga se *qualquer* ramo fechar.
 |---|---|---|
 | **Fonte `3004` ×3** (um `3004` por fase) | aviso "fonte 3004 por fase" + `CURTO` + pino `L3` solto | **uma** fonte `3007` com `pinos` L1/L2/L3/N/PE |
 | **PE no neutro** | `CURTO N+P na mesma net` / aviso "PE do motor vai ao neutro" | trilho `"PE"` em `trilhos` e `"pe":"PE"` na potência |
+| **Térmico com rótulo diferente do contato** (`-F1` no 6007 e `-RT1` no 8017) | gate: "contato termico ... nao segue nenhum rele termico 6007 de mesmo rotulo" — no app o térmico NUNCA dispara. Use o **mesmo rótulo** (ex.: `-RT1`) no 6007 e no contato 95-96; o mesmo vale para contatos auxiliares 7000/7001 e polos 2001 (rótulo da bobina 9000). |
 | **Pino solto** (V1/W1/PE do motor, pino 3/5 do contator, pino da fonte) | `pino L3 da fonte -X (3007) solto em (x,y): ligue-o ao trilho L3` | ligar todos os terminais (DSL já faz; solto = pino omitido em `fontes.pinos` ou classe sem pino) |
 | **Fases cruzadas** (dois trilhos de fase no mesmo nó) | `CURTO 1+2 na mesma net` | cada coluna de fase no seu trilho; reversão só via `ordem` |
 | **Sem `testes`** ou chave errada | `sem testes: declare "testes"` / `entrada 'S9' nao existe no circuito` | declare casos; chave = rótulo sem `-` |

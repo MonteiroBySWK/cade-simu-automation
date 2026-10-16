@@ -144,6 +144,29 @@ def acionavel_curto(c):
     return f"CURTO {c}{dica}"
 
 
+def conferir_vinculos(path):
+    """Vinculos por ROTULO que o app usa (achado do app_sim): contato 8016..8019 so segue um 6007
+    (termico) de MESMO rotulo; auxiliares 7000/7001 e polos 2001 so seguem bobina 9xxx de mesmo
+    rotulo. Retorna (erros, avisos)."""
+    from dissect import parse_ent, split_all
+    _, ents, _ = split_all(Path(path).read_bytes().decode("latin1"))
+    ps = [p for p in map(parse_ent, ents) if p]
+    rot = lambda p: ((p["labels"] or [""])[0]).strip()
+    termicos = {rot(p) for p in ps if p["id"] == "6007"}
+    bobinas = {rot(p) for p in ps if p["id"] in ("9000", "9001", "9002", "9004", "9005", "9006", "9007",
+                                                  "9014", "9015", "10060")}
+    erros, avisos = [], []
+    for p in ps:
+        r = rot(p)
+        if p["id"] in ("8016", "8017", "8018", "8019") and r not in termicos:
+            erros.append(f"contato termico {r or p['id']} ({p['id']}) nao segue nenhum rele termico 6007 de "
+                         f"mesmo rotulo (6007: {sorted(termicos) or 'nenhum'}): no app o termico NUNCA dispara. "
+                         f"Use o MESMO rotulo no 6007 e no contato 95-96.")
+        if p["id"] in ("7000", "7001", "2001") and r and r not in bobinas:
+            avisos.append(f"{p['id']} {r}: nenhuma bobina de mesmo rotulo (contato nunca e comandado)")
+    return erros, avisos
+
+
 def gate(path, testes, r=None):
     """Gate sobre um .cad ja gerado: testes funcionais + geo_check + wires_check. Preenche `r`
     (dict no formato de construir) e o devolve. Nao reconstroi o arquivo."""
@@ -159,6 +182,10 @@ def gate(path, testes, r=None):
                 "curtos_msg": [acionavel_curto(c) for c in curtos],
                 "soltos_msg": [acionavel_solto(s) for s in soltos]}
     r["erros"] += r["geo"]["curtos_msg"] + r["geo"]["soltos_msg"]
+
+    ev, av = conferir_vinculos(str(out))
+    r["erros"] += ev
+    r["avisos"] += av
 
     # sem casos declarados, cad_test usa a suite embutida (so vale p/ circuito com KM1 e KM2)
     teste = cade_mcp.cad_test(str(out), json.dumps(testes))
