@@ -1,3 +1,9 @@
+> **CORREÇÃO (2026-10-15, após `tools/app_sim.py`):** os números abaixo (≈975x705) foram medidos
+> na unidade da **barra de status** do app (~3,3x a unidade do `.cad`). Em unidades do `.cad` a
+> moldura é **x 20..467, y -1..332** (legenda em y≈311..329) — ver `tools/sheet.json` e
+> `docs/app-sim.md`. Área segura para layout: **x ≤ 455, y ≤ 305**. Itens do gabarito do curso
+> em y=440 ficam fora da moldura.
+
 # Area de desenho da folha — achados 15/10/2026
 
 ## Resposta
