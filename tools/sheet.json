@@ -1,0 +1,3 @@
+{"x_max": 980, "y_max": 770, "x_min": 10, "y_min": 70,
+ "x_seguro_max": 960, "y_seguro_max": 750,
+ "fonte": "empirico Wine (barra de status X,Y no canto da moldura verde de Aula1.cad, zoom 89%): moldura x 10..~985, y ~70..~775; corpus real: x<=444, y<=440 (texto 486). Moldura depende do arquivo (Pratica5_Complementar tem offset ~+45 no canto sup-esq). Sem clamp encontrado; ver docs/folha.md"}
