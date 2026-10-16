@@ -185,6 +185,17 @@ def _compilar(spec):
     ctx.top0 = top0
     blocos = spec.get("comando", [])
     tc = spec.get("trilhos_comando")
+    # largura util da faixa 0 para a rede (estimativa: fontes + trilhos de comando a esquerda,
+    # reserva da potencia a direita); define quando um paralelo largo quebra em linhas
+    est = x0 + 5
+    if spec.get("fontes"):
+        est += max([_width(f.get("classe", "3007" if f.get("pinos") else "3004"))
+                    for f in spec["fontes"]] + [0]) + 15
+    if tc:
+        est += (15 + 12 if tc.get("transformador") else 0) + (12 if tc.get("fonte") else 0) + 15
+    reserva_pot = sum(_pot_largura(pw) + GAP for pw in spec.get("potencia", []))
+    util = SHEET_X - MARGEM_X - 40 - reserva_pot - est - SPINE_L - SPINE_R
+    _ROWW[0] = util if util >= 120 else None
     ctx.preparar_comando(blocos, tc)        # mede redes novas, cria trilhos C*, desloca trilhos de baixo
     baixo = [v for v in rails.values() if v > meio]
     para = [b.get("para") for b in blocos if b.get("para") in rails and not _eh_rede(b)] or \
@@ -353,6 +364,7 @@ GN = 10           # folga vertical entre o barramento e o pino do simbolo
 RUNG_GAP = 30     # entre degraus (colunas) vizinhos
 CHUNK_GAP = 44    # entre colunas de um mesmo degrau quebrado em serpentina
 MARGEM_X = 12     # reserva a direita da folha (rotulos)
+SPINE_L, SPINE_R, ROWGAP = 8, 14, 10   # Par largo quebrado em linhas: espinhas laterais e folga entre linhas
 GRADE = 6         # passo entre ramos paralelos = multiplo da grade (eixos de Par vizinhos alinham)
 
 
@@ -426,6 +438,42 @@ def _par_layout(kids):
     return ms, offs, (offs[0] + offs[-1]) // 2, total
 
 
+_ROWW = [None]      # largura util estimada da faixa 0 (definida em _compilar)
+
+
+def _rowmax():
+    """largura maxima de uma linha de ramos paralelos: cabe na faixa 0 (apos fontes, antes da
+    potencia) ou, no minimo, numa faixa extra (que comeca em x0+5)."""
+    cheia = SHEET_X - MARGEM_X - 14 - 30 - SPINE_L - SPINE_R
+    return _ROWW[0] if _ROWW[0] else cheia
+
+
+def _par_rows(kids):
+    """ramos de um paralelo largo demais -> linhas (cada uma cabe em _rowmax)."""
+    rows, cur = [], []
+    for k in kids:
+        if cur and _par_layout(cur + [k])[3] > _rowmax():
+            rows.append(cur)
+            cur = [k]
+        else:
+            cur = cur + [k]
+    rows.append(cur)
+    return rows
+
+
+def _par_info(no):
+    """-> (rows, lays, left_off, lw, rw, H) do paralelo (1 linha = caso comum)."""
+    rows = _par_rows(no.kids)
+    lays = [_par_layout(r) for r in rows]
+    hs = [max(m[2] for m in l[0]) for l in lays]
+    if len(rows) == 1:
+        _, offs, center, total = lays[0]
+        return rows, lays, 0, center, total - center, hs[0]
+    wmax = max(l[3] for l in lays)
+    axis = lays[0][2]
+    return rows, lays, SPINE_L, axis + SPINE_L, wmax - axis + SPINE_R, sum(hs) + ROWGAP * (len(rows) - 1)
+
+
 def _med(no):
     """-> (lw, rw, H): extensao a esquerda/direita do EIXO (coluna de entrada/saida) e altura
     do nivel de entrada ao de saida (barramento a barramento)."""
@@ -433,11 +481,23 @@ def _med(no):
         xs = [0, no.w, no.pa[0], no.pb[0]]
         lw, rw = no.pa[0] - min(xs), max(xs) - no.pa[0]
         return lw, rw, GN + max(no.h - no.pa[1], no.pb[1] - no.pa[1]) + GN
-    ms = [_med(k) for k in no.kids]
     if no.kind == "serie":
+        ms = [_med(k) for k in no.kids]
         return max(m[0] for m in ms), max(m[1] for m in ms), sum(m[2] for m in ms)
-    _, _, center, total = _par_layout(no.kids)
-    return center, total - center, max(m[2] for m in ms)
+    _, _, _, lw, rw, h = _par_info(no)
+    return lw, rw, h
+
+
+def _primeira(no):
+    while no.kind != "leaf":
+        no = no.kids[0]
+    return no
+
+
+def _ultima(no):
+    while no.kind != "leaf":
+        no = no.kids[-1]
+    return no
 
 
 def _folhas(no):
@@ -493,14 +553,41 @@ def _colocar(L, no, ax, yi, yo, pp, ch):
             _colocar(L, k, ax, cur, ko, pp, ch)
             cur = ko
     else:
-        _, offs, center, _t_ = _par_layout(no.kids)
-        left = ax - center
-        for k, off in zip(no.kids, offs):
-            _colocar(L, k, left + off, yi, yo, pp, ch)
+        rows, lays, lo, lw, rw, _h = _par_info(no)
+        if len(rows) == 1:
+            _, offs, center, _t_ = lays[0]
+            left = ax - center
+            for k, off in zip(no.kids, offs):
+                _colocar(L, k, left + off, yi, yo, pp, ch)
+            return
+        left0 = ax - lays[0][2]
+        wmax = max(l[3] for l in lays)
+        yr = yi
+        for r, (row, lay) in enumerate(zip(rows, lays)):
+            ms, offs, _c, _t_ = lay
+            ult = r == len(rows) - 1
+            yo_r = yo if ult else yr + max(m[2] for m in ms)
+            for k, off in zip(row, offs):
+                _colocar(L, k, left0 + off, yr, yo_r, pp, ch)
+            yr = yo_r + ROWGAP
+        sp = pp.setdefault("__sp", [])
+        sp.append(("in", left0 - SPINE_L, (_primeira(rows[0][0]).sid, "A")))
+        sp.append(("out", left0 + wmax + SPINE_R, (_ultima(rows[0][-1]).sid, "B")))
+
+
+def _conexo(segs, pts):
+    """todos os `pts` estao no mesmo componente formado por `segs` (extremos coincidentes)?"""
+    uf = _UF()
+    for (a, b) in segs:
+        uf.union(a, b)
+    raizes = {uf.find(p) for p in pts}
+    return len(raizes) == 1
 
 
 def _redes(L, uf, pp, nomes, bordas, folhas):
-    """desenha cada no eletrico: trilho (roteador) ou barramento manual (fios)."""
+    """desenha cada no eletrico: trilho (roteador + barramentos de linhas extras) ou barramento
+    manual (fios). Nos em varios niveis (paralelo largo em linhas) usam as espinhas de pp['__sp']."""
+    spines = pp.get("__sp", [])
     grupos = {}
     for tok in list(uf.p):
         grupos.setdefault(uf.find(tok), []).append(tok)
@@ -508,12 +595,50 @@ def _redes(L, uf, pp, nomes, bordas, folhas):
         toks = grupos[root]
         trilhos = sorted({t[1] for t in toks if t[0] == "r"})
         pins = [t for t in toks if t[0] == "p"]
+        pset = {(s, ab) for _, s, ab in pins}
+        sps = [(k, x) for k, x, ref in spines if ref in pset]
         if len(trilhos) > 1:
             raise ValueError("degrau em curto: os trilhos 'de' e 'para' ficaram no mesmo no")
+        segs = []
+
+        def seg(x1, y1, x2, y2):
+            if (x1, y1) != (x2, y2):
+                L.fio(x1, y1, x2, y2)
+                segs.append(((x1, y1), (x2, y2)))
+
         if trilhos:
-            for _, sid, ab in sorted(pins):
-                f = folhas[sid]
-                L.con((sid, f.na if ab == "A" else f.nb), (nomes[trilhos[0]], "rail"))
+            lado = "A" if trilhos[0] == "de" else "B"
+            dados = [(s, pp[(s, ab)]) for _, s, ab in sorted(pins)]
+            niveis = {d[1][2] for _, d in [(0, x) for x in dados]}
+            if len(niveis) == 1:
+                for _, sid, ab in sorted(pins):
+                    f = folhas[sid]
+                    L.con((sid, f.na if ab == "A" else f.nb), (nomes[trilhos[0]], "rail"))
+                continue
+            term = min(niveis) if lado == "A" else max(niveis)
+            kind = "in" if lado == "A" else "out"
+            xs_sp = [x for k, x in sps if k == kind]
+            if not xs_sp:
+                raise ValueError("no do trilho em varios niveis sem espinha (bug do motor)")
+            xsp = xs_sp[0]
+            termpins = [(s, q) for s, q in dados if q[2] == term]
+            for s, q in termpins:
+                f = folhas[s]
+                L.con((s, f.na if lado == "A" else f.nb), (nomes[trilhos[0]], "rail"))
+            ref = (min if lado == "A" else max)(termpins, key=lambda t: t[1][0])[1]
+            ye = ref[1] - 7 if lado == "A" else ref[1] + 7
+            outros = sorted({q[2] for _, q in dados if q[2] != term})
+            for lv in outros:
+                ps = [q for _, q in dados if q[2] == lv]
+                xs = sorted({q[0] for q in ps} | {xsp})
+                for a_, b_ in zip(xs, xs[1:]):
+                    seg(a_, lv, b_, lv)
+                for q in ps:
+                    seg(q[0], q[1], q[0], lv)
+            ys = sorted(set(outros) | {ye})
+            for a_, b_ in zip(ys, ys[1:]):
+                seg(xsp, a_, xsp, b_)
+            seg(xsp, ye, ref[0], ye)
             continue
         ups = [pp[(s, ab)] for _, s, ab in pins if ab == "B"]
         lows = [pp[(s, ab)] for _, s, ab in pins if ab == "A"]
@@ -521,35 +646,53 @@ def _redes(L, uf, pp, nomes, bordas, folhas):
             raise ValueError("no sem origem ou sem destino na rede (expressao incompleta)")
         lb = {u[2] for u in ups}
         la = {d[2] for d in lows}
-        if len(lb) != 1 or len(la) != 1:
-            raise ValueError("niveis inconsistentes na rede (bug do motor)")
-        lb, la = lb.pop(), la.pop()
-        if la == lb:                                           # barramento comum
-            if len(ups) == 1 and len(lows) == 1 and ups[0][0] == lows[0][0]:
-                L.fio(ups[0][0], ups[0][1], lows[0][0], lows[0][1])
-                continue
-            xs = sorted({p[0] for p in ups + lows})
-            for a, b in zip(xs, xs[1:]):
-                L.fio(a, lb, b, lb)
-            for u in ups:
-                L.fio(u[0], u[1], u[0], lb)
-            for d in lows:
-                L.fio(d[0], lb, d[0], d[1])
-        elif la < lb:                                          # serpentina: sobe para a proxima coluna
-            xm = bordas[ups[0][3]] + 18
-            xu = sorted({u[0] for u in ups} | {xm})
-            for a, b in zip(xu, xu[1:]):
-                L.fio(a, lb, b, lb)
-            for u in ups:
-                L.fio(u[0], u[1], u[0], lb)
-            L.fio(xm, lb, xm, la)
-            xl = sorted({d[0] for d in lows} | {xm})
-            for a, b in zip(xl, xl[1:]):
-                L.fio(a, la, b, la)
-            for d in lows:
-                L.fio(d[0], la, d[0], d[1])
-        else:
-            raise ValueError("nivel de entrada abaixo do de saida (rede invalida)")
+        if not sps and len(lb) == 1 and len(la) == 1:
+            lb, la = next(iter(lb)), next(iter(la))
+            if la == lb:                                       # barramento comum
+                if len(ups) == 1 and len(lows) == 1 and ups[0][0] == lows[0][0]:
+                    L.fio(ups[0][0], ups[0][1], lows[0][0], lows[0][1])
+                    continue
+                xs = sorted({p_[0] for p_ in ups + lows})
+                for a_, b_ in zip(xs, xs[1:]):
+                    L.fio(a_, lb, b_, lb)
+                for u in ups:
+                    L.fio(u[0], u[1], u[0], lb)
+                for d in lows:
+                    L.fio(d[0], lb, d[0], d[1])
+            elif la < lb:                                      # serpentina: sobe para a proxima coluna
+                xm = bordas[ups[0][3]] + 18
+                xu = sorted({u[0] for u in ups} | {xm})
+                for a_, b_ in zip(xu, xu[1:]):
+                    L.fio(a_, lb, b_, lb)
+                for u in ups:
+                    L.fio(u[0], u[1], u[0], lb)
+                L.fio(xm, lb, xm, la)
+                xl = sorted({d[0] for d in lows} | {xm})
+                for a_, b_ in zip(xl, xl[1:]):
+                    L.fio(a_, la, b_, la)
+                for d in lows:
+                    L.fio(d[0], la, d[0], d[1])
+            else:
+                raise ValueError("nivel de entrada abaixo do de saida (rede invalida)")
+            continue
+        # varios niveis (paralelo largo quebrado em linhas): um barramento por nivel + espinhas
+        allp = ups + lows
+        sp_lv = []
+        for k, x in sps:
+            lv = sorted({u[2] for u in ups}) if k == "out" else sorted({d[2] for d in lows})
+            sp_lv.append((x, lv))
+        for lv in sorted({q[2] for q in allp}):
+            ps = [q for q in allp if q[2] == lv]
+            xs = sorted({q[0] for q in ps} | {x for x, ls in sp_lv if lv in ls})
+            for a_, b_ in zip(xs, xs[1:]):
+                seg(a_, lv, b_, lv)
+            for q in ps:
+                seg(q[0], q[1], q[0], lv)
+        for x, ls in sp_lv:
+            for a_, b_ in zip(ls, ls[1:]):
+                seg(x, a_, x, b_)
+        if not _conexo(segs, [(q[0], q[1]) for q in allp]):
+            raise ValueError("rede em varios niveis ficou desconexa (bug do motor)")
 
 
 def _pot_largura(pw):

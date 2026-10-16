@@ -84,7 +84,7 @@ Diferenças em relação à proposta acima:
   B->neutro. `terra`: `3002` encostado no neutro.
 - `msel_abre` e `entra` da proposta **não** são usados (ramos entram no fim da série).
 - O motor levanta `ValueError` se algo sair da folha (`layout.SHEET_X/Y`, de `tools/sheet.json`:
-  960x750) ou se dois símbolos se sobrepuserem; a rede v2 quebra em colunas/faixas antes disso.
+  455x305, unidades do .cad) ou se dois símbolos se sobrepuserem; a rede v2 quebra em colunas/faixas antes disso.
 
 ### Contatores em paralelo e inversao de fases (reversao)
 Em `potencia[].colunas`, um item pode ser:
@@ -163,17 +163,22 @@ transformador; para simular, declare também `fonte` no secundário (o exemplo
 pinos 2+2); confira no app.
 
 ### Quebra automática (não cabe na folha)
-A folha segura vem de `tools/sheet.json` (`layout.SHEET_X/Y` = 960x750):
+A folha segura vem de `tools/sheet.json` (`layout.SHEET_X/Y` = 455x305, unidades do .cad):
 1. **Série alta demais** (mais que `y_max` entre os trilhos): o degrau vira **serpentina**: a
    série é repartida em colunas equilibradas; a saída de uma coluna volta ao topo da seguinte
    por um fio único (sobe pelo lado direito da coluna). Um *paralelo* alto demais não quebra
    (erro explícito com a altura).
-2. **Largura demais** (degraus não cabem na linha, já descontada a reserva da `potencia`):
+2. **Paralelo largo demais** (os ramos de um mesmo `paralelo` somam mais que a faixa): os ramos
+   se repartem em **linhas** empilhadas; as barras de entrada/saída das linhas se unem por
+   uma **espinha** vertical (esquerda na entrada, direita na saída). Em trilho, a linha de
+   baixo (`para`) / de cima (`de`) liga pelo roteador e as demais pela espinha.
+3. **Largura demais** (degraus não cabem na linha, já descontada a reserva da `potencia`):
    os degraus excedentes vão para uma **faixa** abaixo, com novo par de trilhos
    (`<de>~<id><k>`, `<para>~<id><k>`) **amarrado** ao primeiro por fios nas margens (esquerda
    para `de`, direita para `para`; nenhum cruza símbolo), de modo que seguem sendo o mesmo nó
-   elétrico. Cada degrau cabe inteiro numa faixa; degrau mais largo que a folha dá erro.
-3. **Forma legada que estoura**: `compilar()` traduz os blocos `serie`/`ramos` para `rede`
+   elétrico. Cada degrau cabe inteiro numa faixa. Se nem assim couber (folha 455x305 comporta ~2 faixas),
+   `ValueError` explícito ("faixa extra nao cabe na folha...").
+4. **Forma legada que estoura**: `compilar()` traduz os blocos `serie`/`ramos` para `rede`
    (via ∥ selo, série, carga ∥ indica) e tenta de novo, em vez de falhar (a função interna
    `_compilar` mantém o erro original).
 
