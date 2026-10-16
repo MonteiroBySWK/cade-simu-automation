@@ -140,6 +140,49 @@ def acionavel_curto(c):
     return f"CURTO {c}{dica}"
 
 
+def gate(path, testes, r=None):
+    """Gate sobre um .cad ja gerado: testes funcionais + geo_check + wires_check. Preenche `r`
+    (dict no formato de construir) e o devolve. Nao reconstroi o arquivo."""
+    import cade_mcp
+    import geo_check
+    import wires_check
+    if r is None:
+        r = {"testes": {}, "geo": {}, "fios": {}, "avisos": [], "erros": [], "_teste_raw": ""}
+    out = path
+    res_geo = geo_check.analisar(str(out))      # (curtos, soltos[, ...]) — tolera campos extras
+    curtos, soltos = res_geo[0], res_geo[1]
+    r["geo"] = {"curtos": curtos, "soltos": soltos,
+                "curtos_msg": [acionavel_curto(c) for c in curtos],
+                "soltos_msg": [acionavel_solto(s) for s in soltos]}
+    r["erros"] += r["geo"]["curtos_msg"] + r["geo"]["soltos_msg"]
+
+    # sem casos declarados, cad_test usa a suite embutida (so vale p/ circuito com KM1 e KM2)
+    teste = cade_mcp.cad_test(str(out), json.dumps(testes))
+    r["_teste_raw"] = teste
+    (pas, tot), falhas = _parse_testes(teste)
+    chaves = conferir_chaves_de_teste(str(out), testes) if testes else []
+    r["testes"] = {"ok": teste.startswith("PASSOU") and not chaves, "passaram": pas, "total": tot,
+                   "falhas": falhas, "saida": teste}
+    if teste.startswith("SEM_TESTES"):
+        r["erros"].append("sem testes: declare \"testes\" (casos {nome, entradas, inicial, esperado, status}); "
+                          "sem eles o circuito nao tem prova funcional")
+    for f in falhas:
+        r["erros"].append("teste falhou: " + (f"{f.get('nome')} -> obtido {f.get('obtido')} "
+                          f"status={f.get('status')}, esperado {f.get('esp')}" if "obtido" in f else f["nome"]))
+    for c in chaves:
+        r["erros"].append(c)
+    if testes and not teste.startswith("PASSOU") and not falhas:
+        r["erros"].append(f"testes: {teste.splitlines()[0]}")
+
+    n, ruins = wires_check.analisar(str(out))
+    r["fios"] = {"ok": not ruins, "n": n,
+                 "atravessam": [f"fio {a}->{b} atravessa o simbolo {nome}" for nome, a, b in ruins]}
+    if ruins:
+        r["avisos"].append(f"{len(ruins)} trecho(s) de fio atravessam simbolo (estetico): "
+                           + "; ".join(r["fios"]["atravessam"][:3]))
+    return r
+
+
 def construir(spec, out):
     """Compila (se for DSL), gera o .cad via cad_build e roda o gate completo.
 
@@ -148,8 +191,6 @@ def construir(spec, out):
                    avisos:[...], erros:[...], n_simbolos, _build_raw, _teste_raw}.
     `ok` = build ok E testes passam E sem curto/pino solto (fios = aviso estetico, nao bloqueia)."""
     import cade_mcp
-    import geo_check
-    import wires_check
     r = {"ok": False, "path": str(out), "titulo": None,
          "build": {"ok": False, "mensagem": ""},
          "testes": {"ok": False, "passaram": None, "total": None, "falhas": [], "saida": ""},
@@ -183,37 +224,8 @@ def construir(spec, out):
     if "ERRO" in res:
         return r
 
-    # sem casos declarados, cad_test usa a suite embutida (so vale p/ circuito com KM1 e KM2)
-    teste = cade_mcp.cad_test(str(out), json.dumps(testes))
-    r["_teste_raw"] = teste
-    (pas, tot), falhas = _parse_testes(teste)
-    chaves = conferir_chaves_de_teste(str(out), testes) if testes else []
-    r["testes"] = {"ok": teste.startswith("PASSOU") and not chaves, "passaram": pas, "total": tot,
-                   "falhas": falhas, "saida": teste}
-    if teste.startswith("SEM_TESTES"):
-        r["erros"].append("sem testes: declare \"testes\" (casos {nome, entradas, inicial, esperado, status}); "
-                          "sem eles o circuito nao tem prova funcional")
-    for f in falhas:
-        r["erros"].append("teste falhou: " + (f"{f.get('nome')} -> obtido {f.get('obtido')} "
-                          f"status={f.get('status')}, esperado {f.get('esp')}" if "obtido" in f else f["nome"]))
-    for c in chaves:
-        r["erros"].append(c)
-    if testes and not teste.startswith("PASSOU") and not falhas:
-        r["erros"].append(f"testes: {teste.splitlines()[0]}")
-
-    curtos, soltos = geo_check.analisar(str(out))
-    r["geo"] = {"curtos": curtos, "soltos": soltos,
-                "curtos_msg": [acionavel_curto(c) for c in curtos],
-                "soltos_msg": [acionavel_solto(s) for s in soltos]}
-    r["erros"] += r["geo"]["curtos_msg"] + r["geo"]["soltos_msg"]
-
-    n, ruins = wires_check.analisar(str(out))
-    r["fios"] = {"ok": not ruins, "n": n,
-                 "atravessam": [f"fio {a}->{b} atravessa o simbolo {nome}" for nome, a, b in ruins]}
-    if ruins:
-        r["avisos"].append(f"{len(ruins)} trecho(s) de fio atravessam simbolo (estetico): "
-                           + "; ".join(r["fios"]["atravessam"][:3]))
-    r["ok"] = bool(r["build"]["ok"] and r["testes"]["ok"] and not curtos and not soltos)
+    g = gate(str(out), testes, r)
+    r["ok"] = bool(r["build"]["ok"] and g["testes"]["ok"] and not r["geo"]["curtos"] and not r["geo"]["soltos"])
     return r
 
 
