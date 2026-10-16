@@ -235,3 +235,104 @@ CUER POLI RELL NUME TEXT`, coords "+ddd" em **1/5 px**) aplica a cada ponto (x,y
 - Estatística do acervo (112 arquivos, endpoints de fio a ≤40 px) corrobora:
   2001/6007: pinos em x∈{0,6,12}, y∈{0,12}; 6009: x∈{0,6,12}, y∈{0,21};
   1000: x∈{0,6,12,18}, y=0 (U1,V1,W1,PE); contatos/botões 7000/8000/8001/8017: (0,0),(0,12).
+
+---
+
+## 11. Semântica de simulação por classe (Ghidra, 15/10/2026)
+
+Entrega: **`docs/classes-papeis.json`** (366 classes: todas de `pinos-binario.json` + as do
+despacho `FUN_0040d2b0` + as nomeadas nos diálogos). Gerado por
+`tools/ghidra/gen_classes_papeis.py` a partir de três extrações do `srv.java` (novos comandos
+`cmpstr` e `sem`). Chaves por classe: `nome` (espanhol, string do binário), `aba`, `papel`,
+`pinos` (nomes padrão na ordem de desenho = p1..pN de `pinos-binario.json`), `contatos`
+(`[{pinos:[a,b], fecha_quando:"estado==1|0|sempre"}]`), `aciona_por`, `estado_inicial`,
+`parametros`, `designacao_padrao`, `evidencia`, `confianca` (`alta|media|baixa`;
+`nome_ausente_no_binario:true` = nome deduzido).
+
+### 11.1 Método
+- **Nomes**: `FUN_0087aca0` (OnInitDialog das propriedades) faz `if (DAT_00bd95cc == classe)
+  SetWindowText("nome")` → 159 classes. `srv cmpstr 00bd95cc` varre o programa inteiro por
+  `CMP [0x00bd95cc],imm` + `PUSH string` seguinte (outros diálogos: `FUN_00899910` aux/lógica,
+  `FUN_00888e00` sensores, `FUN_008c8f40` temporizadores, `FUN_008a4d20` PLC) → +120.
+  Sem nome no binário (só pinos): 8016..8022, 1008.., 9040..9045 etc. (fallback marcado).
+- **Papel**: `srv sem <funções de desenho>` lista, em ordem, as strings empurradas (rótulo
+  padrão, nome de cada pino antes do seu `NUME`), os testes `CMP [ent+0x78a9c],v` da etapa de
+  propagação (= condição de condução), as classes comparadas e as chamadas `Ordinal_812`
+  (CString `==`, comparação de rótulo). 12 funções decompiladas linha a linha para validar.
+
+### 11.2 Estado em runtime (arrays SoA, stride 4 por entidade) — CONFIANÇA ALTA
+| offset | significado |
+|---|---|
+| `+0x78a9c` | **estado** (1 = acionado/energizado). Contatos testam este campo |
+| `+0x7a9dc` | estado anterior (detecção de borda: carga energiza quando `novo && ant∈{0,-1}`) |
+| `+0x2eee4` | contador do temporizador (ticks restantes) |
+| `+0x30e24` | **saída temporizada** do temporizador (copiada aos contatos 7004..7015) |
+| `+0x7156c` (stride 0xf) | char de tensão do **fio** |
+| `+0x8e25c`,`+0x8f1fc`,`+0x9019c`… (stride 2) | char visto no pino 1, 2, 3… do símbolo |
+`FUN_0043d540` (Play) zera todos esses campos → **estado_inicial = 0 para todas as classes**.
+
+### 11.3 Modelo de simulação — CONFIANÇA ALTA (decompilado)
+- **Tensão = char propagado**. Fonte estampa `'1','2','3','N','P','+','-'` (L1,L2,L3,N,PE,+,-)
+  no fio do pino. Cada elemento fechado copia o char do fio de um pino para o fio do outro
+  (se este estiver `'0'`), marcando a origem com `'*'` (`FUN_005b00d0` etc.).
+- **Relaxação**: `OnDraw` percorre todas as entidades **8 passadas** (`DAT_00bd959c=0..7`,
+  `FUN_0040d2b0` @0x41e9a4). Só na **passada 7** cargas comitam estado e temporizadores contam.
+  Cada `WM_TIMER 1` (`FUN_008691f0`) zera os chars dos fios e redesenha.
+- **Contato** (NA/NC/polos): conduz se `estado == 1` (NA) ou `estado == 0` (NC) — lido do
+  `CMP` na etapa de propagação: 7000/8000/8016/2001 `==1`; 7001/8001/8017 `==0`;
+  NA-NC (7002/8002/8018) pinos `11,13,12,14` → 11-12 `==0`, 13-14 `==1`; comutado
+  (7003/8003/8019) `11,12,14` → 11-12 `==0`, 11-14 `==1`.
+- **Carga energizada** (bobina 9000, temporizador 9004, lâmpada 9008, `FUN_006292a0`/
+  `FUN_0062dbe0`/`FUN_006367b0`): par de chars nos 2 pinos ∈ {(fase,N), (N,fase),
+  (fase_i,fase_j) i≠j, (+,-), (-,+)}; lâmpada também (+,N). **Não há "fase estampada" na
+  lâmpada**: ela só lê os dois lados. Lâmpada sem retorno estampa marcas de carga-em-série
+  (`'R','S','T'` / `'A','B','C'`, `'W'`) no lado aberto; duas cargas em série acendem com
+  **meia luz** (flag `local_84`, pares com `'Z'`/`'B'`) — confiança média.
+- **Acionamento por rótulo**: a bobina, na passada 7, copia seu estado a toda entidade cujo
+  **label0 é igual** (Ordinal_812) e cuja classe ∈ {2000,2001,2002,2006,2008} (polos) ∪
+  {7000..7003} (auxiliares). Temporizadores copiam também a 7004..7007 (9004), 7008..7011
+  (9005), …, mas com o valor de `+0x30e24` (temporizado).
+- **Entradas (clique, `FUN_0043ee20`)**: pulsadores 8000..8007, fins de curso 8012..8015, 8023
+  e sensores 7500..7605 → `estado=1` ao pressionar (momentâneo) e propagam a mesmo rótulo;
+  interruptores 2003..2005/2007, 8008..8011, 8022, fusíveis/seccionadores 5000..5009,
+  disjuntores 6000..6020 → **alternam**; 8021 cicla 0→1→2; **relé térmico 6007**: clique
+  alterna e copia o estado para 8016..8019 de **mesmo rótulo** (os polos 1-2/3-4/5-6 do 6007
+  **sempre conduzem**).
+- **Consequências p/ o gerador/simulador**: disjuntores/seccionadores (6000..6020,
+  5005..5009) e interruptores começam **abertos** (conduzem com estado==1; inicial 0) —
+  confiança média (validar no app); fusíveis 5000..5004 conduzem com estado==0 (íntegros).
+  NC do térmico (8017) fecha no repouso. Contato/polo só é comandado por bobina de **rótulo
+  idêntico** (string exata, incl. o `-`).
+
+### 11.4 Temporizadores — CONFIANÇA ALTA (código) / MÉDIA (unidade "x60")
+- Classes: **9004** ON-delay (Temporizador a la conexión), **9005** OFF-delay, **9006**
+  ON+OFF, **9007** intermitente, **9015** gerador de pulsos; contatos **7004..7007** (ON:
+  NA 67-68, NC 55-56, NA-NC, comutado), **7008..7011** (OFF), **7012..7015** (ON/OFF). CLP:
+  10066..10069, 10081; relé de zócalo 7017; blocos 7020/7021 ("Contactos ON/OFF Delay")
+  acoplados ao contator 7018.
+- Ligação contato↔temporizador: **por rótulo (label0 igual)**, como bobina↔contato.
+- 9004 (`FUN_0062dbe0`, passada 7): na borda de energização `estado=1` e
+  `contador = atoi(label5) × mult(label4)`; a cada tick `contador--`; quando `<1`,
+  `saida(+0x30e24)=1`. Desenergizou: `estado=saida=contador=0` (reset imediato). Contatos
+  7004.. recebem `saida`; contatos instantâneos 7000..7003 e polos recebem `estado`.
+- **Tempo** = label5 (6º rótulo; no `.cad` `#A1#A2#0#5#` → unidade `0`, tempo `5`).
+  **Unidade** = label4 ∈ `'3'`→×1, `'0'`→×10, `'1'`→×100, `'2'`→×1000 ticks; diálogo
+  (`FUN_008c8f40`, rádios) mostra "x 0,1 Seg / x 1 Seg / x 10 Seg / x 60 Seg" ⇒ com tick de
+  100 ms: 0,1 s / 1 s / 10 s / **100 s** (o "x60" da UI não bate com ×1000 — inconsistência
+  do app). `atoi` ⇒ fração ("0.5") vira 0 (comuta no 1º tick).
+- **Tick** = `SetTimer(1, 1000 − 18×vel)` ms; `vel` = `DAT_00b80804` = **último `%4d` do
+  header** (`FUN_00878080`), padrão 50 ⇒ **100 ms**.
+
+### 11.5 Confiança por item
+| item | conf. | evidência |
+|---|---|---|
+| contatos NA/NC/NA-NC/comutado (7000-7003, 8000-8003, 8016-8019) | alta | CMP na propagação, 4 decompiladas |
+| polos 2000-2002/2006/2008 por rótulo da bobina | alta | `FUN_006292a0` + `FUN_00516240` |
+| bobina 9000 / lâmpada 9008: energiza c/ tensão entre pinos | alta | decompilado |
+| lâmpada meia-luz em série | média | decompilado parcialmente |
+| temporizador 9004 (borda, contador, label4/5, tick) | alta | `FUN_0062dbe0`, `FUN_008691f0` |
+| 9005/9006/9007 (OFF/ON-OFF/intermitente) | média | mesma estrutura (sem), não lidos linha a linha |
+| 6007 polos sempre fechados; clique propaga a 8016-8019 | alta | `FUN_005727b0`, `FUN_0043ee20` |
+| disjuntores/seccionadores iniciam abertos | média | CMP `==1` + zeragem no Play; falta prova no app |
+| motores 1000.. (gira com fases distintas) | média | campo 0x7a9dc, não lido linha a linha |
+| sensores 7500.., pneumática 10500.., PLC/GRAFCET/lógica 10000.. | baixa | só nome + pinos + família |
