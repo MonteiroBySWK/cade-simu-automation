@@ -484,7 +484,25 @@ def _confere(cs, e):
     return cond
 
 
-def _rodar_caso(c, cs):
+def chaves_invalidas(c, cs):
+    """Chaves citadas por um caso que nao existem no circuito -> [(campo, chave)].
+    Teste com chave inexistente seria vacuo (falso verde): o chamador deve reprovar."""
+    tim = c._timers()
+    ruim = []
+    for b in [cs] + list(cs.get("passos") or []):
+        for k in (b.get("entradas") or {}):
+            if k not in c.entradas and k not in c.bobinas:
+                ruim.append(("entradas", k))
+        for campo, validas in (("inicial", set(c.bobinas) | set(tim) | {t["chave"] for t in tim.values()}),
+                               ("esperado", set(c.bobinas)), ("esperado_lampadas", set(c.lampadas)),
+                               ("esperado_temporizadores", set(tim))):
+            for k in (b.get(campo) or []):
+                if k not in validas:
+                    ruim.append((campo, k))
+    return ruim
+
+
+def executar_caso(c, cs):
     """Executa um caso (simples ou com `passos`) -> (aprovado, estado_final)."""
     st = c.novo_estado(cs.get("inicial", []), cs.get("tempos"))
     passos = cs.get("passos")
@@ -504,7 +522,7 @@ def teste_casos(path, casos):
     c = Circuito(path)
     ok = 0
     for cs in casos:
-        cond, e = _rodar_caso(c, cs)
+        cond, e = executar_caso(c, cs)
         ok += cond
         extra = ""
         if cs.get("esperado_lampadas") is not None or e["lampadas"]:
