@@ -19,7 +19,18 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from dissect import parse_ent, split_entities  # noqa: E402
 
-from mcp.server.fastmcp import FastMCP  # noqa: E402
+try:
+    from mcp.server.fastmcp import FastMCP  # noqa: E402
+except ImportError:  # sem o pacote `mcp` (ex.: pytest no python do sistema): ferramentas viram funcoes comuns
+    class FastMCP:  # type: ignore[no-redef]
+        def __init__(self, *_a, **_k):
+            pass
+
+        def tool(self, *_a, **_k):
+            return lambda fn: fn
+
+        def run(self):
+            raise SystemExit("pacote 'mcp' ausente: use tools/.venv-mcp/bin/python tools/cade_mcp.py")
 
 ROOT = Path(__file__).resolve().parent.parent
 CLI = ROOT / "src" / "cade_cli" / "target" / "debug" / "cade_cli"
