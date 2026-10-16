@@ -43,7 +43,8 @@
       "nome": "repouso desligado",
       "entradas": {},
       "status": "OK",
-      "esperado": []
+      "esperado": [],
+      "esperado_lampadas": []
     },
     {
       "nome": "S1 liga KM1",
@@ -53,6 +54,9 @@
       "status": "OK",
       "esperado": [
         "KM1"
+      ],
+      "esperado_lampadas": [
+        "H1"
       ]
     },
     {
@@ -64,6 +68,9 @@
       ],
       "inicial": [
         "KM1"
+      ],
+      "esperado_lampadas": [
+        "H1"
       ]
     },
     {
@@ -75,7 +82,8 @@
       "esperado": [],
       "inicial": [
         "KM1"
-      ]
+      ],
+      "esperado_lampadas": []
     },
     {
       "nome": "RT1 aberto bloqueia",
@@ -84,9 +92,12 @@
         "S1": true
       },
       "status": "OK",
-      "esperado": []
+      "esperado": [],
+      "esperado_lampadas": [
+        "H2"
+      ]
     }
   ],
   "golden": "partida_sinalizacao",
-  "nota": "O netlist_sim so observa bobinas (9000/10060): a logica das lampadas H1/H2 e verificada so estruturalmente (classes/rotulos obrigatorios + geo_check)."
+  "nota": "O netlist_sim (geometria + potencial de fase) simula bobinas e lampadas: H1 (paralela a bobina) e H2 (NA do termico em serie) sao validadas funcionalmente via esperado_lampadas, alem de classes/rotulos obrigatorios e geo_check."
 }
