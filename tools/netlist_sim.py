@@ -425,16 +425,19 @@ class Circuito:
             if not tim or status in ("RACE", "INSTAVEL"):
                 break
             ativo = self._ativos(ent, coil)
+            if self._passo_tempo(tim, tm, el, ativo, 0.0):       # efeitos instantaneos (TOF liga, tempo 0)
+                status, coil, lamp, curtos = self._assentar(ent, coil, tm)
+                continue
+            if restante <= 1e-9:
+                break
             ev = self._proximo_evento(tim, tm, el, ativo)
             dt = restante if ev is None else min(restante, ev)
-            if dt <= 0 and restante <= 1e-9:
+            if dt <= 0:
                 break
             mudou = self._passo_tempo(tim, tm, el, ativo, dt)
             restante -= dt
             if mudou:
                 status, coil, lamp, curtos = self._assentar(ent, coil, tm)
-            elif restante <= 1e-9:
-                break
         st["coil"] = coil
         return {"status": status, "bobinas": sorted(k for k, v in coil.items() if v),
                 "lampadas": sorted(lamp),
