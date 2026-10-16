@@ -121,7 +121,7 @@ Também confirmado: remover a entidade 0 herdada do doador (fonte `3004 -X` solt
    arquivo** (folha.md: a moldura depende do rodapé/legenda).
 3. **Botoeiras simultâneas** (`S1`+`S2` juntas, status `RACE`): não reproduzível (ponteiro único);
    o verificador pulsa as anteriores e segura só a última, e marca `RACE` como `ignorado`.
-4. **Sem divergência de lógica** (app × netlist) nos 36 casos avaliáveis: bobinas e lâmpadas
+4. **Sem divergência de lógica** (app × netlist) nos 20 casos avaliáveis (+6 do `pd_f1`): bobinas e lâmpadas
    coincidem exatamente.
 
 ## O que lê com confiança e o que não
