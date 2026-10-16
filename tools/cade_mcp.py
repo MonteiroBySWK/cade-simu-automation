@@ -724,5 +724,46 @@ def _assign_nets(ents):
                 e["nums"][idx] = str(net)
 
 
+@mcp.tool()
+def cad_simular_no_app(path: str, casos_json: str = "[]", entradas_alias_json: str = "{}") -> str:
+    """CONFIRMACAO FINAL na VERDADE do app: abre o .cad no CADe_SIMU (Wine), da Play, aciona as entradas
+    e le bobinas/lampadas acesas por analise de imagem. Roda os mesmos casos de cad_test/cad_gate.
+
+    Quando usar: SO no fim, com cad_design/cad_gate verde e o cad_preview conferido. Custa ~30-90 s
+    (subir o Wine ~20 s + ~4-6 s por caso), exige Wine + DISPLAY (X11) e usa UM Wine por vez; nao use em
+    loop de iteracao (o netlist/cad_test e instantaneo). Sempre derruba o Wine ao terminar.
+    casos_json: [{"nome","entradas":{"S1":true},"inicial":["KM1"],"esperado":["KM1"],
+                  "esperado_lampadas":["H1"]}]  (mesmo formato dos "testes"; botoeira True = segurar;
+      termico/disjuntor True = clique; "inicial" e obtido apertando a sequencia de botoes ate as bobinas
+      chegarem la). Vazio = so confere o estado de repouso. status 'RACE' vira 'ignorado'.
+    entradas_alias_json: {"RT1":"F1"} (raro): aciona a entrada pelo rotulo de outro simbolo.
+    Retorno JSON: {ok, repouso, casos:[{nome, resultado: ok|falha|indeterminado|nao_acionavel|erro|ignorado,
+      esperado, obtido, obtido_lampadas, screenshot, motivo}], screenshots (diretorio), tempo_s, avisos}.
+    Divergencia app x netlist = bug do modelo/RE ou do circuito, NAO do teste: leia 'motivo' e o screenshot.
+    Ja sabido: o contato do rele termico (8016/8017) so acompanha o disparo do 6007 de MESMO ROTULO
+    (ex.: ambos '-F1'); com rotulos diferentes (-RT1 x -F1) o app nao permite disparar o termico."""
+    try:
+        casos = json.loads(casos_json)
+        aliases = json.loads(entradas_alias_json)
+    except json.JSONDecodeError as e:
+        return json.dumps({"ok": False, "erro": f"JSON invalido: {e}"}, ensure_ascii=False)
+    if not Path(path).is_file():
+        return json.dumps({"ok": False, "erro": f"arquivo nao existe: {path}"}, ensure_ascii=False)
+    if not os.environ.get("DISPLAY") and not os.path.exists("/tmp/.X11-unix"):
+        return json.dumps({"ok": False, "erro": "sem DISPLAY/X11: o simulador do app precisa de uma tela (DISPLAY=:1)"},
+                          ensure_ascii=False)
+    import app_sim
+    try:
+        r = app_sim.executar_casos(path, casos, aliases=aliases)
+    except Exception as e:  # nao deixa o MCP cair; o app_sim ja da down no finally
+        return json.dumps({"ok": False, "erro": f"{type(e).__name__}: {e}"}, ensure_ascii=False)
+    r.pop("log", None)
+    div = [c for c in r["casos"] if c.get("resultado") in ("falha", "nao_acionavel", "indeterminado", "erro")]
+    r["proximo_passo"] = ("app == modelo nos casos avaliados" if not div and r.get("ok") else
+                          f"{len(div)} caso(s) divergem do esperado: confira os screenshots e o 'motivo'; "
+                          "se o netlist passa mas o app nao, o circuito/RE esta errado, nao o teste")
+    return json.dumps(r, ensure_ascii=False, indent=1, default=str)
+
+
 if __name__ == "__main__":
     mcp.run()
