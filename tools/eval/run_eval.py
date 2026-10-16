@@ -70,22 +70,18 @@ def testes_funcionais(path, casos):
     """-> (passaram, total, detalhes). Chave inexistente no circuito = teste reprovado (nao vacuo)."""
     import netlist_sim as ns
     c = ns.Circuito(str(path))
-    validas = set(c.entradas) | set(c.bobinas)
     ok, det = 0, []
     for cs in casos:
-        ruim = [k for k in (cs.get("entradas") or {}) if k not in validas] + \
-               [k for campo in ("inicial", "esperado") for k in (cs.get(campo) or []) if k not in c.bobinas]
+        ruim = ns.chaves_invalidas(c, cs)
         if ruim:
-            det.append(f"{cs.get('nome')}: chave(s) inexistente(s) no circuito {ruim} "
-                       f"(entradas {sorted(c.entradas)}, bobinas {sorted(c.bobinas)})")
+            det.append(f"{cs.get('nome')}: chave(s) inexistente(s) no circuito {[f'{k} ({cp})' for cp, k in ruim]} "
+                       f"(entradas {sorted(c.entradas)}, bobinas {sorted(c.bobinas)}, lampadas {sorted(c.lampadas)})")
             continue
-        status, got = c.resolve(cs.get("entradas") or {}, set(cs.get("inicial") or []))
-        cond = (cs.get("status") is None or status == cs["status"]) and \
-               (cs.get("esperado") is None or got == set(cs["esperado"]))
+        cond, e = ns.executar_caso(c, cs)
         ok += cond
         if not cond:
-            det.append(f"{cs.get('nome')}: obtido {sorted(got)} status={status}, esperado {cs.get('esperado')} "
-                       f"status={cs.get('status')}")
+            det.append(f"{cs.get('nome')}: obtido bobinas={e['bobinas']} lampadas={e['lampadas']} status={e['status']}, "
+                       f"esperado {cs.get('esperado')} lampadas={cs.get('esperado_lampadas')} status={cs.get('status')}")
     return ok, len(casos), det
 
 

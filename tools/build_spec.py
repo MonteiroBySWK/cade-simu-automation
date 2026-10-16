@@ -16,7 +16,7 @@ from pathlib import Path
 TOOLS = Path(__file__).resolve().parent
 sys.path.insert(0, str(TOOLS))
 
-_FALHA = re.compile(r"\[FALHA\]\s*(?P<nome>.*?):\s*KM=(?P<obtido>\[.*?\])\s*status=(?P<status>\S+)\s*esperado=(?P<esp>.*)$")
+_FALHA = re.compile(r"\[FALHA\]\s*(?P<nome>.*?):\s*KM=(?P<obtido>\[.*?\])\s*status=(?P<status>\S+)\s*esperado=(?P<esp>\[[^\]]*\]|None)(?P<resto>.*)$")
 _PINO_SOLTO = re.compile(r"^(?P<rot>.*)\((?P<classe>\d+)\)\.(?P<pino>[^@]+)@\((?P<x>-?\d+), (?P<y>-?\d+)\)$")
 _FONTES = {"3000", "3001", "3003", "3004", "3005", "3006", "3007", "3011"}
 
@@ -93,24 +93,28 @@ def _parse_testes(saida):
 
 
 def conferir_chaves_de_teste(path, testes):
-    """Chaves de entradas/inicial/esperado que nao existem no circuito (teste vacuo = falso verde)."""
+    """Chaves de entradas/inicial/esperado*/passos que nao existem no circuito (teste vacuo = falso verde)."""
     if not testes:
         return []
     import netlist_sim as ns
     c = ns.Circuito(path)
-    validas_in = set(c.entradas) | set(c.bobinas)
     erros = []
     for cs in testes:
-        for k in (cs.get("entradas") or {}):
-            if k not in validas_in:
-                erros.append(f"teste '{cs.get('nome', '?')}': entrada '{k}' nao existe no circuito "
+        for campo, k in ns.chaves_invalidas(c, cs):
+            nome = cs.get("nome", "?")
+            if campo == "entradas":
+                erros.append(f"teste '{nome}': entrada '{k}' nao existe no circuito "
                              f"(entradas validas: {sorted(c.entradas)}; bobinas: {sorted(c.bobinas)}). "
                              f"A chave e o ROTULO do simbolo sem o '-' (ex.: '-S1' -> 'S1').")
-        for campo in ("inicial", "esperado"):
-            for k in (cs.get(campo) or []):
-                if k not in c.bobinas:
-                    erros.append(f"teste '{cs.get('nome', '?')}': '{campo}' cita '{k}', que nao e bobina "
-                                 f"(bobinas: {sorted(c.bobinas)}).")
+            elif campo == "esperado_lampadas":
+                erros.append(f"teste '{nome}': '{campo}' cita '{k}', que nao e lampada "
+                             f"(lampadas: {sorted(c.lampadas)}; use o rotulo sem '-', ex.: '-H1' -> 'H1').")
+            elif campo == "esperado_temporizadores":
+                erros.append(f"teste '{nome}': '{campo}' cita '{k}', que nao e contato temporizado "
+                             f"(temporizadores: {sorted(c._timers())}).")
+            else:
+                erros.append(f"teste '{nome}': '{campo}' cita '{k}', que nao e bobina "
+                             f"(bobinas: {sorted(c.bobinas)}).")
     return erros
 
 
