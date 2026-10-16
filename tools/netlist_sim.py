@@ -105,8 +105,16 @@ def carregar_papeis(path=None):
         classes = raw.get("classes", raw) if isinstance(raw, dict) else {}
         for cid, e in classes.items():
             n = _normalizar_papel(e)
-            if n:
-                tab[str(cid)] = n
+            if not n:
+                continue
+            # nomes de pino do RE (A1/95/13...) nao existem na tabela do binario (p1/p2/1..6):
+            # so aceite 'pinos' que existam na classe; senao use os 2 primeiros do binario.
+            conhecidos = set(G.pinos_da_classe(str(cid)))
+            if n.get("pinos") and not set(n["pinos"]) <= conhecidos:
+                n.pop("pinos")
+            if str(cid) in tab and path is None:
+                continue           # papel embutido (validado no app) prevalece; o JSON padrao do RE so ACRESCENTA
+            tab[str(cid)] = n
     return tab
 
 
