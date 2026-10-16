@@ -1,0 +1,113 @@
+{
+  "id": "partida_emergencia",
+  "titulo": "Partida direta com parada de emergencia",
+  "dificuldade": 2,
+  "enunciado": "Partida direta de um motor trifasico (contator -KM1, disjuntor -Q1, termico -F1 com contato NF -RT1, liga -S1, desliga -S0, selo, lampada -H1) com um BOTAO DE EMERGENCIA -E1 (NF, cogumelo): ao ser acionado derruba o contator mesmo com o selo fechado e impede nova partida enquanto estiver acionado. Soltar a emergencia NAO religa o motor.",
+  "restricoes": [
+    "Use UMA fonte trifasica multi-terminal (classe 3007) e trilho PE separado do neutro.",
+    "Ligue TODOS os terminais (nenhum pino solto; U1/V1/W1/PE do motor, 1-3-5/2-4-6 do contator).",
+    "Os rotulos dos simbolos devem ser exatamente os do enunciado (os testes usam esses nomes).",
+    "O NF da emergencia fica EM SERIE, como primeiro elemento do comando (antes do termico e do -S0)."
+  ],
+  "obrigatorios": {
+    "classes": {
+      "2001": 1,
+      "6007": 1,
+      "1000": 1,
+      "9000": 1,
+      "8017": 1,
+      "8001": 1,
+      "8000": 1,
+      "7000": 1
+    },
+    "uma_de": [
+      [
+        "6009",
+        "6010"
+      ]
+    ],
+    "rotulos": [
+      "-E1",
+      "-S0",
+      "-S1",
+      "-KM1",
+      "-RT1"
+    ]
+  },
+  "testes": [
+    {
+      "nome": "repouso desligado",
+      "entradas": {},
+      "status": "OK",
+      "esperado": []
+    },
+    {
+      "nome": "S1 liga KM1",
+      "entradas": {
+        "S1": true
+      },
+      "status": "OK",
+      "esperado": [
+        "KM1"
+      ]
+    },
+    {
+      "nome": "selo mantem KM1",
+      "entradas": {},
+      "status": "OK",
+      "esperado": [
+        "KM1"
+      ],
+      "inicial": [
+        "KM1"
+      ]
+    },
+    {
+      "nome": "S0 desliga",
+      "entradas": {
+        "S0": true
+      },
+      "status": "OK",
+      "esperado": [],
+      "inicial": [
+        "KM1"
+      ]
+    },
+    {
+      "nome": "emergencia derruba KM1 mesmo com selo",
+      "entradas": {
+        "E1": true
+      },
+      "status": "OK",
+      "esperado": [],
+      "inicial": [
+        "KM1"
+      ]
+    },
+    {
+      "nome": "emergencia impede a partida",
+      "entradas": {
+        "E1": true,
+        "S1": true
+      },
+      "status": "OK",
+      "esperado": []
+    },
+    {
+      "nome": "soltar emergencia nao religa",
+      "entradas": {},
+      "status": "OK",
+      "esperado": []
+    },
+    {
+      "nome": "RT1 aberto bloqueia",
+      "entradas": {
+        "RT1": true,
+        "S1": true
+      },
+      "status": "OK",
+      "esperado": []
+    }
+  ],
+  "golden": "partida_emergencia"
+}

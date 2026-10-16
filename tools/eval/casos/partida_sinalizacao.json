@@ -1,0 +1,92 @@
+{
+  "id": "partida_sinalizacao",
+  "titulo": "Partida direta com sinalizacao de funcionamento e de falha",
+  "dificuldade": 2,
+  "enunciado": "Partida direta de um motor trifasico (contator -KM1, disjuntor -Q1, termico -F1, liga -S1, desliga -S0, selo). Inclua sinalizacao: -H1 acende quando o motor esta em funcionamento (paralelo com a bobina -KM1) e -H2 acende quando o rele termico atua (contato NA 97-98 do termico em serie com -H2). A logica de comando nao pode mudar por causa da sinalizacao.",
+  "restricoes": [
+    "Use UMA fonte trifasica multi-terminal (classe 3007) e trilho PE separado do neutro.",
+    "Ligue TODOS os terminais (nenhum pino solto; U1/V1/W1/PE do motor, 1-3-5/2-4-6 do contator).",
+    "Os rotulos dos simbolos devem ser exatamente os do enunciado (os testes usam esses nomes).",
+    "-H2 e alimentado por um degrau proprio: NA do termico (classe 8016, rotulo -RT1) em serie com a lampada.",
+    "Sao 2 lampadas distintas (classe 9008): -H1 e -H2."
+  ],
+  "obrigatorios": {
+    "classes": {
+      "2001": 1,
+      "6007": 1,
+      "1000": 1,
+      "9000": 1,
+      "8017": 1,
+      "8001": 1,
+      "8000": 1,
+      "7000": 1,
+      "8016": 1,
+      "9008": 2
+    },
+    "uma_de": [
+      [
+        "6009",
+        "6010"
+      ]
+    ],
+    "rotulos": [
+      "-S0",
+      "-S1",
+      "-KM1",
+      "-RT1",
+      "-H1",
+      "-H2"
+    ]
+  },
+  "testes": [
+    {
+      "nome": "repouso desligado",
+      "entradas": {},
+      "status": "OK",
+      "esperado": []
+    },
+    {
+      "nome": "S1 liga KM1",
+      "entradas": {
+        "S1": true
+      },
+      "status": "OK",
+      "esperado": [
+        "KM1"
+      ]
+    },
+    {
+      "nome": "selo mantem KM1",
+      "entradas": {},
+      "status": "OK",
+      "esperado": [
+        "KM1"
+      ],
+      "inicial": [
+        "KM1"
+      ]
+    },
+    {
+      "nome": "S0 desliga",
+      "entradas": {
+        "S0": true
+      },
+      "status": "OK",
+      "esperado": [],
+      "inicial": [
+        "KM1"
+      ]
+    },
+    {
+      "nome": "RT1 aberto bloqueia",
+      "entradas": {
+        "RT1": true,
+        "S1": true
+      },
+      "status": "OK",
+      "esperado": []
+    }
+  ],
+  "golden": "partida_sinalizacao",
+  "nota": "O netlist_sim so observa bobinas (9000/10060): a logica das lampadas H1/H2 e verificada so estruturalmente (classes/rotulos obrigatorios + geo_check)."
+}

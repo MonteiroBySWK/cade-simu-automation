@@ -1,0 +1,124 @@
+{
+  "id": "dois_motores_independentes",
+  "titulo": "Dois motores com partidas independentes",
+  "dificuldade": 2,
+  "enunciado": "Dois motores trifasicos (-M1 e -M2), cada um com disjuntor, termico e contator proprios (-Q1/-F1/-KM1 e -Q2/-F2/-KM2). Um unico comando: -S1 liga -KM1, -S2 liga -KM2, cada um com selo e lampada (-H1/-H2); -S0 (NF) desliga os dois; os termicos -RT1 e -RT2 em serie travam a partida. NAO ha intertravamento: os dois motores podem funcionar ao mesmo tempo.",
+  "restricoes": [
+    "Use UMA fonte trifasica multi-terminal (classe 3007) e trilho PE separado do neutro.",
+    "Ligue TODOS os terminais (nenhum pino solto; U1/V1/W1/PE do motor, 1-3-5/2-4-6 do contator).",
+    "Os rotulos dos simbolos devem ser exatamente os do enunciado (os testes usam esses nomes).",
+    "Dois grupos de potencia completos (3 fases por motor).",
+    "Sem contato NF cruzado entre KM1 e KM2."
+  ],
+  "obrigatorios": {
+    "classes": {
+      "2001": 2,
+      "6007": 2,
+      "1000": 2,
+      "9000": 2,
+      "8017": 2,
+      "8001": 1,
+      "8000": 2,
+      "7000": 2
+    },
+    "uma_de": [
+      [
+        "6009",
+        "6010"
+      ]
+    ],
+    "rotulos": [
+      "-S0",
+      "-S1",
+      "-S2",
+      "-KM1",
+      "-KM2",
+      "-RT1",
+      "-RT2"
+    ]
+  },
+  "testes": [
+    {
+      "nome": "repouso desligado",
+      "entradas": {},
+      "status": "OK",
+      "esperado": []
+    },
+    {
+      "nome": "S1 liga KM1",
+      "entradas": {
+        "S1": true
+      },
+      "status": "OK",
+      "esperado": [
+        "KM1"
+      ]
+    },
+    {
+      "nome": "S2 liga KM2",
+      "entradas": {
+        "S2": true
+      },
+      "status": "OK",
+      "esperado": [
+        "KM2"
+      ]
+    },
+    {
+      "nome": "S1 e S2 ligam os dois",
+      "entradas": {
+        "S1": true,
+        "S2": true
+      },
+      "status": "OK",
+      "esperado": [
+        "KM1",
+        "KM2"
+      ]
+    },
+    {
+      "nome": "selo dos dois",
+      "entradas": {},
+      "status": "OK",
+      "esperado": [
+        "KM1",
+        "KM2"
+      ],
+      "inicial": [
+        "KM1",
+        "KM2"
+      ]
+    },
+    {
+      "nome": "S0 desliga os dois",
+      "entradas": {
+        "S0": true
+      },
+      "status": "OK",
+      "esperado": [],
+      "inicial": [
+        "KM1",
+        "KM2"
+      ]
+    },
+    {
+      "nome": "RT1 aberto bloqueia S1",
+      "entradas": {
+        "RT1": true,
+        "S1": true
+      },
+      "status": "OK",
+      "esperado": []
+    },
+    {
+      "nome": "RT2 aberto bloqueia S2",
+      "entradas": {
+        "RT2": true,
+        "S2": true
+      },
+      "status": "OK",
+      "esperado": []
+    }
+  ],
+  "golden": "dois_motores_independentes"
+}

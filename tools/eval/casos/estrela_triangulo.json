@@ -1,0 +1,39 @@
+{
+  "id": "estrela_triangulo",
+  "titulo": "Partida estrela-triangulo (desafio, fora do alcance da DSL v1)",
+  "dificuldade": 4,
+  "enunciado": "Partida ESTRELA-TRIANGULO automatica de um motor trifasico: contatores -KM1 (rede), -KM2 (estrela) e -KM3 (triangulo), temporizador -KT1 que comuta de estrela para triangulo apos alguns segundos, intertravamento entre -KM2 e -KM3, liga -S1, desliga -S0, termico -RT1 e disjuntor -Q1. Motor de 6 terminais (familia de motores 1000-1004 da biblioteca; confira com cad_pins).",
+  "restricoes": [
+    "Use UMA fonte trifasica multi-terminal (classe 3007) e trilho PE separado do neutro.",
+    "Ligue TODOS os terminais (nenhum pino solto; U1/V1/W1/PE do motor, 1-3-5/2-4-6 do contator).",
+    "Os rotulos dos simbolos devem ser exatamente os do enunciado (os testes usam esses nomes).",
+    "Exige temporizador e motor de 6 terminais; a DSL v1 (tools/layout.py) NAO tem esses blocos — monte com cad_build/conexoes e valide pelo gate."
+  ],
+  "obrigatorios": {
+    "classes": {
+      "2001": 3,
+      "9000": 3,
+      "8000": 1,
+      "8001": 1
+    },
+    "uma_de": [
+      [
+        "1000",
+        "1001",
+        "1002",
+        "1003",
+        "1004"
+      ]
+    ],
+    "rotulos": [
+      "-KM1",
+      "-KM2",
+      "-KM3",
+      "-S0",
+      "-S1"
+    ]
+  },
+  "testes": [],
+  "golden": null,
+  "nota": "Sem golden e sem prova funcional possivel (netlist_sim nao modela temporizador): pontua estrutura + gate geometrico."
+}
