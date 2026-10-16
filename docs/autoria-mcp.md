@@ -1,16 +1,46 @@
 # Autoria de `.cad` do zero via MCP
 
-O agente **monta o circuito sem nunca escrever `*`/`#`** — só símbolos e fios.
+O agente **monta o circuito sem nunca escrever `*`/`#`** — só topologia (ou símbolos e fios).
 
-## Ferramentas
+## Caminho recomendado: `cad_design` (topologia → .cad + gate)
+
+O agente **não calcula x/y**: descreve a topologia (DSL de `docs/dsl-layout.md`), o motor
+(`tools/layout.py`) posiciona e roteia, e o gate prova. Fluxo:
+
+```
+cad_examples → cad_example(nome) → (adaptar layout + testes) → cad_design → corrigir pelo relatório → cad_preview → entregar
+```
+
+### Ferramentas de alto nível
 
 | ferramenta | o que faz |
 |---|---|
-| `cad_symbols` | lista as classes de símbolo (ID + exemplo de rótulo) |
-| `cad_build` | cria o `.cad` do zero a partir de `simbolos_json` + `fios_json` |
+| `cad_examples` | lista os `tools/examples/*.layout.json` (nome, título, resumo, nº de testes) |
+| `cad_example(nome)` | devolve o layout.json (DSL + `testes`); pode ir direto a `cad_design` |
+| **`cad_design(layout_json, out_path)`** | layout → compila → `cad_build` → gate. Retorna JSON `{ok, path, gate:{build,testes,geo:{curtos,soltos},fios}, avisos, erros, proximo_passo}` |
+| `cad_gate(path, testes_json)` | o mesmo gate sobre um `.cad` existente (validate + testes + `geo_check` + `wires_check`) |
+| `cad_pins(classe)` | `{nome, uso, largura, altura, pinos{nome:[dx,dy]}, pinos_ab, pinos_binario}`; nome só quando documentado (`tools/symbol_names.json`) |
+| `cad_symbols` | catálogo: classe, nome/uso (quando conhecidos), tamanho, pinos nomeados |
+| `cad_preview(path, scale=3, png_path="")` | PNG (data URI): pinos nomeados, **cor por fase** (L1 laranja, L2 roxo, L3 azul, N ciano, PE verde; propagada por Q/F/KM), **pino solto = círculo vermelho**, **curto = fio vermelho com X** |
+
+O `ok` de `cad_design`/`cad_gate` = build válido **e** testes passam **e** sem curto de fase
+**e** sem pino solto. `fios` (fio atravessando símbolo) é estético: aparece em `avisos`/`gate.fios`
+mas não derruba o `ok`. As mensagens são acionáveis, p.ex. `pino L3 da fonte -X (3007) solto em
+(42,55): ligue-o ao trilho L3` ou `CURTO N+P na mesma net ... crie trilho PE separado`.
+Erros de autoria detectados antes do build (`avisos`): fonte `3004` por fase, PE do motor no neutro,
+trilho inexistente; e depois: circuito **sem testes** e chaves de teste que não existem no circuito.
+
+Biblioteca de avaliação (sem LLM): `tools/eval/casos/*.json` (enunciado PT-BR, restrições,
+obrigatórios, testes) + `python3 tools/eval/run_eval.py --golden | <caso> <arq.cad> | --dir pasta/`.
+
+### Ferramentas de baixo nível
+
+| ferramenta | o que faz |
+|---|---|
+| `cad_build` | cria o `.cad` do zero a partir de `simbolos_json` + `conexoes_json`/`fios_json` |
 | `cad_validate` | confere header + `$$$`; devolve modo/versão |
 | `cad_inspect` | resume entidades/IDs/rungs/nets |
-| `cad_preview` | renderiza o esquema como imagem (o agente **vê**) |
+| `cad_test` / `cad_simulate` | tabela-verdade do comando via netlist |
 | `cad_from_image` | imagem → inventário de símbolos (kNN) |
 | `cad_parse` / `cad_emit` / `cad_new` | round-trip e template mínimo |
 

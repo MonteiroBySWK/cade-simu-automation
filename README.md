@@ -37,12 +37,31 @@ cargo build --manifest-path src/cade_cli/Cargo.toml
 # claude mcp add cade-simu -- tools/.venv-mcp/bin/python tools/cade_mcp.py
 ```
 
-Ferramentas expostas: `cad_validate`, `cad_parse`, `cad_emit` (com
-revalidação), `cad_new`, `cad_inspect` (entidades, IDs, rungs, nets) e
-`cad_preview` (o esquema como imagem — o agente VÊ o circuito).
+Ferramentas (caminho de menor resistência primeiro):
 
-Regra do loop: o agente compõe `cade.json`, emite, valida e confere o
-preview — nunca escreve `*`/`#` na mão.
+| ferramenta | uso |
+|---|---|
+| `cad_examples` / `cad_example(nome)` | few-shot: layouts topológicos que passam o gate |
+| **`cad_design(layout_json, out_path)`** | **principal**: layout topológico (sem x/y) → `.cad` + gate completo + `proximo_passo` |
+| `cad_gate(path, testes_json)` | gate de um `.cad` existente: validate + testes + geometria (curto/pino solto) + fios |
+| `cad_pins(classe)` / `cad_symbols` | nome, para que serve, tamanho e pinos de qualquer classe |
+| `cad_preview(path)` | PNG: pinos nomeados, cor por fase, soltos/curtos em vermelho |
+| `cad_test`, `cad_simulate`, `cad_validate`, `cad_inspect` | verificação avulsa |
+| `cad_build`, `cad_emit`, `cad_parse`, `cad_new`, `cad_from_image` | baixo nível |
+
+Fluxo do agente: `cad_examples` → montar o layout topológico → `cad_design` → corrigir pelo
+relatório do gate → `cad_preview` → entregar (ver `skills/automacao-industrial/SKILL.md`).
+
+```bash
+python3 tools/mcp_call.py cad_examples
+python3 tools/mcp_call.py cad_example '{"nome":"partida_direta"}'
+python3 tools/mcp_call.py cad_design '{"layout_json":"<json>","out_path":"out/x.cad"}'
+python3 tools/eval/run_eval.py --golden      # baseline da biblioteca de avaliação (sem LLM)
+python3 -m pytest tools -q
+```
+
+Regra do loop: o agente descreve a topologia, deixa o motor posicionar/rotear e só
+entrega com o gate verde e o preview conferido — nunca escreve `*`/`#` nem x/y na mão.
 
 ## Uso
 
@@ -72,9 +91,9 @@ python3 tools/mcp_call.py cad_build '{"titulo":"T","simbolos_json":"[{\"classe\"
 python3 tools/mcp_call.py cad_validate '{"path":"out/novo.cad"}'
 ```
 
-Ferramentas: `cad_symbols`, `cad_build`, `cad_validate`, `cad_inspect`,
-`cad_preview`, `cad_from_image`, `cad_parse`, `cad_emit`, `cad_new`.
-Registrado em `~/.config/opencode/opencode.json` como servidor MCP `cade-simu`.
+Baixo nível: `cad_symbols`, `cad_build`, `cad_validate`, `cad_inspect`,
+`cad_preview`, `cad_from_image`, `cad_parse`, `cad_emit`, `cad_new` (o caminho recomendado é
+`cad_design`, acima). Registrado em `~/.config/opencode/opencode.json` como servidor MCP `cade-simu`.
 
 Certificação: um agente (subagente com contexto zerado) montou um circuito de
 **partida intercalar de motores** do zero, só via `cad_symbols`+`cad_build` —
