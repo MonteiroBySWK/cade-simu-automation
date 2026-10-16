@@ -10,7 +10,7 @@
   "temporizador": {
    "rotulo_tempo": "label5 (+0x4c3a4; 6o rótulo da entidade) — inteiro via atoi()",
    "rotulo_unidade": "label4 (+0x4a464): '3'=x0,1 s (x1 tick) | '0'=x1 s (x10) | '1'=x10 s (x100) | '2'='x60 Seg' no diálogo mas o código usa x1000 ticks (=100 s)",
-   "tick": "1 tick = passada 7 do OnDraw disparada pelo WM_TIMER 1; periodo = 1000-18*velocidade ms (velocidade = último %4d do header, padrão 50 => 100 ms)",
+   "tick": "1 tick = passada 7 do OnDraw disparada pelo WM_TIMER 1; periodo = 1000-18*velocidade ms (velocidade = DAT_00b80804, opção do app gravada pelo diálogo de opções FUN_00878080 no registro de configuração 'CADe_SIMU*...*%4d$$$' — NÃO está no .cad; padrão 50 => 100 ms)",
    "nota": "atoi: '0.5' vira 0 => comuta no 1o tick. No .cad: '#A1#A2#0#5#' = unidade '0' (s), tempo 5"
   }
  },
@@ -101,6 +101,17 @@
   ],
   "designacao_padrao": "-M",
   "estado_inicial": 0,
+  "representacao": {
+   "campo": "n16 (+0x177e4)",
+   "opcoes_dialogo": [
+    "Símbolo",
+    "Imagen 2D",
+    "Imagen 2D - Y",
+    "Imagen 2D - D",
+    "Imagen 3D"
+   ],
+   "3d": "botão 3D (cmd 33360, FUN_004a2340) troca n16 p/ o índice 'Imagen 3D' da variante; 0 = Símbolo (padrão do gerador)"
+  },
   "nota": "carga trifásica/mono: gira se fases distintas nos pinos de fase (campo 0x7a9dc = estado de giro)",
   "evidencia": "desenho/sim FUN_004a8d80; nome FUN_0087aca0",
   "confianca": "media"
@@ -123,6 +134,16 @@
   ],
   "designacao_padrao": "-M",
   "estado_inicial": 0,
+  "representacao": {
+   "campo": "n16 (+0x177e4)",
+   "opcoes_dialogo": [
+    "Símbolo",
+    "Imagen 2D",
+    "Imagen 2D - D",
+    "Imagen 3D"
+   ],
+   "3d": "botão 3D (cmd 33360, FUN_004a2340) troca n16 p/ o índice 'Imagen 3D' da variante; 0 = Símbolo (padrão do gerador)"
+  },
   "nota": "carga trifásica/mono: gira se fases distintas nos pinos de fase (campo 0x7a9dc = estado de giro)",
   "evidencia": "desenho/sim FUN_004ac380; nome FUN_0087aca0",
   "confianca": "media"
@@ -772,6 +793,11 @@
   ],
   "designacao_padrao": "-K",
   "estado_inicial": 0,
+  "representacao": {
+   "campo": "n16 (+0x177e4)",
+   "opcoes_dialogo": [],
+   "3d": "botão 3D (cmd 33360, FUN_004a2340) troca n16 p/ o índice 'Imagen 3D' da variante; 0 = Símbolo (padrão do gerador)"
+  },
   "nota": "carga/acionamento de potência (resistência, variador, soft-starter, controle)",
   "evidencia": "desenho/sim FUN_0050d540; nome FUN_0087aca0",
   "confianca": "baixa"
@@ -1519,6 +1545,24 @@
   ],
   "designacao_padrao": "-X",
   "estado_inicial": 0,
+  "representacao": {
+   "campo": "n16 (+0x177e4)",
+   "opcoes_dialogo": [
+    "Símbolo",
+    "Imagen 2D blanco",
+    "Imagen 2D gris",
+    "Imagen 2D azul",
+    "Imagen 2D tierra",
+    "Imagen 3D blanco",
+    "Imagen 3D gris",
+    "Imagen 3D azul",
+    "Imagen 3D tierra",
+    "Pequeño",
+    "Mediano",
+    "Grande"
+   ],
+   "3d": "botão 3D (cmd 33360, FUN_004a2340) troca n16 p/ o índice 'Imagen 3D' da variante; 0 = Símbolo (padrão do gerador)"
+  },
   "nota": "cabo/conexão: 4000/4009/4010/4018/4019 = fios (nó por geometria); 4001/4012 = junção; 4003/4004 = marcador",
   "evidencia": "desenho/sim FUN_00543390; nome FUN_0087aca0",
   "confianca": "alta"
@@ -2538,6 +2582,11 @@
   "designacao_padrao": "-Q",
   "aciona_por": "clique (alterna; propaga a mesmo rótulo)",
   "estado_inicial": 0,
+  "representacao": {
+   "campo": "n16 (+0x177e4)",
+   "opcoes_dialogo": [],
+   "3d": "botão 3D (cmd 33360, FUN_004a2340) troca n16 p/ o índice 'Imagen 3D' da variante; 0 = Símbolo (padrão do gerador)"
+  },
   "nota": "conduz quando estado==1; estado inicial 0 => ABERTO até clicar",
   "evidencia": "desenho/sim FUN_00588bb0; nome FUN_0087aca0",
   "confianca": "media"
@@ -2581,6 +2630,11 @@
   "designacao_padrao": "-Q",
   "aciona_por": "clique (alterna; propaga a mesmo rótulo)",
   "estado_inicial": 0,
+  "representacao": {
+   "campo": "n16 (+0x177e4)",
+   "opcoes_dialogo": [],
+   "3d": "botão 3D (cmd 33360, FUN_004a2340) troca n16 p/ o índice 'Imagen 3D' da variante; 0 = Símbolo (padrão do gerador)"
+  },
   "nota": "conduz quando estado==1; estado inicial 0 => ABERTO até clicar",
   "evidencia": "desenho/sim FUN_0058ed60; nome FUN_0087aca0",
   "confianca": "media"
@@ -2602,6 +2656,24 @@
   "designacao_padrao": "-Q",
   "aciona_por": "clique (alterna; propaga a mesmo rótulo)",
   "estado_inicial": 0,
+  "representacao": {
+   "campo": "n16 (+0x177e4)",
+   "opcoes_dialogo": [
+    "Símbolo IN",
+    "Imagen 2D IN",
+    "Imagen 3D IN",
+    "Símbolo IIIN",
+    "Imagen 2D IIIN",
+    "Imagen 3D IIIN",
+    "Símbolo III",
+    "Imagen 2D III",
+    "Imagen 3D III",
+    "Pequeño",
+    "Mediano",
+    "Grande"
+   ],
+   "3d": "botão 3D (cmd 33360, FUN_004a2340) troca n16 p/ o índice 'Imagen 3D' da variante; 0 = Símbolo (padrão do gerador)"
+  },
   "nota": "conduz quando estado==1; estado inicial 0 => ABERTO até clicar",
   "evidencia": "desenho/sim FUN_00595310; nome FUN_0087aca0",
   "confianca": "media"
@@ -2623,6 +2695,21 @@
   "designacao_padrao": "-Q",
   "aciona_por": "clique (alterna; propaga a mesmo rótulo)",
   "estado_inicial": 0,
+  "representacao": {
+   "campo": "n16 (+0x177e4)",
+   "opcoes_dialogo": [
+    "Símbolo IN",
+    "Imagen 2D IN",
+    "Imagen 3D IN",
+    "Símbolo IIIN",
+    "Imagen 2D IIIN",
+    "Imagen 3D IIIN",
+    "Pequeño",
+    "Mediano",
+    "Grande"
+   ],
+   "3d": "botão 3D (cmd 33360, FUN_004a2340) troca n16 p/ o índice 'Imagen 3D' da variante; 0 = Símbolo (padrão do gerador)"
+  },
   "nota": "conduz quando estado==1; estado inicial 0 => ABERTO até clicar",
   "evidencia": "desenho/sim FUN_0059c470; nome FUN_0087aca0",
   "confianca": "media"
@@ -2644,6 +2731,11 @@
   "designacao_padrao": "-Q",
   "aciona_por": "clique (alterna; propaga a mesmo rótulo)",
   "estado_inicial": 0,
+  "representacao": {
+   "campo": "n16 (+0x177e4)",
+   "opcoes_dialogo": [],
+   "3d": "botão 3D (cmd 33360, FUN_004a2340) troca n16 p/ o índice 'Imagen 3D' da variante; 0 = Símbolo (padrão do gerador)"
+  },
   "nota": "conduz quando estado==1; estado inicial 0 => ABERTO até clicar",
   "evidencia": "desenho/sim FUN_005a1bf0; nome FUN_0087aca0",
   "confianca": "media"
@@ -2665,6 +2757,11 @@
   "designacao_padrao": "-Q",
   "aciona_por": "clique (alterna; propaga a mesmo rótulo)",
   "estado_inicial": 0,
+  "representacao": {
+   "campo": "n16 (+0x177e4)",
+   "opcoes_dialogo": [],
+   "3d": "botão 3D (cmd 33360, FUN_004a2340) troca n16 p/ o índice 'Imagen 3D' da variante; 0 = Símbolo (padrão do gerador)"
+  },
   "nota": "conduz quando estado==1; estado inicial 0 => ABERTO até clicar",
   "evidencia": "desenho/sim FUN_005a8e60; nome FUN_0087aca0",
   "confianca": "media"
@@ -3144,6 +3241,15 @@
   "designacao_padrao": "-KA",
   "aciona_por": "label (relé de base/zócalo; 7018 contator com 7019..7021 blocos aditivos)",
   "estado_inicial": 0,
+  "representacao": {
+   "campo": "n16 (+0x177e4)",
+   "opcoes_dialogo": [
+    "Símbolo",
+    "Imagen 2D",
+    "Imagen 3D"
+   ],
+   "3d": "botão 3D (cmd 33360, FUN_004a2340) troca n16 p/ o índice 'Imagen 3D' da variante; 0 = Símbolo (padrão do gerador)"
+  },
   "nota": "relé/contator compacto com blocos de contatos auxiliares ou temporizados",
   "evidencia": "desenho/sim FUN_005c9640; nome FUN_0087aca0",
   "confianca": "baixa"
@@ -3175,6 +3281,11 @@
    "tempo": "label5",
    "unidade": "label4",
    "ver": "_modelo.temporizador"
+  },
+  "representacao": {
+   "campo": "n16 (+0x177e4)",
+   "opcoes_dialogo": [],
+   "3d": "botão 3D (cmd 33360, FUN_004a2340) troca n16 p/ o índice 'Imagen 3D' da variante; 0 = Símbolo (padrão do gerador)"
   },
   "nota": "relé/contator compacto com blocos de contatos auxiliares ou temporizados",
   "evidencia": "desenho/sim FUN_005cf450; nome cmpstr",
@@ -3225,6 +3336,11 @@
   "designacao_padrao": "-KM",
   "aciona_por": "label (relé de base/zócalo; 7018 contator com 7019..7021 blocos aditivos)",
   "estado_inicial": 0,
+  "representacao": {
+   "campo": "n16 (+0x177e4)",
+   "opcoes_dialogo": [],
+   "3d": "botão 3D (cmd 33360, FUN_004a2340) troca n16 p/ o índice 'Imagen 3D' da variante; 0 = Símbolo (padrão do gerador)"
+  },
   "nota": "relé/contator compacto com blocos de contatos auxiliares ou temporizados",
   "evidencia": "desenho/sim FUN_005d5e90; nome FUN_0087aca0",
   "confianca": "baixa"
@@ -3246,6 +3362,20 @@
   "designacao_padrao": "-KM",
   "aciona_por": "label (relé de base/zócalo; 7018 contator com 7019..7021 blocos aditivos)",
   "estado_inicial": 0,
+  "representacao": {
+   "campo": "n16 (+0x177e4)",
+   "opcoes_dialogo": [
+    "Contactos ON Delay",
+    "Contactos OFF Delay",
+    "Símbolo",
+    "Imagen 2D",
+    "Imagen 3D",
+    "Pequeño",
+    "Mediano",
+    "Grande"
+   ],
+   "3d": "botão 3D (cmd 33360, FUN_004a2340) troca n16 p/ o índice 'Imagen 3D' da variante; 0 = Símbolo (padrão do gerador)"
+  },
   "nota": "relé/contator compacto com blocos de contatos auxiliares ou temporizados",
   "evidencia": "desenho/sim FUN_005ddf00; nome FUN_0087aca0",
   "confianca": "baixa"
@@ -3263,6 +3393,11 @@
   "designacao_padrao": "-KM",
   "aciona_por": "label (relé de base/zócalo; 7018 contator com 7019..7021 blocos aditivos)",
   "estado_inicial": 0,
+  "representacao": {
+   "campo": "n16 (+0x177e4)",
+   "opcoes_dialogo": [],
+   "3d": "botão 3D (cmd 33360, FUN_004a2340) troca n16 p/ o índice 'Imagen 3D' da variante; 0 = Símbolo (padrão do gerador)"
+  },
   "nota": "relé/contator compacto com blocos de contatos auxiliares ou temporizados",
   "evidencia": "desenho/sim FUN_005e2d10; nome FUN_0087aca0",
   "confianca": "baixa"
@@ -3280,6 +3415,11 @@
   "designacao_padrao": "-KM",
   "aciona_por": "label (relé de base/zócalo; 7018 contator com 7019..7021 blocos aditivos)",
   "estado_inicial": 0,
+  "representacao": {
+   "campo": "n16 (+0x177e4)",
+   "opcoes_dialogo": [],
+   "3d": "botão 3D (cmd 33360, FUN_004a2340) troca n16 p/ o índice 'Imagen 3D' da variante; 0 = Símbolo (padrão do gerador)"
+  },
   "nota": "relé/contator compacto com blocos de contatos auxiliares ou temporizados",
   "evidencia": "desenho/sim FUN_005e64e0; nome FUN_0087aca0",
   "confianca": "baixa"
@@ -6088,6 +6228,20 @@
    }
   ],
   "estado_inicial": 0,
+  "representacao": {
+   "campo": "n16 (+0x177e4)",
+   "opcoes_dialogo": [
+    "Símbolo",
+    "Pulsador verde",
+    "Pulsador rojo",
+    "Pulsador seta",
+    "Selector.",
+    "2D frontal",
+    "2D lateral",
+    "3D"
+   ],
+   "3d": "botão 3D (cmd 33360, FUN_004a2340) troca n16 p/ o índice 'Imagen 3D' da variante; 0 = Símbolo (padrão do gerador)"
+  },
   "nota": "elementos de painel com imagem (pulsador/piloto/LED/botoeira)",
   "evidencia": "desenho/sim FUN_005efec0; nome FUN_0087aca0",
   "confianca": "baixa"
@@ -6103,6 +6257,19 @@
   "designacao_padrao": "-H",
   "aciona_por": "clique/painel",
   "estado_inicial": 0,
+  "representacao": {
+   "campo": "n16 (+0x177e4)",
+   "opcoes_dialogo": [
+    "Símbolo",
+    "Piloto verde",
+    "Piloto rojo",
+    "Piloto ambar",
+    "2D frontal",
+    "2D lateral",
+    "Imagen 3D"
+   ],
+   "3d": "botão 3D (cmd 33360, FUN_004a2340) troca n16 p/ o índice 'Imagen 3D' da variante; 0 = Símbolo (padrão do gerador)"
+  },
   "nota": "elementos de painel com imagem (pulsador/piloto/LED/botoeira)",
   "evidencia": "desenho/sim FUN_005f5a30; nome FUN_0087aca0",
   "confianca": "baixa"
@@ -6129,6 +6296,14 @@
   "designacao_padrao": "-H",
   "aciona_por": "clique/painel",
   "estado_inicial": 0,
+  "representacao": {
+   "campo": "n16 (+0x177e4)",
+   "opcoes_dialogo": [
+    "Símbolo",
+    "Imagen 2D"
+   ],
+   "3d": "botão 3D (cmd 33360, FUN_004a2340) troca n16 p/ o índice 'Imagen 3D' da variante; 0 = Símbolo (padrão do gerador)"
+  },
   "nota": "elementos de painel com imagem (pulsador/piloto/LED/botoeira)",
   "evidencia": "desenho/sim FUN_005f96f0; nome FUN_0087aca0",
   "confianca": "baixa"
@@ -6144,6 +6319,18 @@
   "designacao_padrao": "-H",
   "aciona_por": "clique/painel",
   "estado_inicial": 0,
+  "representacao": {
+   "campo": "n16 (+0x177e4)",
+   "opcoes_dialogo": [
+    "LED verde",
+    "LED rojo",
+    "LED ambar",
+    "Símbolo",
+    "Imagen 2D",
+    "Imagen 3D"
+   ],
+   "3d": "botão 3D (cmd 33360, FUN_004a2340) troca n16 p/ o índice 'Imagen 3D' da variante; 0 = Símbolo (padrão do gerador)"
+  },
   "nota": "elementos de painel com imagem (pulsador/piloto/LED/botoeira)",
   "evidencia": "desenho/sim FUN_005f7d90; nome FUN_0087aca0",
   "confianca": "baixa"
@@ -7420,6 +7607,11 @@
   "aba": "PLC (LOGO/S7/ET200/Arduino)",
   "papel": "plc",
   "estado_inicial": 0,
+  "representacao": {
+   "campo": "n16 (+0x177e4)",
+   "opcoes_dialogo": [],
+   "3d": "botão 3D (cmd 33360, FUN_004a2340) troca n16 p/ o índice 'Imagen 3D' da variante; 0 = Símbolo (padrão do gerador)"
+  },
   "nota": "CLP/IO",
   "evidencia": "nome cmpstr",
   "confianca": "baixa"
@@ -7429,6 +7621,11 @@
   "aba": "PLC (LOGO/S7/ET200/Arduino)",
   "papel": "plc",
   "estado_inicial": 0,
+  "representacao": {
+   "campo": "n16 (+0x177e4)",
+   "opcoes_dialogo": [],
+   "3d": "botão 3D (cmd 33360, FUN_004a2340) troca n16 p/ o índice 'Imagen 3D' da variante; 0 = Símbolo (padrão do gerador)"
+  },
   "nota": "CLP/IO",
   "evidencia": "nome cmpstr",
   "confianca": "baixa"
@@ -7442,6 +7639,11 @@
   ],
   "designacao_padrao": "I0.0",
   "estado_inicial": 0,
+  "representacao": {
+   "campo": "n16 (+0x177e4)",
+   "opcoes_dialogo": [],
+   "3d": "botão 3D (cmd 33360, FUN_004a2340) troca n16 p/ o índice 'Imagen 3D' da variante; 0 = Símbolo (padrão do gerador)"
+  },
   "nota": "CLP/IO",
   "evidencia": "desenho/sim FUN_007693a0; nome cmpstr",
   "confianca": "baixa"
@@ -7514,6 +7716,11 @@
   ],
   "designacao_padrao": "S7_1500_3D",
   "estado_inicial": 0,
+  "representacao": {
+   "campo": "n16 (+0x177e4)",
+   "opcoes_dialogo": [],
+   "3d": "botão 3D (cmd 33360, FUN_004a2340) troca n16 p/ o índice 'Imagen 3D' da variante; 0 = Símbolo (padrão do gerador)"
+  },
   "nota": "CLP/IO",
   "evidencia": "desenho/sim FUN_00736440; nome cmpstr",
   "confianca": "baixa"
@@ -7523,6 +7730,11 @@
   "aba": "PLC (LOGO/S7/ET200/Arduino)",
   "papel": "plc",
   "estado_inicial": 0,
+  "representacao": {
+   "campo": "n16 (+0x177e4)",
+   "opcoes_dialogo": [],
+   "3d": "botão 3D (cmd 33360, FUN_004a2340) troca n16 p/ o índice 'Imagen 3D' da variante; 0 = Símbolo (padrão do gerador)"
+  },
   "nota": "CLP/IO",
   "evidencia": "nome cmpstr",
   "confianca": "baixa"
@@ -7539,6 +7751,11 @@
   ],
   "designacao_padrao": "ET_200_3D",
   "estado_inicial": 0,
+  "representacao": {
+   "campo": "n16 (+0x177e4)",
+   "opcoes_dialogo": [],
+   "3d": "botão 3D (cmd 33360, FUN_004a2340) troca n16 p/ o índice 'Imagen 3D' da variante; 0 = Símbolo (padrão do gerador)"
+  },
   "nota": "CLP/IO",
   "evidencia": "desenho/sim FUN_0074da50; nome cmpstr",
   "confianca": "baixa"
@@ -7548,6 +7765,11 @@
   "aba": "PLC (LOGO/S7/ET200/Arduino)",
   "papel": "plc",
   "estado_inicial": 0,
+  "representacao": {
+   "campo": "n16 (+0x177e4)",
+   "opcoes_dialogo": [],
+   "3d": "botão 3D (cmd 33360, FUN_004a2340) troca n16 p/ o índice 'Imagen 3D' da variante; 0 = Símbolo (padrão do gerador)"
+  },
   "nota": "CLP/IO",
   "evidencia": "nome cmpstr",
   "confianca": "baixa"
@@ -7557,6 +7779,11 @@
   "aba": "PLC (LOGO/S7/ET200/Arduino)",
   "papel": "plc",
   "estado_inicial": 0,
+  "representacao": {
+   "campo": "n16 (+0x177e4)",
+   "opcoes_dialogo": [],
+   "3d": "botão 3D (cmd 33360, FUN_004a2340) troca n16 p/ o índice 'Imagen 3D' da variante; 0 = Símbolo (padrão do gerador)"
+  },
   "nota": "CLP/IO",
   "evidencia": "nome cmpstr",
   "confianca": "baixa"
@@ -7566,6 +7793,11 @@
   "aba": "PLC (LOGO/S7/ET200/Arduino)",
   "papel": "plc",
   "estado_inicial": 0,
+  "representacao": {
+   "campo": "n16 (+0x177e4)",
+   "opcoes_dialogo": [],
+   "3d": "botão 3D (cmd 33360, FUN_004a2340) troca n16 p/ o índice 'Imagen 3D' da variante; 0 = Símbolo (padrão do gerador)"
+  },
   "nota": "CLP/IO",
   "evidencia": "nome cmpstr",
   "confianca": "baixa"
@@ -7575,6 +7807,11 @@
   "aba": "PLC (LOGO/S7/ET200/Arduino)",
   "papel": "plc",
   "estado_inicial": 0,
+  "representacao": {
+   "campo": "n16 (+0x177e4)",
+   "opcoes_dialogo": [],
+   "3d": "botão 3D (cmd 33360, FUN_004a2340) troca n16 p/ o índice 'Imagen 3D' da variante; 0 = Símbolo (padrão do gerador)"
+  },
   "nota": "CLP/IO",
   "evidencia": "nome cmpstr",
   "confianca": "baixa"
@@ -7584,6 +7821,11 @@
   "aba": "PLC (LOGO/S7/ET200/Arduino)",
   "papel": "plc",
   "estado_inicial": 0,
+  "representacao": {
+   "campo": "n16 (+0x177e4)",
+   "opcoes_dialogo": [],
+   "3d": "botão 3D (cmd 33360, FUN_004a2340) troca n16 p/ o índice 'Imagen 3D' da variante; 0 = Símbolo (padrão do gerador)"
+  },
   "nota": "CLP/IO",
   "evidencia": "nome cmpstr",
   "confianca": "baixa"

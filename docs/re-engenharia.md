@@ -320,8 +320,11 @@ despacho `FUN_0040d2b0` + as nomeadas nos diálogos). Gerado por
   (`FUN_008c8f40`, rádios) mostra "x 0,1 Seg / x 1 Seg / x 10 Seg / x 60 Seg" ⇒ com tick de
   100 ms: 0,1 s / 1 s / 10 s / **100 s** (o "x60" da UI não bate com ×1000 — inconsistência
   do app). `atoi` ⇒ fração ("0.5") vira 0 (comuta no 1º tick).
-- **Tick** = `SetTimer(1, 1000 − 18×vel)` ms; `vel` = `DAT_00b80804` = **último `%4d` do
-  header** (`FUN_00878080`), padrão 50 ⇒ **100 ms**.
+- **Tick** = `SetTimer(1, 1000 − 18×vel)` ms; `vel` = `DAT_00b80804` = velocidade de simulação
+  (opção do app; `FUN_00878080` grava-a como último `%4d` do registro de configuração
+  `CADe_SIMU*…*%4d$$$` — **não** faz parte do `.cad`: o acervo começa direto em
+  `CADe_SIMU*0*3000#…`). Padrão 50 ⇒ **100 ms**. (Corrige §3: aquele "header" é o da
+  configuração, não do `.cad`.)
 
 ### 11.5 Confiança por item
 | item | conf. | evidência |
@@ -336,3 +339,26 @@ despacho `FUN_0040d2b0` + as nomeadas nos diálogos). Gerado por
 | disjuntores/seccionadores iniciam abertos | média | CMP `==1` + zeragem no Play; falta prova no app |
 | motores 1000.. (gira com fases distintas) | média | campo 0x7a9dc, não lido linha a linha |
 | sensores 7500.., pneumática 10500.., PLC/GRAFCET/lógica 10000.. | baixa | só nome + pinos + família |
+
+### 11.6 Catálogo por aba (cobertura)
+`classes-papeis.json` cobre **366 classes** em 16 abas (`aba`): Desenho, Motores e cargas,
+Contactores/interruptores de potência, Alimentações, Cabos e conexões, Fusíveis/seccionadores,
+Proteções, Contatos auxiliares/temporizados/relés, Sensores (7500..7605: indutivo, capacitivo,
+magnético, barreira, pressostato, vacuostato, termostato — NA/NC, 2/3 fios PNP/NPN),
+Botões/interruptores/fins de curso, Painel (8100..8103), Bobinas e sinalização, Lógica/Ladder,
+GRAFCET, PLC (LOGO/S7-1200/S7-1500/ET-200/Arduino) e Pneumática (10500..10509, 10550).
+Contagem de `confianca`: alta 50, média 97, baixa 219 (baixa = só nome+pinos+família).
+Sem nome no binário (nome deduzido, `nome_ausente_no_binario`): 8016..8022, 1008/1009,
+1060..1075, 2008, 3016..3018, 6011..6014, 9014, 9016, 9040..9045, 10074; sem nome nem
+dedução: 6, 8, 9, 1011, 1012, 2009, 3015, 3019, 3020, 7583, 7596..7599, 10076..10083,
+10102, 10200, 10201. Pneumática/PLC/GRAFCET: semântica **não** extraída (fora do caminho
+elétrico usado pelo gerador).
+
+## 12. Botões 2D/3D — CONFIANÇA ALTA (detalhes em `docs/3d.md`)
+- Sem 3D real: os comandos 33358/33359/33360/33367 (Símbolo / 2D / 3D / anterior;
+  handlers `FUN_0049fe30`/`FUN_004a1080`/`FUN_004a2340`) só reescrevem **n16** (`+0x177e4`,
+  "id de imagem" da §9.1) das classes com imagem (1000, 1001, 1076, 4011, 6015..6020,
+  7016..7021, 8100..8103, 10202..10204, 10209..10215, 10220), guardando o original em
+  `+0x8c31c` (memória). O desenho troca o símbolo por um **bitmap embutido** (274 RT_BITMAP,
+  ~32 MB) via `FUN_008c04e0(nome)` → `LoadBitmap` → `StretchBlt`.
+- Para o gerador: nada a preencher; manter `n16 = 0`. A simulação não depende do modo.

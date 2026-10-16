@@ -22,7 +22,7 @@ DISP = sorted(set(int(l.split()[1]) for l in open(D / "disp.txt", encoding="lati
 
 TEMPO = {"rotulo_tempo": "label5 (+0x4c3a4; 6o rótulo da entidade) — inteiro via atoi()",
          "rotulo_unidade": "label4 (+0x4a464): '3'=x0,1 s (x1 tick) | '0'=x1 s (x10) | '1'=x10 s (x100) | '2'='x60 Seg' no diálogo mas o código usa x1000 ticks (=100 s)",
-         "tick": "1 tick = passada 7 do OnDraw disparada pelo WM_TIMER 1; periodo = 1000-18*velocidade ms (velocidade = último %4d do header, padrão 50 => 100 ms)",
+         "tick": "1 tick = passada 7 do OnDraw disparada pelo WM_TIMER 1; periodo = 1000-18*velocidade ms (velocidade = DAT_00b80804, opção do app gravada pelo diálogo de opções FUN_00878080 no registro de configuração 'CADe_SIMU*...*%4d$$$' — NÃO está no .cad; padrão 50 => 100 ms)",
          "nota": "atoi: '0.5' vira 0 => comuta no 1o tick. No .cad: '#A1#A2#0#5#' = unidade '0' (s), tempo 5"}
 
 
@@ -125,6 +125,11 @@ def classify(c, s):
     return "outro", None, "", "baixa"
 
 
+# classes tocadas pelos handlers Símbolo/2D/3D (FUN_0049fe30/FUN_004a1080/FUN_004a2340); ver docs/3d.md
+CLASSES_3D = {1000, 1001, 1076, 4011, 6015, 6016, 6017, 6018, 6019, 6020, 7016, 7017, 7018, 7019, 7020,
+              7021, 8100, 8101, 8102, 8103, 10202, 10203, 10204, 10209, 10210, 10211, 10212, 10213,
+              10214, 10215, 10220}
+
 FALLBACK = {
     "8016": "Contacto relé térmico NA (97-98)", "8017": "Contacto relé térmico NC (95-96)",
     "8018": "Contacto relé térmico NA-NC (95-96/97-98)", "8019": "Contacto relé térmico conmutado (95-96-98)",
@@ -187,6 +192,10 @@ for c in ids:
         e["parametros"] = {"tempo": "label5", "unidade": "label4", "ver": "_modelo.temporizador"}
     if papel in ("lampada", "sinalizador") and c in (9008, 9009):
         e["parametros"] = {"cor": "rótulo comparado com nomes de cor (Ordinal_813) — afeta só o desenho"}
+    if c in CLASSES_3D:
+        opts = (LIB.get(k) or [None])[1:]
+        e["representacao"] = {"campo": "n16 (+0x177e4)", "opcoes_dialogo": opts,
+                              "3d": "botão 3D (cmd 33360, FUN_004a2340) troca n16 p/ o índice 'Imagen 3D' da variante; 0 = Símbolo (padrão do gerador)"}
     if nota:
         e["nota"] = nota
     ev = []
