@@ -30,8 +30,9 @@ def coordenadas_de_pino(sid, x, y):
     return pts
 
 
-def main(argv):
-    d = Path(argv[0]).read_bytes().decode("latin1")
+def analisar(path):
+    """-> (n_fios, ruins): ruins = [(simbolo, (x1,y1), (x2,y2))] de trechos que atravessam corpo."""
+    d = Path(path).read_bytes().decode("latin1")
     _, ents, _ = split_entities(d)
     syms, fios, pinos = [], [], []
     for e in ents:
@@ -65,12 +66,17 @@ def main(argv):
                 break
         if achou:
             ruins.append((achou, (x1, y1), (x2, y2)))
+    return len(fios), ruins
+
+
+def main(argv):
+    n_fios, ruins = analisar(argv[0])
     if ruins:
         print(f"FIOS: {len(ruins)} trecho(s) atravessam símbolo:")
         for nome, a, b in ruins:
             print(f"  - passa por {nome}: {a} -> {b}")
         return 1
-    print(f"FIOS: ok ({len(fios)} trechos, nenhum atravessa símbolo)")
+    print(f"FIOS: ok ({n_fios} trechos, nenhum atravessa símbolo)")
     return 0
 
 
