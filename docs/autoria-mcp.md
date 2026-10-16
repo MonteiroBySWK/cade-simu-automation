@@ -33,6 +33,17 @@ trilho inexistente; e depois: circuito **sem testes** e chaves de teste que não
 Biblioteca de avaliação (sem LLM): `tools/eval/casos/*.json` (enunciado PT-BR, restrições,
 obrigatórios, testes) + `python3 tools/eval/run_eval.py --golden | <caso> <arq.cad> | --dir pasta/`.
 
+### Confirmação final no app (`cad_simular_no_app`)
+
+`cad_simular_no_app(path, casos_json="[]", entradas_alias_json="{}")` abre o `.cad` no CADe_SIMU
+(Wine), dá Play, aciona as entradas (botoeira = segura o mouse; térmico/disjuntor = clique) e lê
+**bobinas energizadas e lâmpadas acesas** por análise de imagem (símbolo ativo = vermelho puro).
+Usa os mesmos casos (`testes`) do gate e devolve pass/fail por caso + screenshots em
+`out/app_sim/<nome>/`. Custa ~30-90 s e exige Wine + `DISPLAY`: use **uma vez no fim**, depois do
+gate verde. Divergência app x netlist = bug do circuito/RE, não do teste (ver `docs/app-sim.md`).
+Achado importante: o contato do relé térmico (`8016`/`8017`) só acompanha o disparo do `6007` de
+**mesmo rótulo** (ambos `-F1`); com rótulos diferentes o app não permite acionar o térmico.
+
 ### Ferramentas de baixo nível
 
 | ferramenta | o que faz |

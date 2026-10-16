@@ -46,6 +46,7 @@ Ferramentas (caminho de menor resistência primeiro):
 | `cad_gate(path, testes_json)` | gate de um `.cad` existente: validate + testes + geometria (curto/pino solto) + fios |
 | `cad_pins(classe)` / `cad_symbols` | nome, para que serve, tamanho e pinos de qualquer classe |
 | `cad_preview(path)` | PNG: pinos nomeados, cor por fase, soltos/curtos em vermelho |
+| `cad_simular_no_app(path, casos_json)` | **confirmação final na verdade do app**: abre no CADe_SIMU (Wine), Play, aciona entradas e lê bobinas/lâmpadas por imagem (~30-90 s; exige Wine + DISPLAY) — ver `docs/app-sim.md` |
 | `cad_test`, `cad_simulate`, `cad_validate`, `cad_inspect` | verificação avulsa |
 | `cad_build`, `cad_emit`, `cad_parse`, `cad_new`, `cad_from_image` | baixo nível |
 
@@ -56,6 +57,7 @@ relatório do gate → `cad_preview` → entregar (ver `skills/automacao-industr
 python3 tools/mcp_call.py cad_examples
 python3 tools/mcp_call.py cad_example '{"nome":"partida_direta"}'
 python3 tools/mcp_call.py cad_design '{"layout_json":"<json>","out_path":"out/x.cad"}'
+python3 tools/app_sim.py out/x.cad --layout tools/examples/partida_direta.layout.json   # E2E no app (Wine)
 python3 tools/eval/run_eval.py --golden      # baseline da biblioteca de avaliação (sem LLM)
 python3 -m pytest tools -q
 ```
