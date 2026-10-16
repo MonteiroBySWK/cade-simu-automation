@@ -43,7 +43,7 @@ def pinos_da_classe(cid):
     return out
 
 
-def analisar(path):
+def analisar(path, redes=None):
     d = Path(path).read_bytes().decode("latin1")
     _, ents, _ = split_entities(d)
     ps = [p for p in map(parse_ent, ents) if p and len(p["nums"]) > 17]
@@ -86,6 +86,10 @@ def analisar(path):
         for nome, (dx, dy) in pinos_da_classe(p["id"]).items():
             rx, ry = _rot(dx, dy, o)
             pinos.append((rot, p["id"], nome, (x + rx, y + ry)))
+    if redes is not None:                          # {(rotulo, classe, pino): raiz da net}
+        for rot, cid, nome, pt in pinos:
+            if pt in extremos:
+                redes[(rot, cid, nome)] = find(pt)
     estampas = {}                                  # raiz -> {char: [origens]}
     soltos = []
     for rot, cid, nome, pt in pinos:
