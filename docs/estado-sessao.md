@@ -12,7 +12,10 @@ Branch: `claude/mcp-ai-automation-project-32fea4` (worktree). Retome lendo este 
 - RE parcial (commit `818e6b7`): layout SoA do doc, conectividade por geometria, regras de nets
   — ver `docs/re-engenharia.md`.
 
-## Em andamento (RE Ghidra, agente Opus)
+## RE Ghidra — CONCLUÍDO (agente Opus)
+(Ver `docs/re-engenharia.md` §9–10 e `docs/pinos-binario.json`; resumo em `docs/handoff-atividade.md`.)
+
+## (histórico) RE em andamento
 Objetivo: `docs/pinos-binario.json` (pinos reais por classe) + resposta net × geometria + semântica
 dos 23/24 ints. Rascunhos: `tools/ghidra/draw_dump.java`, `pins_dump.java`, `pins_from_dump.py`.
 Projeto Ghidra local: `~/cade-ghidra` (nome `CADE`; **fora do repo, só nesta máquina**; caminho
@@ -20,11 +23,10 @@ sem `.` — o Ghidra rejeita). Máquina tem 11 GiB: **um Ghidra por vez, `-max-m
 sem decompilador em lote.
 
 ## Próximos passos (ordem)
-1. Terminar RE de pinos → `docs/pinos-binario.json`; comparar com `tools/symbol_pins.json`.
-2. Aplicar diff de pinos em `symbol_pins.json`; regenerar intercalada
-   (`python3 tools/build_spec.py tools/examples/intercalada.layout.json out/i.cad`) e `wires_check.py`.
-3. Validar no Wine (`tools/wine_mgr.py up/shot`) e comparar com `Intercalar_atv.cad` do acervo (gabarito real).
-4. `3004#-X`: medir terminais reais (hoje só A/B).
+1. ✅ pinos do binário aplicados; ✅ fonte 3007 + PE; ✅ geo_check no gate; ✅ validado no Wine (KM1/selo/lâmpada).
+2. Descobrir tamanho real da folha (gabarito usa y até 440; layout limita 455x295).
+3. Layout: ramos aninhados/temporizadores; mais circuitos (reversão, estrela-triângulo) com `testes`.
+4. Atualizar `skills/automacao-industrial/SKILL.md` (fonte 3007, PE, geo_check) — ainda cita 3004 e folha 300.
 5. Menores: `detect_symbols.py` e `pratica5_build.py` ainda com caminho absoluto; ramos aninhados/temporizadores no layout.
 
 ## Regras
