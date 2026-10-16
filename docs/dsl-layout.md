@@ -63,8 +63,8 @@ motor de layout calcular as posições.
   `python3 tools/build_spec.py tools/examples/intercalada.layout.json out/x.cad`.
 - **Dimensões**: `tools/symbol_dims.json` (w,h por classe, gerado do acervo via
   `python3 tools/layout.py --gen-dims`); pinos vêm de `tools/symbol_pins.json`.
-- **Exemplos**: `intercalada.layout.json` (2 motores, equivalente à spec manual) e
-  `partida_direta.layout.json` (1 motor). Nenhuma coordenada na entrada.
+- **Exemplos**: `intercalada.layout.json` (2 motores, equivalente à spec manual),
+  `partida_direta.layout.json` (1 motor) e os do comando v2 (seção abaixo). Nenhuma coordenada na entrada.
 - **Testes**: `python3 -m pytest tools/test_layout.py` (folha, sobreposição,
   alinhamento da potência, GATE e FIOS dos dois circuitos).
 
@@ -83,8 +83,8 @@ Diferenças em relação à proposta acima:
 - `fontes`: uma `-X` por fase em escada logo abaixo dos trilhos, A->trilho da fase,
   B->neutro. `terra`: `3002` encostado no neutro.
 - `msel_abre` e `entra` da proposta **não** são usados (ramos entram no fim da série).
-- O motor levanta `ValueError` se algo sair da folha (x>455, y>295) ou se dois
-  símbolos se sobrepuserem.
+- O motor levanta `ValueError` se algo sair da folha (`layout.SHEET_X/Y`, de `tools/sheet.json`:
+  960x750) ou se dois símbolos se sobrepuserem; a rede v2 quebra em colunas/faixas antes disso.
 
 ### Contatores em paralelo e inversao de fases (reversao)
 Em `potencia[].colunas`, um item pode ser:
@@ -104,13 +104,104 @@ S1 energiza KM1 (selo mantem), S0 desliga, S2 energiza KM2, S1 com KM2 ligado na
 Caixa do circuito: ~x 288, y 215 (cabe em 455x295). No app, fios nao mudam de cor por fase;
 a conferencia de fases e pela netlist (`test_reversao_fases_na_geometria`).
 
+## Comando v2: rede série-paralelo recursiva
+
+O `comando` aceita, **por bloco**, duas formas. A legada (`serie` + `ramos`, acima) continua
+igual (mesma saída byte a byte). A nova descreve o degrau como uma **expressão** série/paralelo
+aninhável; o motor desenha, liga e amarra tudo.
+
+```jsonc
+"comando": [
+  { "id": "c1", "de": "L1", "para": "N",
+    "rede": { "serie": [
+      ["RT1","8017","-RT1"],                                   // folha = [id, classe, rotulo]
+      ["S0","8001","-S0"], ["S3","8001","-S3"],                // desligas em SERIE
+      { "paralelo": [ ["S1","8000","-S1"], ["S2","8000","-S2"], ["selo1","7000","-KM1"] ] },  // ligas em PARALELO + selo
+      { "paralelo": [ ["KM1","9000","-KM1"], ["H1","9008","-H1"] ] }   // cargas em paralelo (bobina, lampada, outra bobina...)
+    ] } }
+]
+```
+
+- **Expressão**: folha = `[id, classe, rotulo]`; `{"serie":[...]}` e `{"paralelo":[...]}` aninham
+  em qualquer profundidade (série dentro de paralelo dentro de série...). Uma lista solta de
+  expressões vale como série; `serie`-em-`serie` e `paralelo`-em-`paralelo` são achatados;
+  grupo de 1 elemento some. Folha = símbolo de **2 terminais** (A em cima, B embaixo): botão,
+  contato auxiliar NA/NF de qualquer classe, térmico, bobina, lâmpada... Classe com 3+
+  terminais (contator 2001, disjuntor) não entra na rede (vai em `potencia`).
+- **Vários degraus**: `"rungs": [expr, expr, ...]` (alias `"degraus"`) no lugar de `rede`: cada
+  expressão é um degrau independente entre os **mesmos** `de`/`para`. Vários blocos `comando`
+  também valem (cada um com seu par de trilhos).
+- **Desenho**: o degrau é uma **coluna vertical** entre o trilho `de` (em cima) e `para` (embaixo).
+  Série desce com eixo comum; paralelo põe os ramos **lado a lado** (alinhados pelo topo,
+  passo múltiplo de 6) e o eixo do grupo fica no centro. Cada nó elétrico vira um barramento
+  horizontal com verticais retas nos pinos e vértice em todo ponto de ligação (fio só une
+  fio por extremo): sem T solto, sem pino solto, fio reto quando A e B estão no mesmo x.
+  Elementos ligados direto ao trilho usam o roteador (vértice no trilho).
+- **Altura**: o trilho `para` desce sozinho (e os que estão abaixo dele, ex. PE, descem junto)
+  para caber o degrau mais alto.
+- **Ordem dos símbolos**: percurso em profundidade (primeiro contato do primeiro degrau tem o A
+  no trilho `de`, regra de leitura do simulador legado).
+
+### Trilhos de comando separados (`trilhos_comando`)
+
+```jsonc
+"trilhos_comando": {
+  "nomes": ["C1","C2"],                                        // [topo, base]; default C1/C2
+  "transformador": {"id":"T1","classe":"3012","rotulo":"-T1","primario":["L1","L2"]},
+  "fonte": {"id":"X2","classe":"3003","rotulo":"-X2"}          // fonte monofasica propria (L/N), opcional
+}
+// e o bloco de comando: {"id":"c1","de":"C1","para":"C2","rede":{...}}
+```
+
+Cria o par de trilhos `C1`/`C2` (y automático; `C2` desce conforme a rede) ao lado das fontes.
+`transformador`: classe `3012` (`-T`, pinos do binário `p1..p4`: primário p1/p2 no topo ligado
+aos trilhos de `primario`, secundário p4->C1 e p3->C2). `fonte`: classe `3003`, por padrão
+L->C2 e N->C1 (sem cruzar fio; `"pinos":{"L":"C1","N":"C2"}` inverte). **Pelo menos um dos dois** é
+obrigatório. Atenção: o simulador (netlist e, provavelmente, o app) **não** propaga fase pelo
+transformador; para simular, declare também `fonte` no secundário (o exemplo
+`partida_trafo_comando` faz isso). Que o 3012 é transformador é inferência (rótulo `-T`, 4
+pinos 2+2); confira no app.
+
+### Quebra automática (não cabe na folha)
+A folha segura vem de `tools/sheet.json` (`layout.SHEET_X/Y` = 960x750):
+1. **Série alta demais** (mais que `y_max` entre os trilhos): o degrau vira **serpentina**: a
+   série é repartida em colunas equilibradas; a saída de uma coluna volta ao topo da seguinte
+   por um fio único (sobe pelo lado direito da coluna). Um *paralelo* alto demais não quebra
+   (erro explícito com a altura).
+2. **Largura demais** (degraus não cabem na linha, já descontada a reserva da `potencia`):
+   os degraus excedentes vão para uma **faixa** abaixo, com novo par de trilhos
+   (`<de>~<id><k>`, `<para>~<id><k>`) **amarrado** ao primeiro por fios nas margens (esquerda
+   para `de`, direita para `para`; nenhum cruza símbolo), de modo que seguem sendo o mesmo nó
+   elétrico. Cada degrau cabe inteiro numa faixa; degrau mais largo que a folha dá erro.
+3. **Forma legada que estoura**: `compilar()` traduz os blocos `serie`/`ramos` para `rede`
+   (via ∥ selo, série, carga ∥ indica) e tenta de novo, em vez de falhar (a função interna
+   `_compilar` mantém o erro original).
+
+### Exemplos do comando v2 (todos com `testes`, sem coordenadas)
+| exemplo | mostra |
+|---|---|
+| `liga_desliga_2pontos` | 2 liga em paralelo (+selo), 2 desliga em série, 1 motor |
+| `partida_sequencial` | 2 degraus; `S0 ∥ NA(KM2)` (desliga em ordem), NA de KM1 em série com S2 |
+| `tres_degraus_lampadas` | 3 degraus independentes, lâmpadas, fonte monofásica 3003, `N` desce sozinho |
+| `intertravamento_sinalizacao` | paralelo de séries com paralelos; NA e NF de KM1/KM2 em 4 degraus |
+| `partida_trafo_comando` | `trilhos_comando` (transformador 3012 + fonte 3003), degrau em C1/C2 |
+
+Testes: `python3 -m pytest tools/test_layout_v2.py` (geometria, conectividade por geometria,
+gate dos 5 exemplos, faixas, serpentina, fallback legado, erros de entrada). Casos de
+avaliação em `tools/eval/casos/` (golden = exemplo de mesmo nome).
+
 ### Limitações / pendências
-- `paralelo` so em `potencia` (um nivel); `ordem` vale para qualquer estagio. Dois estagios
-  `paralelo` consecutivos reaproveitam os trilhos de saida como entrada.
-- Um único nível de ramos paralelos; sem ramos aninhados nem temporizadores.
-- Muitos ramos (>3) ou série longa estouram a folha (erro explícito, sem quebra
-  automática em colunas).
-- `cad_test` (netlist) é fixo para a intercalada: em outros circuitos reporta
-  FALHA nos casos KM2/RT2 e o gate ainda imprime OK (só procura `FALHOU`/`AVISO`).
-  Os testes novos conferem só os casos de KM1/RT1 na partida direta.
+- `potencia`: `paralelo` só em um nível (`ordem` vale para qualquer estágio); não quebra em
+  faixas (se a potência não couber depois do comando, erro explícito de folha). O comando v2
+  reserva o espaço estimado dos grupos de potência na faixa 0.
+- Rede v2: só símbolos de 2 terminais verticais (A em cima, B embaixo); sem ramo cruzado
+  (ponte) nem rede não série-paralela; sem temporizadores/contatos multipolares no degrau.
+- Quebra em faixas: no máximo 2 blocos com faixa (uma amarração por bloco na margem
+  esquerda); o fio de `para` na direita fica depois do último símbolo da folha.
+- Rótulos de texto não são considerados no espaçamento (usa `GAP`=20 entre ramos); rótulos
+  longos podem encostar no fio vizinho.
+- `trilhos_comando.transformador`: simuladores não passam fase pelo 3012 (ver acima).
+- `build_spec.lint_layout` ainda avisa "não é um trilho" para `C1`/`C2` de `trilhos_comando`
+  (aviso apenas; o gate ignora).
+- `cad_test` sem `testes` na spec só vale p/ KM1+KM2; os exemplos trazem seus casos.
 - **Pendência de RE**: pinos reais do `3004#-X` (só `A`/`B` medidos).
