@@ -40,7 +40,7 @@ def test_dentro_da_folha_e_sem_sobreposicao():
             w, h = layout.dim(s["classe"])
             w = layout._width(s["classe"])
             b = (s["x"], s["y"], s["x"] + w, s["y"] + h)
-            assert b[2] <= 455 and b[3] <= 295, (nome, s["id"], b)
+            assert b[2] <= layout.SHEET_X and b[3] <= layout.SHEET_Y, (nome, s["id"], b)
             for o in boxes:
                 assert not (b[0] < o[2] and o[0] < b[2] and b[1] < o[3] and o[1] < b[3]), (nome, s["id"])
             boxes.append(b)
