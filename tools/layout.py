@@ -17,6 +17,15 @@ Forma da entrada (ver docs/dsl-layout.md):
                 "colunas":[["Q1","6009","-Q1"], ..., ["M1","1000","-M1"]]}],
    "terra": {"id":"PE","classe":"3002","rotulo":"TERRA","neutro":"N"}}
 
+Comando v2 (rede serie-paralelo recursiva; ver docs/dsl-layout.md): no lugar de serie/ramos,
+   {"id":"c1","de":"L1","para":"N",
+    "rede":{"serie":[["RT1","8017","-RT1"],
+                     {"paralelo":[["S1","8000","-S1"],["S2","8000","-S2"],["selo","7000","-KM1"]]},
+                     {"paralelo":[["KM1","9000","-KM1"],["H1","9008","-H1"]]}]}}
+   ou "rungs":[rede,rede,...] (varios degraus). "trilhos_comando":{"nomes":["C1","C2"],
+   "transformador":{"id":"T1","primario":["L1","L2"]},"fonte":{"id":"X2"}} cria outro par de
+   trilhos. Nao cabendo na folha: serpentina (serie alta) / faixas amarradas (largura).
+
 Fonte unica multi-terminal (recomendado; estampa as fases certas no app):
    "fontes": [{"id":"X1","classe":"3007","rotulo":"-X",
                "pinos":{"L1":"L1","L2":"L2","L3":"L3","N":"N","PE":"PE"}}]
