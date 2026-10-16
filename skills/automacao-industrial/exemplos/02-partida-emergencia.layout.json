@@ -1,0 +1,186 @@
+{
+  "titulo": "PARTIDA DIRETA COM EMERGENCIA",
+  "layout": {
+    "trilhos": {
+      "L1": 14,
+      "L2": 20,
+      "L3": 26,
+      "N": 282,
+      "x0": 25,
+      "x1": 395,
+      "PE": 291
+    },
+    "fontes": [
+      {
+        "id": "X1",
+        "classe": "3007",
+        "rotulo": "-X",
+        "pinos": {
+          "L1": "L1",
+          "L2": "L2",
+          "L3": "L3",
+          "N": "N",
+          "PE": "PE"
+        }
+      }
+    ],
+    "comando": [
+      {
+        "id": "m1",
+        "de": "L1",
+        "para": "N",
+        "serie": [
+          [
+            "E1",
+            "8001",
+            "-E1"
+          ],
+          [
+            "RT1",
+            "8017",
+            "-RT1"
+          ],
+          [
+            "S0",
+            "8001",
+            "-S0"
+          ]
+        ],
+        "ramos": [
+          {
+            "via": [
+              "S1",
+              "8000",
+              "-S1"
+            ],
+            "selo": [
+              "selo1",
+              "7000",
+              "-KM1"
+            ],
+            "carga": [
+              "KM1",
+              "9000",
+              "-KM1"
+            ],
+            "indica": [
+              "H1",
+              "9008",
+              "-H1"
+            ]
+          }
+        ]
+      }
+    ],
+    "potencia": [
+      {
+        "id": "m1",
+        "fases": [
+          "L1",
+          "L2",
+          "L3"
+        ],
+        "neutro": "N",
+        "colunas": [
+          [
+            "Q1",
+            "6009",
+            "-Q1"
+          ],
+          [
+            "F1",
+            "6007",
+            "-F1"
+          ],
+          [
+            "KM1p",
+            "2001",
+            "-KM1"
+          ],
+          [
+            "M1",
+            "1000",
+            "-M1"
+          ]
+        ],
+        "pe": "PE"
+      }
+    ]
+  },
+  "testes": [
+    {
+      "nome": "repouso desligado",
+      "entradas": {},
+      "status": "OK",
+      "esperado": []
+    },
+    {
+      "nome": "S1 liga KM1",
+      "entradas": {
+        "S1": true
+      },
+      "status": "OK",
+      "esperado": [
+        "KM1"
+      ]
+    },
+    {
+      "nome": "selo mantem KM1",
+      "entradas": {},
+      "status": "OK",
+      "esperado": [
+        "KM1"
+      ],
+      "inicial": [
+        "KM1"
+      ]
+    },
+    {
+      "nome": "S0 desliga",
+      "entradas": {
+        "S0": true
+      },
+      "status": "OK",
+      "esperado": [],
+      "inicial": [
+        "KM1"
+      ]
+    },
+    {
+      "nome": "emergencia derruba KM1 (selo nao segura)",
+      "entradas": {
+        "E1": true
+      },
+      "status": "OK",
+      "esperado": [],
+      "inicial": [
+        "KM1"
+      ]
+    },
+    {
+      "nome": "emergencia impede partida",
+      "entradas": {
+        "E1": true,
+        "S1": true
+      },
+      "status": "OK",
+      "esperado": []
+    },
+    {
+      "nome": "soltar emergencia nao religa",
+      "entradas": {},
+      "status": "OK",
+      "esperado": []
+    },
+    {
+      "nome": "RT1 aberto bloqueia",
+      "entradas": {
+        "RT1": true,
+        "S1": true
+      },
+      "status": "OK",
+      "esperado": []
+    }
+  ],
+  "descricao": "Partida direta com botao de EMERGENCIA (NF) em serie, primeiro da cadeia, antes do termico e do S0."
+}

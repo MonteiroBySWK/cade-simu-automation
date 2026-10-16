@@ -1,0 +1,7 @@
+Partida direta de um motor trifasico (contator -KM1, disjuntor -Q1, termico -F1 com contato NF -RT1, liga -S1, desliga -S0, selo, lampada -H1) com um BOTAO DE EMERGENCIA -E1 (NF, cogumelo): ao ser acionado derruba o contator mesmo com o selo fechado e impede nova partida enquanto estiver acionado. Soltar a emergencia NAO religa o motor.
+
+Restricoes:
+- Use UMA fonte trifasica multi-terminal (classe 3007) e trilho PE separado do neutro.
+- Ligue TODOS os terminais (nenhum pino solto; U1/V1/W1/PE do motor, 1-3-5/2-4-6 do contator).
+- Os rotulos dos simbolos devem ser exatamente os do enunciado (os testes usam esses nomes).
+- O NF da emergencia fica EM SERIE, como primeiro elemento do comando (antes do termico e do -S0).

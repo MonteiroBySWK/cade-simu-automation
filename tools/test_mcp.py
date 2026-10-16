@@ -234,6 +234,25 @@ def test_cad_preview_sinaliza_solto_e_curto_em_vermelho(tmp_path):
     assert cad_render.VERMELHO in cores
 
 
+def test_exemplos_da_skill_passam_o_gate(tmp_path):
+    pasta = TOOLS.parent / "skills" / "automacao-industrial" / "exemplos"
+    pares = sorted(pasta.glob("*.layout.json"))
+    assert len(pares) >= 2
+    for f in pares:
+        assert f.with_name(f.name.replace(".layout.json", ".enunciado.txt")).is_file(), f
+        r = json.loads(C.cad_design(f.read_text(), str(tmp_path / (f.stem + ".cad"))))
+        assert r["ok"], (f.name, r["erros"])
+
+
+def test_preview_propaga_fase_pelo_contator_e_mostra_inversao(tmp_path):
+    out = tmp_path / "r.cad"
+    assert _design(_ex("reversao"), out)["ok"]
+    g = cad_render.analisar_geometria(str(out))
+    assert g["n_curtos"] == 0 and not g["soltos"]
+    fases = {f["fase"] for f in g["fios"]}
+    assert {"1", "2", "3", "N", "P", None} <= fases     # None = rede com 2 fases propagadas (reversao no motor)
+
+
 # --- build_spec CLI e eval --------------------------------------------------------
 
 def test_build_spec_cli_continua_funcionando(tmp_path):

@@ -10,6 +10,7 @@ para o agente VER o que o simulador vai ver:
 
 Uso: python3 tools/cad_render.py in.cad -o out.png [--scale 3]
 """
+import json
 import sys
 from pathlib import Path
 
@@ -20,9 +21,22 @@ from dissect import parse_ent, split_entities  # noqa: E402
 
 FASE_COR = {"1": (230, 120, 0), "2": (140, 60, 190), "3": (30, 90, 220), "N": (0, 150, 170), "P": (40, 150, 60)}
 FASE_NOME = {"1": "L1", "2": "L2", "3": "L3", "N": "N", "P": "PE"}
+PASSA = {"6009", "6010", "6007", "2001"}      # dispositivos 1->2, 3->4, 5->6 (propagacao visual da fase)
+PAR = {"1", "2", "3", "4", "5", "6"}
 CINZA = (90, 90, 90)
 VERMELHO = (220, 0, 0)
-FOLHA = (455, 295)
+
+
+def _folha():
+    """Area segura da folha (tools/sheet.json, medida no app); fallback conservador."""
+    try:
+        d = json.loads((TOOLS / "sheet.json").read_text())
+        return int(d["x_seguro_max"]), int(d["y_seguro_max"])
+    except Exception:
+        return 455, 295
+
+
+FOLHA = _folha()
 
 
 def _nome_amigavel(cid, off, nome_bin):
@@ -92,12 +106,41 @@ def analisar_geometria(path):
             pt = (x + rx, y + ry)
             ligado = pt in extremos
             pinos.append({"rotulo": rot, "classe": p["id"], "nome": _nome_amigavel(p["id"], (dx, dy), nome),
-                          "pt": pt, "ligado": ligado, "topo": dy <= 3})
+                          "pt": pt, "ligado": ligado, "topo": dy <= 3, "sx": x, "sy": y})
             if ligado and p["id"] in G.FONTE and nome in G.CHAR:
                 estampas.setdefault(find(pt), {}).setdefault(G.CHAR[nome], []).append(f"{rot}.{nome}")
     curto_raiz = {r for r, m in estampas.items() if len(m) > 1}
     fase_raiz = {r: next(iter(m)) for r, m in estampas.items() if len(m) == 1}
-    fios_c = [{"a": a, "b": b, "fase": fase_raiz.get(find(a)), "curto": find(a) in curto_raiz} for a, b in fios]
+    # propagacao APENAS visual: fase atravessa disjuntor/termico/contator (1->2, 3->4, 5->6) como se
+    # fechados; rede com 2 fases propagadas (ex.: reversao no motor) fica cinza — nao e curto.
+    arestas = []
+    fase_prop = dict(fase_raiz)
+    pares = {}
+    for p in pinos:
+        if p["ligado"] and p["classe"] in PASSA and p["nome"] in PAR:
+            pares.setdefault((p["rotulo"], p["classe"], p["sx"], p["sy"]), {})[p["nome"]] = find(p["pt"])
+    for m in pares.values():
+        for a, b in (("1", "2"), ("3", "4"), ("5", "6")):
+            if a in m and b in m:
+                arestas.append((m[a], m[b]))
+    conflito = set()
+    for _ in range(8):
+        mudou = False
+        for a, b in arestas:
+            for x, y in ((a, b), (b, a)):
+                if x in fase_prop and fase_prop[x] and x not in conflito:
+                    ch = fase_prop[x]
+                    if y not in fase_prop:
+                        fase_prop[y] = ch
+                        mudou = True
+                    elif fase_prop[y] != ch and y not in curto_raiz:
+                        if y not in conflito:
+                            conflito.add(y)
+                            fase_prop[y] = None
+                            mudou = True
+        if not mudou:
+            break
+    fios_c = [{"a": a, "b": b, "fase": fase_prop.get(find(a)), "curto": find(a) in curto_raiz} for a, b in fios]
     return {"fios": fios_c, "pinos": pinos, "simbolos": simbolos, "textos": textos,
             "juncoes": juncoes, "n_curtos": len(curto_raiz),
             "soltos": [p for p in pinos if not p["ligado"]]}
@@ -112,19 +155,18 @@ def _fonte(tam):
 
 
 def renderizar(path, scale=3):
-    """-> PIL.Image. Canvas cobre a folha (455x295) e o conteudo."""
+    """-> PIL.Image. Canvas = conteudo + margem (a folha segura, de tools/sheet.json, e so informada na legenda)."""
     from PIL import Image, ImageDraw
     g = analisar_geometria(path)
-    xs = [FOLHA[0]] + [s["x"] + max(s["w"], 0) for s in g["simbolos"]] + \
+    xs = [200] + [s["x"] + max(s["w"], 0) for s in g["simbolos"]] + \
          [c for f in g["fios"] for c in (f["a"][0], f["b"][0])]
-    ys = [FOLHA[1]] + [s["y"] + max(s["h"], 0) for s in g["simbolos"]] + \
+    ys = [140] + [s["y"] + max(s["h"], 0) for s in g["simbolos"]] + \
          [c for f in g["fios"] for c in (f["a"][1], f["b"][1])]
     W, H = max(xs) + 20, max(ys) + 24          # + legenda
     S = lambda v: int(v) * scale                   # noqa: E731
     img = Image.new("RGB", (W * scale, H * scale), "white")
     dr = ImageDraw.Draw(img)
     f_pino, f_rot, f_leg = _fonte(max(8, 3 * scale)), _fonte(max(9, 4 * scale)), _fonte(max(10, 4 * scale))
-    dr.rectangle([0, 0, S(FOLHA[0]), S(FOLHA[1])], outline=(190, 190, 190))   # moldura (conservadora)
     for s in g["simbolos"]:
         dr.rectangle([S(s["x"]), S(s["y"]), S(s["x"] + s["w"]), S(s["y"] + s["h"])], outline=(60, 60, 60))
         dr.text((S(s["x"]), S(s["y"]) - 2 * scale), f"{s['rotulo']} [{s['classe']}]", fill=(120, 0, 120),
@@ -166,6 +208,9 @@ def renderizar(path, scale=3):
     lx += 150
     dr.line([lx, ly + 6, lx + 22, ly + 6], fill=VERMELHO, width=lw + 2)
     dr.text((lx + 26, ly), f"curto ({g['n_curtos']})", fill=VERMELHO, font=f_leg)
+    fora = max(xs) > FOLHA[0] or max(ys) > FOLHA[1]
+    dr.text((lx + 130, ly), f"extensao {max(xs)}x{max(ys)} / folha segura {FOLHA[0]}x{FOLHA[1]}"
+            + ("  FORA DA FOLHA" if fora else ""), fill=VERMELHO if fora else (90, 90, 90), font=f_leg)
     return img
 
 
