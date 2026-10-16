@@ -32,12 +32,19 @@ def main(argv):
     print(res)
     teste = mcp_call.call("cad_test", {"path": out, "casos_json": json.dumps(testes)})
     print(teste)
-    # GATE: reprova em aviso (curto), erro de build, ou teste que nao PASSOU
-    problema = ("AVISO" in res) or ("ERRO" in res) or ("OK" not in res) or not teste.startswith("PASSOU")
+    import geo_check  # conectividade por geometria + fases (regras do binario)
+    curtos, soltos = geo_check.analisar(out)
+    for c in curtos:
+        print("CURTO:", c)
+    for sl in soltos:
+        print("SOLTO:", sl)
+    # GATE: reprova em aviso (curto), erro de build, teste que nao PASSOU, curto de fase ou pino solto
+    problema = (("AVISO" in res) or ("ERRO" in res) or ("OK" not in res)
+                or not teste.startswith("PASSOU") or bool(curtos) or bool(soltos))
     if problema:
         print("GATE: REPROVADO (corrija antes de seguir)")
         return 1
-    print("GATE: OK (validado, sem curto, testes passando)")
+    print("GATE: OK (validado, sem curto/fase cruzada/pino solto, testes passando)")
     return 0
 
 
