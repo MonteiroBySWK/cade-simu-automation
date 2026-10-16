@@ -17,7 +17,7 @@ from pathlib import Path
 TOOLS = Path(__file__).resolve().parent
 sys.path.insert(0, str(TOOLS))
 import geo_check as G  # noqa: E402
-from dissect import parse_ent, split_entities  # noqa: E402
+from dissect import parse_ent, split_all as split_entities  # noqa: E402
 
 FASE_COR = {"1": (230, 120, 0), "2": (140, 60, 190), "3": (30, 90, 220), "N": (0, 150, 170), "P": (40, 150, 60)}
 FASE_NOME = {"1": "L1", "2": "L2", "3": "L3", "N": "N", "P": "PE"}

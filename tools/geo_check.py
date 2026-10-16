@@ -17,7 +17,7 @@ from pathlib import Path
 
 T = Path(__file__).resolve().parent
 sys.path.insert(0, str(T))
-from dissect import parse_ent, split_entities  # noqa: E402
+from dissect import parse_ent, split_all as split_entities  # noqa: E402
 
 WIRE = {"4000", "4009", "4010", "4018", "4019"}
 SKIP = WIRE | {"4001", "4002", "4003", "4004", "4012", "8", "20000"}
