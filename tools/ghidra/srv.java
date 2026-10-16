@@ -153,6 +153,102 @@ public class srv extends GhidraScript {
                         if (ob instanceof Scalar && ((Scalar) ob).getSignedValue() == v)
                             o.append(ins.getAddress()).append("  ").append(ins).append('\n');
             }
+        } else if (op.equals("cmpstr")) {
+            // cmpstr <addrGlobal> [n]: para cada "CMP [addrGlobal], imm" no programa, a 1a string
+            // empurrada (PUSH imm -> string definida) nas n instruções seguintes => classe:string
+            Address g = A(p[1]);
+            int n = p.length > 2 ? Integer.parseInt(p[2].trim()) : 12;
+            Listing l = currentProgram.getListing();
+            InstructionIterator it = l.getInstructions(true);
+            while (it.hasNext()) {
+                Instruction ins = it.next();
+                if (!ins.getMnemonicString().equals("CMP")) continue;
+                boolean hit = false; Long val = null;
+                for (int k = 0; k < ins.getNumOperands(); k++)
+                    for (Object ob : ins.getOpObjects(k)) {
+                        if (ob instanceof Address && ob.equals(g)) hit = true;
+                        if (ob instanceof Scalar && k == 1) val = ((Scalar) ob).getSignedValue();
+                    }
+                if (!hit || val == null) continue;
+                Instruction j = ins.getNext(); String s = null;
+                for (int i = 0; i < n && j != null && s == null; i++, j = j.getNext()) {
+                    if (!j.getMnemonicString().equals("PUSH")) continue;
+                    for (Object ob : j.getOpObjects(0)) if (ob instanceof Scalar) {
+                        try {
+                            Data d = l.getDataAt(A(Long.toHexString(((Scalar) ob).getUnsignedValue())));
+                            if (d != null && d.hasStringValue()) s = String.valueOf(d.getValue());
+                            else {
+                                Address sa = A(Long.toHexString(((Scalar) ob).getUnsignedValue()));
+                                if (currentProgram.getMemory().contains(sa)) {
+                                    byte[] b = new byte[80]; int m = currentProgram.getMemory().getBytes(sa, b);
+                                    int e = 0; while (e < m && b[e] != 0) e++;
+                                    if (e >= 3 && e < 80) { boolean ok = true; for (int q = 0; q < e; q++) if ((b[q] & 0xff) < 0x20) ok = false;
+                                        if (ok) s = new String(b, 0, e, "ISO-8859-1"); }
+                                }
+                            }
+                        } catch (Exception ex) {}
+                    }
+                }
+                Function f = fnAt(ins.getAddress());
+                o.append(val).append('\t').append(ins.getAddress()).append('\t')
+                 .append(f == null ? "-" : f.getEntryPoint().toString()).append('\t').append(s == null ? "" : s.replace("\n", "\\n")).append('\n');
+            }
+        } else if (op.equals("sem")) {
+            // sem <addr>[,<addr>...]: por função, em ordem: strings empurradas (S), comparações de
+            // campos de estado (K off imm, p/ offsets 0x78a9c/0x30e24/0x7a9dc/0x2eee4 e classe 0x2024)
+            // e Ordinal_812 (L = compara rótulo). Base p/ papel: contato NA (estado==1) / NC (==0).
+            Listing l = currentProgram.getListing();
+            for (String a : p[1].split(",")) {
+                Function f = fnAt(A(a.trim()));
+                if (f == null) { o.append("FUNC ").append(a).append(" ?\n"); continue; }
+                o.append("FUNC ").append(f.getEntryPoint()).append('\n');
+                InstructionIterator it = l.getInstructions(f.getBody(), true);
+                while (it.hasNext()) {
+                    Instruction ins = it.next();
+                    String mn = ins.getMnemonicString();
+                    if (mn.equals("PUSH")) {
+                        for (Object ob : ins.getOpObjects(0)) if (ob instanceof Scalar) {
+                            long v = ((Scalar) ob).getUnsignedValue();
+                            if (v < 0xb46000L || v > 0xbec000L) continue;
+                            try {
+                                byte[] b = new byte[64]; int m = currentProgram.getMemory().getBytes(A(Long.toHexString(v)), b);
+                                int e = 0; while (e < m && b[e] != 0) e++;
+                                boolean ok = e < 64; for (int q = 0; q < e && ok; q++) if ((b[q] & 0xff) < 0x20) ok = false;
+                                if (ok) o.append("  S ").append(new String(b, 0, e, "ISO-8859-1")).append('\n');
+                            } catch (Exception ex) {}
+                        }
+                    } else if (mn.equals("CMP") || (mn.equals("MOV") && ins.getNumOperands() == 2)) {
+                        Object[] o0 = ins.getOpObjects(0);
+                        Long off = null, imm = null;
+                        for (Object ob : o0) if (ob instanceof Scalar) {
+                            long v = ((Scalar) ob).getUnsignedValue();
+                            if (v == 0x78a9c || v == 0x30e24 || v == 0x7a9dc || v == 0x2eee4 || v == 0x32d64 || v == 0x34ca4) off = v;
+                        }
+                        if (off == null && mn.equals("CMP")) {
+                            boolean cls = false;
+                            for (Object ob : o0) if (ob instanceof Scalar && ((Scalar) ob).getUnsignedValue() == 0x2024) cls = true;
+                            if (cls) for (Object ob : ins.getOpObjects(1)) if (ob instanceof Scalar) {
+                                long v = ((Scalar) ob).getSignedValue();
+                                if (v != 4000 && v != 4009 && v != 4010 && v != 4018 && v != 4019 && v != 1 && v != 0 && v != 0xfa1 && v != 0xfac)
+                                    o.append("  C ").append(v).append('\n');
+                            }
+                            continue;
+                        }
+                        if (off == null) continue;
+                        for (Object ob : ins.getOpObjects(1)) if (ob instanceof Scalar) imm = ((Scalar) ob).getSignedValue();
+                        if (imm == null) continue;
+                        o.append(mn.equals("CMP") ? "  K 0x" : "  W 0x").append(Long.toHexString(off)).append(' ').append(imm).append('\n');
+                    } else if (mn.equals("CALL")) {
+                        for (Reference r : ins.getReferencesFrom()) {
+                            Symbol s = getSymbolAt(r.getToAddress());
+                            Function tf = getFunctionAt(r.getToAddress());
+                            String nm = tf != null ? tf.getName() : (s != null ? s.getName() : "");
+                            if (tf != null && tf.isThunk() && tf.getThunkedFunction(true) != null) nm = tf.getThunkedFunction(true).getName();
+                            if (nm.contains("Ordinal_812") || nm.contains("Ordinal_813")) o.append("  L ").append(nm).append('\n');
+                        }
+                    }
+                }
+            }
         } else if (op.equals("fn")) {
             String sub = p[1];
             for (Function f : currentProgram.getFunctionManager().getFunctions(true))

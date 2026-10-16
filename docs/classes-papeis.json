@@ -1,0 +1,7701 @@
+{
+ "_nota": "Semântica de simulação por classe extraída do binário CADe_SIMU 4.0 [BR] (ver docs/re-engenharia.md §11). Chave = id de classe. pinos = nomes padrão na ordem de desenho (= p1..pN de docs/pinos-binario.json). contatos[].fecha_quando refere-se ao estado da PRÓPRIA entidade (+0x78a9c), que é copiado de quem aciona (bobina por rótulo, clique, etc.).",
+ "_modelo": {
+  "no": "fios por geometria (§9.2); cada fio carrega 1 char: '0' (sem tensão), '1','2','3' (fases), 'N', 'P' (PE), '+', '-', e marcas de carga em série 'R','S','T','A','B','C','W','Z'",
+  "conducao": "elemento fechado copia o char de um lado para o fio do outro lado (se este estiver '0'); duas fases diferentes no mesmo nó = curto",
+  "carga_energizada": "bobina/lâmpada/temporizador: par (fase_i, N), (N, fase_i), (fase_i, fase_j i!=j), ('+','-') ou ('-','+') nos 2 pinos; lâmpada aceita também ('+','N') e acende com meia luz em série (pares com 'Z'/'B'...)",
+  "acionamento_por_rotulo": "bobina (9000..) na passada 7 copia seu estado a TODAS as entidades com label0 igual (Ordinal_812 = CString ==) e classe em {2000,2001,2002,2006,2008, 7000..7003}; temporizadores também a 7004..7015 (estado temporizado)",
+  "relaxacao": "OnDraw percorre todas as entidades 8 vezes (DAT_00bd959c = 0..7); só na passada 7 as bobinas comitam estado e os temporizadores contam",
+  "estado_inicial": "todos os estados (0x78a9c, 0x7a9dc, 0x2eee4, 0x30e24) = 0 ao iniciar a simulação (FUN_0043d540)",
+  "temporizador": {
+   "rotulo_tempo": "label5 (+0x4c3a4; 6o rótulo da entidade) — inteiro via atoi()",
+   "rotulo_unidade": "label4 (+0x4a464): '3'=x0,1 s (x1 tick) | '0'=x1 s (x10) | '1'=x10 s (x100) | '2'='x60 Seg' no diálogo mas o código usa x1000 ticks (=100 s)",
+   "tick": "1 tick = passada 7 do OnDraw disparada pelo WM_TIMER 1; periodo = 1000-18*velocidade ms (velocidade = último %4d do header, padrão 50 => 100 ms)",
+   "nota": "atoi: '0.5' vira 0 => comuta no 1o tick. No .cad: '#A1#A2#0#5#' = unidade '0' (s), tempo 5"
+  }
+ },
+ "1": {
+  "nome": "Línea",
+  "aba": "Desenho (formas)",
+  "papel": "outro",
+  "estado_inicial": 0,
+  "nota": "forma gráfica/figura (sem elétrica)",
+  "evidencia": "nome cmpstr",
+  "confianca": "alta"
+ },
+ "2": {
+  "nome": "Rectángulo",
+  "aba": "Desenho (formas)",
+  "papel": "outro",
+  "estado_inicial": 0,
+  "nota": "forma gráfica/figura (sem elétrica)",
+  "evidencia": "nome cmpstr",
+  "confianca": "alta"
+ },
+ "3": {
+  "nome": "Elipse",
+  "aba": "Desenho (formas)",
+  "papel": "outro",
+  "estado_inicial": 0,
+  "nota": "forma gráfica/figura (sem elétrica)",
+  "evidencia": "nome cmpstr",
+  "confianca": "alta"
+ },
+ "4": {
+  "nome": "Rectángulo relleno",
+  "aba": "Desenho (formas)",
+  "papel": "outro",
+  "estado_inicial": 0,
+  "nota": "forma gráfica/figura (sem elétrica)",
+  "evidencia": "nome cmpstr",
+  "confianca": "alta"
+ },
+ "5": {
+  "nome": "Elipse rellena",
+  "aba": "Desenho (formas)",
+  "papel": "outro",
+  "estado_inicial": 0,
+  "nota": "forma gráfica/figura (sem elétrica)",
+  "evidencia": "nome cmpstr",
+  "confianca": "alta"
+ },
+ "6": {
+  "nome": null,
+  "aba": "Desenho (formas)",
+  "papel": "outro",
+  "estado_inicial": 0,
+  "nota": "forma gráfica/figura (sem elétrica)",
+  "evidencia": "dispatch FUN_0040d2b0",
+  "nome_ausente_no_binario": true,
+  "confianca": "alta"
+ },
+ "8": {
+  "nome": null,
+  "aba": "Desenho (formas)",
+  "papel": "outro",
+  "estado_inicial": 0,
+  "nota": "forma gráfica/figura (sem elétrica)",
+  "evidencia": "dispatch FUN_0040d2b0",
+  "nome_ausente_no_binario": true,
+  "confianca": "alta"
+ },
+ "9": {
+  "nome": null,
+  "aba": "Desenho (formas)",
+  "papel": "outro",
+  "estado_inicial": 0,
+  "nota": "forma gráfica/figura (sem elétrica)",
+  "evidencia": "dispatch FUN_0040d2b0",
+  "nome_ausente_no_binario": true,
+  "confianca": "alta"
+ },
+ "1000": {
+  "nome": "Motor trifásico",
+  "aba": "Motores e cargas de potência",
+  "papel": "motor",
+  "pinos": [
+   "U1",
+   "V1",
+   "W1",
+   "PE"
+  ],
+  "designacao_padrao": "-M",
+  "estado_inicial": 0,
+  "nota": "carga trifásica/mono: gira se fases distintas nos pinos de fase (campo 0x7a9dc = estado de giro)",
+  "evidencia": "desenho/sim FUN_004a8d80; nome FUN_0087aca0",
+  "confianca": "media"
+ },
+ "1001": {
+  "nome": "Motor trifásico YD",
+  "aba": "Motores e cargas de potência",
+  "papel": "motor",
+  "pinos": [
+   "U1",
+   "V1",
+   "W1",
+   "PE",
+   "PE",
+   "PE",
+   "PE",
+   "W2",
+   "U2",
+   "V2"
+  ],
+  "designacao_padrao": "-M",
+  "estado_inicial": 0,
+  "nota": "carga trifásica/mono: gira se fases distintas nos pinos de fase (campo 0x7a9dc = estado de giro)",
+  "evidencia": "desenho/sim FUN_004ac380; nome FUN_0087aca0",
+  "confianca": "media"
+ },
+ "1002": {
+  "nome": "Motor monofásico",
+  "aba": "Motores e cargas de potência",
+  "papel": "motor",
+  "pinos": [
+   "U1",
+   "V1",
+   "PE"
+  ],
+  "designacao_padrao": "-M",
+  "estado_inicial": 0,
+  "nota": "carga trifásica/mono: gira se fases distintas nos pinos de fase (campo 0x7a9dc = estado de giro)",
+  "evidencia": "desenho/sim FUN_004b0b00; nome FUN_0087aca0",
+  "confianca": "media"
+ },
+ "1003": {
+  "nome": "Motor Dahalander",
+  "aba": "Motores e cargas de potência",
+  "papel": "motor",
+  "pinos": [
+   "U1",
+   "V1",
+   "W1",
+   "PE",
+   "U2",
+   "V2",
+   "W2"
+  ],
+  "designacao_padrao": "Dah",
+  "estado_inicial": 0,
+  "nota": "carga trifásica/mono: gira se fases distintas nos pinos de fase (campo 0x7a9dc = estado de giro)",
+  "evidencia": "desenho/sim FUN_004b6360; nome FUN_0087aca0",
+  "confianca": "media"
+ },
+ "1004": {
+  "nome": "Motor rotor bobinado",
+  "aba": "Motores e cargas de potência",
+  "papel": "motor",
+  "pinos": [
+   "U1",
+   "V1",
+   "W1",
+   "PE",
+   "K",
+   "L",
+   "M"
+  ],
+  "designacao_padrao": "-M",
+  "estado_inicial": 0,
+  "nota": "carga trifásica/mono: gira se fases distintas nos pinos de fase (campo 0x7a9dc = estado de giro)",
+  "evidencia": "desenho/sim FUN_004bb8d0; nome FUN_0087aca0",
+  "confianca": "media"
+ },
+ "1005": {
+  "nome": "Motor dos velocidades",
+  "aba": "Motores e cargas de potência",
+  "papel": "motor",
+  "pinos": [
+   "U1",
+   "V1",
+   "W1",
+   "PE",
+   "U2",
+   "V2",
+   "W2"
+  ],
+  "designacao_padrao": "I-II",
+  "estado_inicial": 0,
+  "nota": "carga trifásica/mono: gira se fases distintas nos pinos de fase (campo 0x7a9dc = estado de giro)",
+  "evidencia": "desenho/sim FUN_004b8fa0; nome FUN_0087aca0",
+  "confianca": "media"
+ },
+ "1006": {
+  "nome": "Motor cc. iman permanente",
+  "aba": "Motores e cargas de potência",
+  "papel": "motor",
+  "pinos": [
+   "A1",
+   "A2",
+   "PE"
+  ],
+  "designacao_padrao": "-M",
+  "estado_inicial": 0,
+  "nota": "carga trifásica/mono: gira se fases distintas nos pinos de fase (campo 0x7a9dc = estado de giro)",
+  "evidencia": "desenho/sim FUN_004be160; nome FUN_0087aca0",
+  "confianca": "media"
+ },
+ "1007": {
+  "nome": "Motor cc. ex. indepen.",
+  "aba": "Motores e cargas de potência",
+  "papel": "motor",
+  "pinos": [
+   "A1",
+   "A2",
+   "PE",
+   "F1",
+   "F2"
+  ],
+  "designacao_padrao": "-M",
+  "estado_inicial": 0,
+  "nota": "carga trifásica/mono: gira se fases distintas nos pinos de fase (campo 0x7a9dc = estado de giro)",
+  "evidencia": "desenho/sim FUN_004bfe60; nome FUN_0087aca0",
+  "confianca": "media"
+ },
+ "1008": {
+  "nome": "Motor (U1 V1 PE U2 V2)",
+  "aba": "Motores e cargas de potência",
+  "papel": "motor",
+  "pinos": [
+   "U1",
+   "V1",
+   "PE",
+   "U2",
+   "V2"
+  ],
+  "designacao_padrao": "-M",
+  "estado_inicial": 0,
+  "nota": "carga trifásica/mono: gira se fases distintas nos pinos de fase (campo 0x7a9dc = estado de giro)",
+  "evidencia": "desenho/sim FUN_004b1f60",
+  "nome_ausente_no_binario": true,
+  "confianca": "media"
+ },
+ "1009": {
+  "nome": "Freno (U1 V1 PE)",
+  "aba": "Motores e cargas de potência",
+  "papel": "motor",
+  "pinos": [
+   "U1",
+   "V1",
+   "PE"
+  ],
+  "designacao_padrao": "-Fr",
+  "estado_inicial": 0,
+  "nota": "carga trifásica/mono: gira se fases distintas nos pinos de fase (campo 0x7a9dc = estado de giro)",
+  "evidencia": "desenho/sim FUN_004c80a0",
+  "nome_ausente_no_binario": true,
+  "confianca": "media"
+ },
+ "1010": {
+  "nome": "Motor trifásico como monofásico",
+  "aba": "Motores e cargas de potência",
+  "papel": "motor",
+  "pinos": [
+   "U1",
+   "V1",
+   "W1",
+   "PE"
+  ],
+  "designacao_padrao": "-M",
+  "estado_inicial": 0,
+  "nota": "carga trifásica/mono: gira se fases distintas nos pinos de fase (campo 0x7a9dc = estado de giro)",
+  "evidencia": "desenho/sim FUN_004b4050; nome FUN_0087aca0",
+  "confianca": "media"
+ },
+ "1011": {
+  "nome": null,
+  "aba": "Motores e cargas de potência",
+  "papel": "motor",
+  "pinos": [
+   "p1",
+   "p2",
+   "p3",
+   "p4",
+   "p5",
+   "p6"
+  ],
+  "designacao_padrao": "-M",
+  "estado_inicial": 0,
+  "nota": "carga trifásica/mono: gira se fases distintas nos pinos de fase (campo 0x7a9dc = estado de giro)",
+  "evidencia": "desenho/sim FUN_004c2f10",
+  "nome_ausente_no_binario": true,
+  "confianca": "media"
+ },
+ "1012": {
+  "nome": null,
+  "aba": "Motores e cargas de potência",
+  "papel": "motor",
+  "pinos": [
+   "p1",
+   "p2",
+   "p3",
+   "p4"
+  ],
+  "designacao_padrao": "-M",
+  "estado_inicial": 0,
+  "nota": "carga trifásica/mono: gira se fases distintas nos pinos de fase (campo 0x7a9dc = estado de giro)",
+  "evidencia": "desenho/sim FUN_004c5b70",
+  "nome_ausente_no_binario": true,
+  "confianca": "media"
+ },
+ "1050": {
+  "nome": "Resistencia I",
+  "aba": "Motores e cargas de potência",
+  "papel": "outro",
+  "pinos": [
+   "1",
+   "2"
+  ],
+  "designacao_padrao": "-R",
+  "estado_inicial": 0,
+  "nota": "carga/acionamento de potência (resistência, variador, soft-starter, controle)",
+  "evidencia": "desenho/sim FUN_004c9270; nome FUN_0087aca0",
+  "confianca": "baixa"
+ },
+ "1051": {
+  "nome": "Resistencia III",
+  "aba": "Motores e cargas de potência",
+  "papel": "outro",
+  "pinos": [
+   "1",
+   "3",
+   "5",
+   "2",
+   "4",
+   "6"
+  ],
+  "designacao_padrao": "-R",
+  "estado_inicial": 0,
+  "nota": "carga/acionamento de potência (resistência, variador, soft-starter, controle)",
+  "evidencia": "desenho/sim FUN_004cb850; nome FUN_0087aca0",
+  "confianca": "baixa"
+ },
+ "1052": {
+  "nome": "Autotransformador III",
+  "aba": "Motores e cargas de potência",
+  "papel": "outro",
+  "pinos": [
+   "1",
+   "4",
+   "7",
+   "2",
+   "5",
+   "8",
+   "3",
+   "6",
+   "9"
+  ],
+  "designacao_padrao": "-T",
+  "estado_inicial": 0,
+  "nota": "carga/acionamento de potência (resistência, variador, soft-starter, controle)",
+  "evidencia": "desenho/sim FUN_004ced60; nome FUN_0087aca0",
+  "confianca": "baixa"
+ },
+ "1053": {
+  "nome": "Arrancador electrónico",
+  "aba": "Motores e cargas de potência",
+  "papel": "outro",
+  "pinos": [
+   "1",
+   "3",
+   "5",
+   "2",
+   "4",
+   "6",
+   "PE"
+  ],
+  "designacao_padrao": "-G",
+  "estado_inicial": 0,
+  "nota": "carga/acionamento de potência (resistência, variador, soft-starter, controle)",
+  "evidencia": "desenho/sim FUN_004d1f30; nome FUN_0087aca0",
+  "confianca": "baixa"
+ },
+ "1054": {
+  "nome": "Variador velocidad ca II.",
+  "aba": "Motores e cargas de potência",
+  "papel": "outro",
+  "pinos": [
+   "L1",
+   "N",
+   "PE",
+   "U",
+   "V",
+   "W",
+   "PE"
+  ],
+  "designacao_padrao": "-G",
+  "estado_inicial": 0,
+  "nota": "carga/acionamento de potência (resistência, variador, soft-starter, controle)",
+  "evidencia": "desenho/sim FUN_004d4820; nome FUN_0087aca0",
+  "confianca": "baixa"
+ },
+ "1055": {
+  "nome": "Variador velocidad ca III.",
+  "aba": "Motores e cargas de potência",
+  "papel": "outro",
+  "pinos": [
+   "L1",
+   "L2",
+   "L3",
+   "PE",
+   "U",
+   "V",
+   "W",
+   "PE"
+  ],
+  "designacao_padrao": "-G",
+  "estado_inicial": 0,
+  "nota": "carga/acionamento de potência (resistência, variador, soft-starter, controle)",
+  "evidencia": "desenho/sim FUN_004d6f50; nome FUN_0087aca0",
+  "confianca": "baixa"
+ },
+ "1056": {
+  "nome": "Control Variador velocidad ca.",
+  "aba": "Motores e cargas de potência",
+  "papel": "outro",
+  "pinos": [
+   "p1",
+   "p2",
+   "p3",
+   "p4",
+   "p5",
+   "p6",
+   "p7",
+   "p8",
+   "p9",
+   "p10",
+   "p11",
+   "p12",
+   "p13"
+  ],
+  "designacao_padrao": "-G",
+  "estado_inicial": 0,
+  "nota": "carga/acionamento de potência (resistência, variador, soft-starter, controle)",
+  "evidencia": "desenho/sim FUN_004d9af0; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "1057": {
+  "nome": "Variador velocidad cc.",
+  "aba": "Motores e cargas de potência",
+  "papel": "outro",
+  "pinos": [
+   "L1",
+   "N",
+   "PE",
+   "M1",
+   "M2"
+  ],
+  "designacao_padrao": "-G",
+  "estado_inicial": 0,
+  "nota": "carga/acionamento de potência (resistência, variador, soft-starter, controle)",
+  "evidencia": "desenho/sim FUN_004df2b0; nome FUN_0087aca0",
+  "confianca": "baixa"
+ },
+ "1058": {
+  "nome": "Variador velocidad cc.",
+  "aba": "Motores e cargas de potência",
+  "papel": "outro",
+  "pinos": [
+   "L1",
+   "N",
+   "PE",
+   "M1",
+   "M2",
+   "F1",
+   "F2"
+  ],
+  "designacao_padrao": "-G",
+  "estado_inicial": 0,
+  "nota": "carga/acionamento de potência (resistência, variador, soft-starter, controle)",
+  "evidencia": "desenho/sim FUN_004e1030; nome FUN_0087aca0",
+  "confianca": "baixa"
+ },
+ "1059": {
+  "nome": "ControlVariador velocidad cc.",
+  "aba": "Motores e cargas de potência",
+  "papel": "outro",
+  "pinos": [
+   "L1",
+   "L2",
+   "L3",
+   "PE",
+   "M1",
+   "M2"
+  ],
+  "designacao_padrao": "-G",
+  "estado_inicial": 0,
+  "nota": "carga/acionamento de potência (resistência, variador, soft-starter, controle)",
+  "evidencia": "desenho/sim FUN_004e3510; nome FUN_0087aca0",
+  "confianca": "baixa"
+ },
+ "1060": {
+  "nome": "Variador (L1 L2 L3 PE M1 M2 F1 F2)",
+  "aba": "Motores e cargas de potência",
+  "papel": "outro",
+  "pinos": [
+   "L1",
+   "L2",
+   "L3",
+   "PE",
+   "M1",
+   "M2",
+   "F1",
+   "F2"
+  ],
+  "designacao_padrao": "-G",
+  "estado_inicial": 0,
+  "nota": "carga/acionamento de potência (resistência, variador, soft-starter, controle)",
+  "evidencia": "desenho/sim FUN_004e5850",
+  "nome_ausente_no_binario": true,
+  "confianca": "baixa"
+ },
+ "1061": {
+  "nome": "Control Variador velocidad cc.",
+  "aba": "Motores e cargas de potência",
+  "papel": "outro",
+  "pinos": [
+   "p1",
+   "p2",
+   "p3",
+   "p4",
+   "p5",
+   "p6",
+   "p7"
+  ],
+  "designacao_padrao": "-G",
+  "estado_inicial": 0,
+  "nota": "carga/acionamento de potência (resistência, variador, soft-starter, controle)",
+  "evidencia": "desenho/sim FUN_004e82f0; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "1062": {
+  "nome": "Control arrancador electrónico c.a.",
+  "aba": "Motores e cargas de potência",
+  "papel": "outro",
+  "pinos": [
+   "IN",
+   "A1",
+   "A2"
+  ],
+  "designacao_padrao": "-G",
+  "estado_inicial": 0,
+  "nota": "carga/acionamento de potência (resistência, variador, soft-starter, controle)",
+  "evidencia": "desenho/sim FUN_004eb7f0; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "1063": {
+  "nome": "Control (I1 I2 A1 A2)",
+  "aba": "Motores e cargas de potência",
+  "papel": "outro",
+  "pinos": [
+   "I1",
+   "I2",
+   "A1",
+   "A2"
+  ],
+  "designacao_padrao": "-G",
+  "estado_inicial": 0,
+  "nota": "carga/acionamento de potência (resistência, variador, soft-starter, controle)",
+  "evidencia": "desenho/sim FUN_004edf10",
+  "nome_ausente_no_binario": true,
+  "confianca": "baixa"
+ },
+ "1065": {
+  "nome": "Módulo lógico (I1..I4 Q1..Q4)",
+  "aba": "Motores e cargas de potência",
+  "papel": "outro",
+  "pinos": [
+   "I1",
+   "I2",
+   "I3",
+   "I4",
+   "Q1",
+   "Q2",
+   "Q3",
+   "Q4",
+   "L+",
+   "L-"
+  ],
+  "designacao_padrao": "-G",
+  "estado_inicial": 0,
+  "nota": "carga/acionamento de potência (resistência, variador, soft-starter, controle)",
+  "evidencia": "desenho/sim FUN_004f0e90",
+  "nome_ausente_no_binario": true,
+  "confianca": "baixa"
+ },
+ "1066": {
+  "nome": "Módulo lógico (I1..I3 Q1..Q4 L+)",
+  "aba": "Motores e cargas de potência",
+  "papel": "outro",
+  "pinos": [
+   "I1",
+   "I2",
+   "I3",
+   "Q1",
+   "Q2",
+   "Q3",
+   "Q4",
+   "L+",
+   "L-"
+  ],
+  "designacao_padrao": "-G",
+  "estado_inicial": 0,
+  "nota": "carga/acionamento de potência (resistência, variador, soft-starter, controle)",
+  "evidencia": "desenho/sim FUN_004f4610",
+  "nome_ausente_no_binario": true,
+  "confianca": "baixa"
+ },
+ "1067": {
+  "nome": "Módulo lógico (I1..I3 Q1..Q4 L+)",
+  "aba": "Motores e cargas de potência",
+  "papel": "outro",
+  "pinos": [
+   "I1",
+   "I2",
+   "I3",
+   "Q1",
+   "Q2",
+   "Q3",
+   "Q4",
+   "L+",
+   "L-"
+  ],
+  "designacao_padrao": "-G",
+  "estado_inicial": 0,
+  "nota": "carga/acionamento de potência (resistência, variador, soft-starter, controle)",
+  "evidencia": "desenho/sim FUN_004f9680",
+  "nome_ausente_no_binario": true,
+  "confianca": "baixa"
+ },
+ "1070": {
+  "nome": "Relé (A1 A2 1 2)",
+  "aba": "Motores e cargas de potência",
+  "papel": "outro",
+  "pinos": [
+   "A1",
+   "A2",
+   "1",
+   "2"
+  ],
+  "designacao_padrao": "-K",
+  "estado_inicial": 0,
+  "nota": "carga/acionamento de potência (resistência, variador, soft-starter, controle)",
+  "evidencia": "desenho/sim FUN_004fe560",
+  "nome_ausente_no_binario": true,
+  "confianca": "baixa"
+ },
+ "1071": {
+  "nome": "Relé (A1 A2 1 2)",
+  "aba": "Motores e cargas de potência",
+  "papel": "outro",
+  "pinos": [
+   "A1",
+   "A2",
+   "1",
+   "2"
+  ],
+  "designacao_padrao": "-K",
+  "estado_inicial": 0,
+  "nota": "carga/acionamento de potência (resistência, variador, soft-starter, controle)",
+  "evidencia": "desenho/sim FUN_004ffc10",
+  "nome_ausente_no_binario": true,
+  "confianca": "baixa"
+ },
+ "1072": {
+  "nome": "Contactor compacto con bobina (1-6, A1 A2)",
+  "aba": "Motores e cargas de potência",
+  "papel": "outro",
+  "pinos": [
+   "1",
+   "3",
+   "5",
+   "2",
+   "4",
+   "6",
+   "A1",
+   "A2"
+  ],
+  "designacao_padrao": "-KM",
+  "estado_inicial": 0,
+  "nota": "carga/acionamento de potência (resistência, variador, soft-starter, controle)",
+  "evidencia": "desenho/sim FUN_00501b30",
+  "nome_ausente_no_binario": true,
+  "confianca": "baixa"
+ },
+ "1073": {
+  "nome": "Contactor compacto con bobina (1-6, A1 A2)",
+  "aba": "Motores e cargas de potência",
+  "papel": "outro",
+  "pinos": [
+   "1",
+   "3",
+   "5",
+   "2",
+   "4",
+   "6",
+   "A1",
+   "A2",
+   "A3"
+  ],
+  "designacao_padrao": "-KM",
+  "estado_inicial": 0,
+  "nota": "carga/acionamento de potência (resistência, variador, soft-starter, controle)",
+  "evidencia": "desenho/sim FUN_00504c90",
+  "nome_ausente_no_binario": true,
+  "confianca": "baixa"
+ },
+ "1074": {
+  "nome": "Relé con contacto NA (A1 A2 13 14)",
+  "aba": "Motores e cargas de potência",
+  "papel": "outro",
+  "pinos": [
+   "A1",
+   "A2",
+   "13",
+   "14"
+  ],
+  "designacao_padrao": "-K",
+  "estado_inicial": 0,
+  "nota": "carga/acionamento de potência (resistência, variador, soft-starter, controle)",
+  "evidencia": "desenho/sim FUN_00509810",
+  "nome_ausente_no_binario": true,
+  "confianca": "baixa"
+ },
+ "1075": {
+  "nome": "Relé con contacto conmutado (A1 A2 11 12 14)",
+  "aba": "Motores e cargas de potência",
+  "papel": "outro",
+  "pinos": [
+   "A1",
+   "A2",
+   "12",
+   "11",
+   "14"
+  ],
+  "designacao_padrao": "-K",
+  "estado_inicial": 0,
+  "nota": "carga/acionamento de potência (resistência, variador, soft-starter, controle)",
+  "evidencia": "desenho/sim FUN_0050b440",
+  "nome_ausente_no_binario": true,
+  "confianca": "baixa"
+ },
+ "1076": {
+  "nome": "Relé 1 canal",
+  "aba": "Motores e cargas de potência",
+  "papel": "outro",
+  "pinos": [
+   "p1",
+   "p2",
+   "p3",
+   "p4",
+   "p5",
+   "p6"
+  ],
+  "designacao_padrao": "-K",
+  "estado_inicial": 0,
+  "nota": "carga/acionamento de potência (resistência, variador, soft-starter, controle)",
+  "evidencia": "desenho/sim FUN_0050d540; nome FUN_0087aca0",
+  "confianca": "baixa"
+ },
+ "2000": {
+  "nome": "Contactor II",
+  "aba": "Contactores e interruptores (polos de potência)",
+  "papel": "contato_NA",
+  "pinos": [
+   "1",
+   "3",
+   "2",
+   "4"
+  ],
+  "designacao_padrao": "-KM",
+  "aciona_por": "label igual ao da bobina (9000/9001/9002/9004..9007/9014/9015/1070..)",
+  "contatos": [
+   {
+    "pinos": [
+     "1",
+     "2"
+    ],
+    "fecha_quando": "estado==1"
+   },
+   {
+    "pinos": [
+     "3",
+     "4"
+    ],
+    "fecha_quando": "estado==1"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "polos principais do contator: conduz topo->base quando estado==1",
+  "evidencia": "desenho/sim FUN_00514240; nome FUN_0087aca0",
+  "confianca": "alta"
+ },
+ "2001": {
+  "nome": "Contactor III",
+  "aba": "Contactores e interruptores (polos de potência)",
+  "papel": "contato_NA",
+  "pinos": [
+   "1",
+   "3",
+   "5",
+   "2",
+   "4",
+   "6"
+  ],
+  "designacao_padrao": "-KM",
+  "aciona_por": "label igual ao da bobina (9000/9001/9002/9004..9007/9014/9015/1070..)",
+  "contatos": [
+   {
+    "pinos": [
+     "1",
+     "2"
+    ],
+    "fecha_quando": "estado==1"
+   },
+   {
+    "pinos": [
+     "3",
+     "4"
+    ],
+    "fecha_quando": "estado==1"
+   },
+   {
+    "pinos": [
+     "5",
+     "6"
+    ],
+    "fecha_quando": "estado==1"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "polos principais do contator: conduz topo->base quando estado==1",
+  "evidencia": "FUN_00516240 (decompilada); desenho/sim FUN_00516240; nome FUN_0087aca0",
+  "confianca": "alta"
+ },
+ "2002": {
+  "nome": "Contactor IIII",
+  "aba": "Contactores e interruptores (polos de potência)",
+  "papel": "contato_NA",
+  "pinos": [
+   "1",
+   "3",
+   "5",
+   "7",
+   "2",
+   "4",
+   "6",
+   "8"
+  ],
+  "designacao_padrao": "-KM",
+  "aciona_por": "label igual ao da bobina (9000/9001/9002/9004..9007/9014/9015/1070..)",
+  "contatos": [
+   {
+    "pinos": [
+     "1",
+     "2"
+    ],
+    "fecha_quando": "estado==1"
+   },
+   {
+    "pinos": [
+     "3",
+     "4"
+    ],
+    "fecha_quando": "estado==1"
+   },
+   {
+    "pinos": [
+     "5",
+     "6"
+    ],
+    "fecha_quando": "estado==1"
+   },
+   {
+    "pinos": [
+     "7",
+     "8"
+    ],
+    "fecha_quando": "estado==1"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "polos principais do contator: conduz topo->base quando estado==1",
+  "evidencia": "desenho/sim FUN_0051cbd0; nome FUN_0087aca0",
+  "confianca": "alta"
+ },
+ "2003": {
+  "nome": "Interruptor II",
+  "aba": "Contactores e interruptores (polos de potência)",
+  "papel": "interruptor",
+  "pinos": [
+   "1",
+   "3",
+   "2",
+   "4"
+  ],
+  "designacao_padrao": "-S",
+  "aciona_por": "clique (alterna; propaga a mesmo rótulo)",
+  "contatos": [
+   {
+    "pinos": [
+     "1",
+     "2"
+    ],
+    "fecha_quando": "estado==1"
+   },
+   {
+    "pinos": [
+     "3",
+     "4"
+    ],
+    "fecha_quando": "estado==1"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "interruptor manual de potência",
+  "evidencia": "desenho/sim FUN_00521e40; nome FUN_0087aca0",
+  "confianca": "media"
+ },
+ "2004": {
+  "nome": "Interruptor III",
+  "aba": "Contactores e interruptores (polos de potência)",
+  "papel": "interruptor",
+  "pinos": [
+   "1",
+   "3",
+   "5",
+   "2",
+   "4",
+   "6"
+  ],
+  "designacao_padrao": "-S",
+  "aciona_por": "clique (alterna; propaga a mesmo rótulo)",
+  "contatos": [
+   {
+    "pinos": [
+     "1",
+     "2"
+    ],
+    "fecha_quando": "estado==1"
+   },
+   {
+    "pinos": [
+     "3",
+     "4"
+    ],
+    "fecha_quando": "estado==1"
+   },
+   {
+    "pinos": [
+     "5",
+     "6"
+    ],
+    "fecha_quando": "estado==1"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "interruptor manual de potência",
+  "evidencia": "desenho/sim FUN_00524600; nome FUN_0087aca0",
+  "confianca": "media"
+ },
+ "2005": {
+  "nome": "Interruptor IIII",
+  "aba": "Contactores e interruptores (polos de potência)",
+  "papel": "interruptor",
+  "pinos": [
+   "1",
+   "3",
+   "5",
+   "7",
+   "2",
+   "4",
+   "6",
+   "8"
+  ],
+  "designacao_padrao": "-S",
+  "aciona_por": "clique (alterna; propaga a mesmo rótulo)",
+  "contatos": [
+   {
+    "pinos": [
+     "1",
+     "2"
+    ],
+    "fecha_quando": "estado==1"
+   },
+   {
+    "pinos": [
+     "3",
+     "4"
+    ],
+    "fecha_quando": "estado==1"
+   },
+   {
+    "pinos": [
+     "5",
+     "6"
+    ],
+    "fecha_quando": "estado==1"
+   },
+   {
+    "pinos": [
+     "7",
+     "8"
+    ],
+    "fecha_quando": "estado==1"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "interruptor manual de potência",
+  "evidencia": "desenho/sim FUN_00527b10; nome FUN_0087aca0",
+  "confianca": "media"
+ },
+ "2006": {
+  "nome": "Contactor I",
+  "aba": "Contactores e interruptores (polos de potência)",
+  "papel": "contato_NA",
+  "pinos": [
+   "1",
+   "2"
+  ],
+  "designacao_padrao": "-KM",
+  "aciona_por": "label igual ao da bobina (9000/9001/9002/9004..9007/9014/9015/1070..)",
+  "contatos": [
+   {
+    "pinos": [
+     "1",
+     "2"
+    ],
+    "fecha_quando": "estado==1"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "polos principais do contator: conduz topo->base quando estado==1",
+  "evidencia": "desenho/sim FUN_005130e0; nome FUN_0087aca0",
+  "confianca": "alta"
+ },
+ "2007": {
+  "nome": "Interruptor I",
+  "aba": "Contactores e interruptores (polos de potência)",
+  "papel": "interruptor",
+  "pinos": [
+   "1",
+   "2"
+  ],
+  "designacao_padrao": "-S",
+  "aciona_por": "clique (alterna; propaga a mesmo rótulo)",
+  "contatos": [
+   {
+    "pinos": [
+     "1",
+     "2"
+    ],
+    "fecha_quando": "estado==1"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "interruptor manual de potência",
+  "evidencia": "desenho/sim FUN_00520520; nome FUN_0087aca0",
+  "confianca": "media"
+ },
+ "2008": {
+  "nome": "Contactor (1-6)",
+  "aba": "Contactores e interruptores (polos de potência)",
+  "papel": "contato_NA",
+  "pinos": [
+   "1",
+   "3",
+   "5",
+   "2",
+   "4",
+   "6"
+  ],
+  "designacao_padrao": "-KM",
+  "aciona_por": "label igual ao da bobina (9000/9001/9002/9004..9007/9014/9015/1070..)",
+  "contatos": [
+   {
+    "pinos": [
+     "1",
+     "2"
+    ],
+    "fecha_quando": "estado==1"
+   },
+   {
+    "pinos": [
+     "3",
+     "4"
+    ],
+    "fecha_quando": "estado==1"
+   },
+   {
+    "pinos": [
+     "5",
+     "6"
+    ],
+    "fecha_quando": "estado==1"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "polos principais do contator: conduz topo->base quando estado==1",
+  "evidencia": "desenho/sim FUN_00518fa0",
+  "nome_ausente_no_binario": true,
+  "confianca": "alta"
+ },
+ "2009": {
+  "nome": null,
+  "aba": "Contactores e interruptores (polos de potência)",
+  "papel": "outro",
+  "estado_inicial": 0,
+  "nota": "sem nome no binário",
+  "evidencia": "dispatch FUN_0040d2b0",
+  "nome_ausente_no_binario": true,
+  "confianca": "baixa"
+ },
+ "3000": {
+  "nome": "Alimentación L",
+  "aba": "Alimentações",
+  "papel": "fonte",
+  "pinos": [
+   "L"
+  ],
+  "designacao_padrao": "-X",
+  "estado_inicial": 0,
+  "nota": "estampa o char de fase no fio do pino: L1->'1', L2->'2', L3->'3', N->'N', PE->'P', +->'+', -->'-'",
+  "evidencia": "desenho/sim FUN_0052bc20; nome FUN_0087aca0",
+  "confianca": "media"
+ },
+ "3001": {
+  "nome": "Alimentación N",
+  "aba": "Alimentações",
+  "papel": "fonte",
+  "pinos": [
+   "N"
+  ],
+  "designacao_padrao": "-X",
+  "estado_inicial": 0,
+  "nota": "estampa o char de fase no fio do pino: L1->'1', L2->'2', L3->'3', N->'N', PE->'P', +->'+', -->'-'",
+  "evidencia": "desenho/sim FUN_0052c2b0; nome FUN_0087aca0",
+  "confianca": "media"
+ },
+ "3002": {
+  "nome": "Alimentación PE",
+  "aba": "Alimentações",
+  "papel": "fonte",
+  "pinos": [
+   "PE"
+  ],
+  "designacao_padrao": "-X",
+  "estado_inicial": 0,
+  "nota": "estampa o char de fase no fio do pino: L1->'1', L2->'2', L3->'3', N->'N', PE->'P', +->'+', -->'-'",
+  "evidencia": "desenho/sim FUN_0052c940; nome FUN_0087aca0",
+  "confianca": "media"
+ },
+ "3003": {
+  "nome": "Alimentación L N",
+  "aba": "Alimentações",
+  "papel": "fonte",
+  "pinos": [
+   "L",
+   "N"
+  ],
+  "designacao_padrao": "-X",
+  "estado_inicial": 0,
+  "nota": "estampa o char de fase no fio do pino: L1->'1', L2->'2', L3->'3', N->'N', PE->'P', +->'+', -->'-'",
+  "evidencia": "desenho/sim FUN_0052cfd0; nome FUN_0087aca0",
+  "confianca": "alta"
+ },
+ "3004": {
+  "nome": "Alimentación L1 L2 L3",
+  "aba": "Alimentações",
+  "papel": "fonte",
+  "pinos": [
+   "L1",
+   "L2",
+   "L3"
+  ],
+  "designacao_padrao": "-X",
+  "estado_inicial": 0,
+  "nota": "estampa o char de fase no fio do pino: L1->'1', L2->'2', L3->'3', N->'N', PE->'P', +->'+', -->'-'",
+  "evidencia": "desenho/sim FUN_0052e7a0; nome FUN_0087aca0",
+  "confianca": "alta"
+ },
+ "3005": {
+  "nome": "Alimentación L1 L2 L3 PE",
+  "aba": "Alimentações",
+  "papel": "fonte",
+  "pinos": [
+   "L1",
+   "L2",
+   "L3",
+   "PE"
+  ],
+  "designacao_padrao": "-X",
+  "estado_inicial": 0,
+  "nota": "estampa o char de fase no fio do pino: L1->'1', L2->'2', L3->'3', N->'N', PE->'P', +->'+', -->'-'",
+  "evidencia": "desenho/sim FUN_0052f550; nome FUN_0087aca0",
+  "confianca": "media"
+ },
+ "3006": {
+  "nome": "Alimentación L1 L2 L3 N",
+  "aba": "Alimentações",
+  "papel": "fonte",
+  "pinos": [
+   "L1",
+   "L2",
+   "L3",
+   "N"
+  ],
+  "designacao_padrao": "-X",
+  "estado_inicial": 0,
+  "nota": "estampa o char de fase no fio do pino: L1->'1', L2->'2', L3->'3', N->'N', PE->'P', +->'+', -->'-'",
+  "evidencia": "desenho/sim FUN_00530690; nome FUN_0087aca0",
+  "confianca": "alta"
+ },
+ "3007": {
+  "nome": "Alimentación L1 L2 L3 N PE",
+  "aba": "Alimentações",
+  "papel": "fonte",
+  "pinos": [
+   "L1",
+   "L2",
+   "L3",
+   "N",
+   "PE"
+  ],
+  "designacao_padrao": "-X",
+  "estado_inicial": 0,
+  "nota": "estampa o char de fase no fio do pino: L1->'1', L2->'2', L3->'3', N->'N', PE->'P', +->'+', -->'-'",
+  "evidencia": "desenho/sim FUN_005317d0; nome FUN_0087aca0",
+  "confianca": "alta"
+ },
+ "3008": {
+  "nome": "Alimentación +",
+  "aba": "Alimentações",
+  "papel": "fonte",
+  "pinos": [
+   "p1"
+  ],
+  "designacao_padrao": "-X",
+  "estado_inicial": 0,
+  "nota": "estampa o char de fase no fio do pino: L1->'1', L2->'2', L3->'3', N->'N', PE->'P', +->'+', -->'-'",
+  "evidencia": "desenho/sim FUN_00532ca0; nome FUN_0087aca0",
+  "confianca": "media"
+ },
+ "3009": {
+  "nome": "Alimentación -",
+  "aba": "Alimentações",
+  "papel": "fonte",
+  "pinos": [
+   "p1"
+  ],
+  "designacao_padrao": "-X",
+  "estado_inicial": 0,
+  "nota": "estampa o char de fase no fio do pino: L1->'1', L2->'2', L3->'3', N->'N', PE->'P', +->'+', -->'-'",
+  "evidencia": "desenho/sim FUN_005333b0; nome FUN_0087aca0",
+  "confianca": "media"
+ },
+ "3010": {
+  "nome": "Alimentación + -",
+  "aba": "Alimentações",
+  "papel": "fonte",
+  "pinos": [
+   "p1",
+   "p2"
+  ],
+  "designacao_padrao": "-X",
+  "estado_inicial": 0,
+  "nota": "estampa o char de fase no fio do pino: L1->'1', L2->'2', L3->'3', N->'N', PE->'P', +->'+', -->'-'",
+  "evidencia": "desenho/sim FUN_00533a80; nome FUN_0087aca0",
+  "confianca": "media"
+ },
+ "3011": {
+  "nome": "Alimentación L N PE",
+  "aba": "Alimentações",
+  "papel": "fonte",
+  "pinos": [
+   "L",
+   "N",
+   "PE"
+  ],
+  "designacao_padrao": "-X",
+  "estado_inicial": 0,
+  "nota": "estampa o char de fase no fio do pino: L1->'1', L2->'2', L3->'3', N->'N', PE->'P', +->'+', -->'-'",
+  "evidencia": "desenho/sim FUN_0052d9f0; nome FUN_0087aca0",
+  "confianca": "alta"
+ },
+ "3012": {
+  "nome": "Transformador",
+  "aba": "Alimentações",
+  "papel": "fonte",
+  "pinos": [
+   "1",
+   "3",
+   "2",
+   "4"
+  ],
+  "designacao_padrao": "-T",
+  "estado_inicial": 0,
+  "nota": "estampa o char de fase no fio do pino: L1->'1', L2->'2', L3->'3', N->'N', PE->'P', +->'+', -->'-'",
+  "evidencia": "desenho/sim FUN_00534560; nome FUN_0087aca0",
+  "confianca": "media"
+ },
+ "3013": {
+  "nome": "Rectificador",
+  "aba": "Alimentações",
+  "papel": "fonte",
+  "pinos": [
+   "1",
+   "2",
+   "3",
+   "4"
+  ],
+  "designacao_padrao": "-V",
+  "estado_inicial": 0,
+  "nota": "estampa o char de fase no fio do pino: L1->'1', L2->'2', L3->'3', N->'N', PE->'P', +->'+', -->'-'",
+  "evidencia": "desenho/sim FUN_005362a0; nome FUN_0087aca0",
+  "confianca": "media"
+ },
+ "3014": {
+  "nome": "Fuente de alimentacióm",
+  "aba": "Alimentações",
+  "papel": "fonte",
+  "pinos": [
+   "1",
+   "2",
+   "3",
+   "4",
+   "PE"
+  ],
+  "designacao_padrao": "-V",
+  "estado_inicial": 0,
+  "nota": "estampa o char de fase no fio do pino: L1->'1', L2->'2', L3->'3', N->'N', PE->'P', +->'+', -->'-'",
+  "evidencia": "desenho/sim FUN_005383d0; nome FUN_0087aca0",
+  "confianca": "media"
+ },
+ "3015": {
+  "nome": null,
+  "aba": "Alimentações",
+  "papel": "outro",
+  "pinos": [
+   "p1"
+  ],
+  "estado_inicial": 0,
+  "nota": "fonte/conversor especial (transformador, retificador, variador)",
+  "evidencia": "desenho/sim FUN_0053a360",
+  "nome_ausente_no_binario": true,
+  "confianca": "baixa"
+ },
+ "3016": {
+  "nome": "Diodo/dispositivo (13 14)",
+  "aba": "Alimentações",
+  "papel": "outro",
+  "pinos": [
+   "13",
+   "14"
+  ],
+  "designacao_padrao": "-D",
+  "estado_inicial": 0,
+  "nota": "fonte/conversor especial (transformador, retificador, variador)",
+  "evidencia": "desenho/sim FUN_0053aa70",
+  "nome_ausente_no_binario": true,
+  "confianca": "baixa"
+ },
+ "3017": {
+  "nome": "Transformador III (1-6)",
+  "aba": "Alimentações",
+  "papel": "outro",
+  "pinos": [
+   "1",
+   "2",
+   "3",
+   "4",
+   "5",
+   "6"
+  ],
+  "designacao_padrao": "-T",
+  "estado_inicial": 0,
+  "nota": "fonte/conversor especial (transformador, retificador, variador)",
+  "evidencia": "desenho/sim FUN_0053b7e0",
+  "nome_ausente_no_binario": true,
+  "confianca": "baixa"
+ },
+ "3018": {
+  "nome": "Variador (1-5, PE)",
+  "aba": "Alimentações",
+  "papel": "outro",
+  "pinos": [
+   "1",
+   "2",
+   "3",
+   "4",
+   "5",
+   "PE"
+  ],
+  "designacao_padrao": "-V",
+  "estado_inicial": 0,
+  "nota": "fonte/conversor especial (transformador, retificador, variador)",
+  "evidencia": "desenho/sim FUN_0053db40",
+  "nome_ausente_no_binario": true,
+  "confianca": "baixa"
+ },
+ "3019": {
+  "nome": null,
+  "aba": "Alimentações",
+  "papel": "outro",
+  "pinos": [
+   "p1",
+   "p2"
+  ],
+  "designacao_padrao": "-V",
+  "estado_inicial": 0,
+  "nota": "fonte/conversor especial (transformador, retificador, variador)",
+  "evidencia": "desenho/sim FUN_0053ff40",
+  "nome_ausente_no_binario": true,
+  "confianca": "baixa"
+ },
+ "3020": {
+  "nome": null,
+  "aba": "Alimentações",
+  "papel": "outro",
+  "pinos": [
+   "p1",
+   "p2"
+  ],
+  "designacao_padrao": "-TC",
+  "estado_inicial": 0,
+  "nota": "fonte/conversor especial (transformador, retificador, variador)",
+  "evidencia": "desenho/sim FUN_005409f0",
+  "nome_ausente_no_binario": true,
+  "confianca": "baixa"
+ },
+ "4000": {
+  "nome": "Cable fase",
+  "aba": "Cabos e conexões",
+  "papel": "outro",
+  "estado_inicial": 0,
+  "nota": "cabo/conexão: 4000/4009/4010/4018/4019 = fios (nó por geometria); 4001/4012 = junção; 4003/4004 = marcador",
+  "evidencia": "nome FUN_0087aca0",
+  "confianca": "alta"
+ },
+ "4001": {
+  "nome": "Conexión",
+  "aba": "Cabos e conexões",
+  "papel": "outro",
+  "estado_inicial": 0,
+  "nota": "cabo/conexão: 4000/4009/4010/4018/4019 = fios (nó por geometria); 4001/4012 = junção; 4003/4004 = marcador",
+  "evidencia": "nome FUN_0087aca0",
+  "confianca": "alta"
+ },
+ "4002": {
+  "nome": "Manguera",
+  "aba": "Cabos e conexões",
+  "papel": "outro",
+  "estado_inicial": 0,
+  "nota": "cabo/conexão: 4000/4009/4010/4018/4019 = fios (nó por geometria); 4001/4012 = junção; 4003/4004 = marcador",
+  "evidencia": "nome FUN_0087aca0",
+  "confianca": "alta"
+ },
+ "4003": {
+  "nome": "Entrada manguera",
+  "aba": "Cabos e conexões",
+  "papel": "outro",
+  "estado_inicial": 0,
+  "nota": "cabo/conexão: 4000/4009/4010/4018/4019 = fios (nó por geometria); 4001/4012 = junção; 4003/4004 = marcador",
+  "evidencia": "nome FUN_0087aca0",
+  "confianca": "alta"
+ },
+ "4004": {
+  "nome": "Entrada manguera",
+  "aba": "Cabos e conexões",
+  "papel": "outro",
+  "estado_inicial": 0,
+  "nota": "cabo/conexão: 4000/4009/4010/4018/4019 = fios (nó por geometria); 4001/4012 = junção; 4003/4004 = marcador",
+  "evidencia": "nome FUN_0087aca0",
+  "confianca": "alta"
+ },
+ "4009": {
+  "nome": "Cable neutro",
+  "aba": "Cabos e conexões",
+  "papel": "outro",
+  "estado_inicial": 0,
+  "nota": "cabo/conexão: 4000/4009/4010/4018/4019 = fios (nó por geometria); 4001/4012 = junção; 4003/4004 = marcador",
+  "evidencia": "nome FUN_0087aca0",
+  "confianca": "alta"
+ },
+ "4010": {
+  "nome": "Cable PE",
+  "aba": "Cabos e conexões",
+  "papel": "outro",
+  "estado_inicial": 0,
+  "nota": "cabo/conexão: 4000/4009/4010/4018/4019 = fios (nó por geometria); 4001/4012 = junção; 4003/4004 = marcador",
+  "evidencia": "nome FUN_0087aca0",
+  "confianca": "alta"
+ },
+ "4011": {
+  "nome": "Regleta cuadrada",
+  "aba": "Cabos e conexões",
+  "papel": "outro",
+  "pinos": [
+   "p1",
+   "p2"
+  ],
+  "designacao_padrao": "-X",
+  "estado_inicial": 0,
+  "nota": "cabo/conexão: 4000/4009/4010/4018/4019 = fios (nó por geometria); 4001/4012 = junção; 4003/4004 = marcador",
+  "evidencia": "desenho/sim FUN_00543390; nome FUN_0087aca0",
+  "confianca": "alta"
+ },
+ "4012": {
+  "nome": "Regleta redonda",
+  "aba": "Cabos e conexões",
+  "papel": "outro",
+  "estado_inicial": 0,
+  "nota": "cabo/conexão: 4000/4009/4010/4018/4019 = fios (nó por geometria); 4001/4012 = junção; 4003/4004 = marcador",
+  "evidencia": "nome FUN_0087aca0",
+  "confianca": "alta"
+ },
+ "4013": {
+  "nome": "Conector salida",
+  "aba": "Cabos e conexões",
+  "papel": "outro",
+  "pinos": [
+   "p1"
+  ],
+  "designacao_padrao": "-X",
+  "estado_inicial": 0,
+  "nota": "cabo/conexão: 4000/4009/4010/4018/4019 = fios (nó por geometria); 4001/4012 = junção; 4003/4004 = marcador",
+  "evidencia": "desenho/sim FUN_00546e90; nome FUN_0087aca0",
+  "confianca": "alta"
+ },
+ "4014": {
+  "nome": "Conector entrada",
+  "aba": "Cabos e conexões",
+  "papel": "outro",
+  "pinos": [
+   "p1"
+  ],
+  "designacao_padrao": "-X",
+  "estado_inicial": 0,
+  "nota": "cabo/conexão: 4000/4009/4010/4018/4019 = fios (nó por geometria); 4001/4012 = junção; 4003/4004 = marcador",
+  "evidencia": "desenho/sim FUN_005479c0; nome FUN_0087aca0",
+  "confianca": "alta"
+ },
+ "4015": {
+  "nome": "Regleta redonda 2",
+  "aba": "Cabos e conexões",
+  "papel": "outro",
+  "estado_inicial": 0,
+  "nota": "cabo/conexão: 4000/4009/4010/4018/4019 = fios (nó por geometria); 4001/4012 = junção; 4003/4004 = marcador",
+  "evidencia": "nome FUN_0087aca0",
+  "confianca": "alta"
+ },
+ "4016": {
+  "nome": "Regleta redonda 3",
+  "aba": "Cabos e conexões",
+  "papel": "outro",
+  "estado_inicial": 0,
+  "nota": "cabo/conexão: 4000/4009/4010/4018/4019 = fios (nó por geometria); 4001/4012 = junção; 4003/4004 = marcador",
+  "evidencia": "nome FUN_0087aca0",
+  "confianca": "alta"
+ },
+ "4017": {
+  "nome": "Regleta redonda 4",
+  "aba": "Cabos e conexões",
+  "papel": "outro",
+  "estado_inicial": 0,
+  "nota": "cabo/conexão: 4000/4009/4010/4018/4019 = fios (nó por geometria); 4001/4012 = junção; 4003/4004 = marcador",
+  "evidencia": "nome FUN_0087aca0",
+  "confianca": "alta"
+ },
+ "4018": {
+  "nome": "Cable +",
+  "aba": "Cabos e conexões",
+  "papel": "outro",
+  "estado_inicial": 0,
+  "nota": "cabo/conexão: 4000/4009/4010/4018/4019 = fios (nó por geometria); 4001/4012 = junção; 4003/4004 = marcador",
+  "evidencia": "nome FUN_0087aca0",
+  "confianca": "alta"
+ },
+ "4019": {
+  "nome": "Cable -",
+  "aba": "Cabos e conexões",
+  "papel": "outro",
+  "estado_inicial": 0,
+  "nota": "cabo/conexão: 4000/4009/4010/4018/4019 = fios (nó por geometria); 4001/4012 = junção; 4003/4004 = marcador",
+  "evidencia": "nome FUN_0087aca0",
+  "confianca": "alta"
+ },
+ "5000": {
+  "nome": "Fusible I",
+  "aba": "Fusíveis e seccionadores",
+  "papel": "fusivel",
+  "pinos": [
+   "1",
+   "2"
+  ],
+  "designacao_padrao": "-F",
+  "aciona_por": "clique (alterna = queima)",
+  "contatos": [
+   {
+    "pinos": [
+     "1",
+     "2"
+    ],
+    "fecha_quando": "estado==0"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "conduz quando estado==0 (estado inicial 0 => íntegro)",
+  "evidencia": "desenho/sim FUN_00548b10; nome FUN_0087aca0",
+  "confianca": "media"
+ },
+ "5001": {
+  "nome": "Fusible IN",
+  "aba": "Fusíveis e seccionadores",
+  "papel": "fusivel",
+  "pinos": [
+   "1",
+   "3",
+   "2",
+   "4"
+  ],
+  "designacao_padrao": "-F",
+  "aciona_por": "clique (alterna = queima)",
+  "contatos": [
+   {
+    "pinos": [
+     "1",
+     "2"
+    ],
+    "fecha_quando": "estado==0"
+   },
+   {
+    "pinos": [
+     "3",
+     "4"
+    ],
+    "fecha_quando": "estado==0"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "conduz quando estado==0 (estado inicial 0 => íntegro)",
+  "evidencia": "desenho/sim FUN_00549c30; nome FUN_0087aca0",
+  "confianca": "media"
+ },
+ "5002": {
+  "nome": "Fusible II",
+  "aba": "Fusíveis e seccionadores",
+  "papel": "fusivel",
+  "pinos": [
+   "1",
+   "3",
+   "2",
+   "4"
+  ],
+  "designacao_padrao": "-F",
+  "aciona_por": "clique (alterna = queima)",
+  "contatos": [
+   {
+    "pinos": [
+     "1",
+     "2"
+    ],
+    "fecha_quando": "estado==0"
+   },
+   {
+    "pinos": [
+     "3",
+     "4"
+    ],
+    "fecha_quando": "estado==0"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "conduz quando estado==0 (estado inicial 0 => íntegro)",
+  "evidencia": "desenho/sim FUN_0054b800; nome FUN_0087aca0",
+  "confianca": "media"
+ },
+ "5003": {
+  "nome": "Fusible III",
+  "aba": "Fusíveis e seccionadores",
+  "papel": "fusivel",
+  "pinos": [
+   "1",
+   "3",
+   "5",
+   "2",
+   "4",
+   "6"
+  ],
+  "designacao_padrao": "-F",
+  "aciona_por": "clique (alterna = queima)",
+  "contatos": [
+   {
+    "pinos": [
+     "1",
+     "2"
+    ],
+    "fecha_quando": "estado==0"
+   },
+   {
+    "pinos": [
+     "3",
+     "4"
+    ],
+    "fecha_quando": "estado==0"
+   },
+   {
+    "pinos": [
+     "5",
+     "6"
+    ],
+    "fecha_quando": "estado==0"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "conduz quando estado==0 (estado inicial 0 => íntegro)",
+  "evidencia": "desenho/sim FUN_0054d4d0; nome FUN_0087aca0",
+  "confianca": "media"
+ },
+ "5004": {
+  "nome": "Fusible IIIN",
+  "aba": "Fusíveis e seccionadores",
+  "papel": "fusivel",
+  "pinos": [
+   "1",
+   "3",
+   "5",
+   "7",
+   "2",
+   "4",
+   "6",
+   "8"
+  ],
+  "designacao_padrao": "-F",
+  "aciona_por": "clique (alterna = queima)",
+  "contatos": [
+   {
+    "pinos": [
+     "1",
+     "2"
+    ],
+    "fecha_quando": "estado==0"
+   },
+   {
+    "pinos": [
+     "3",
+     "4"
+    ],
+    "fecha_quando": "estado==0"
+   },
+   {
+    "pinos": [
+     "5",
+     "6"
+    ],
+    "fecha_quando": "estado==0"
+   },
+   {
+    "pinos": [
+     "7",
+     "8"
+    ],
+    "fecha_quando": "estado==0"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "conduz quando estado==0 (estado inicial 0 => íntegro)",
+  "evidencia": "desenho/sim FUN_0054fd60; nome FUN_0087aca0",
+  "confianca": "media"
+ },
+ "5005": {
+  "nome": "Seccionador I",
+  "aba": "Fusíveis e seccionadores",
+  "papel": "interruptor",
+  "pinos": [
+   "1",
+   "3"
+  ],
+  "designacao_padrao": "-F",
+  "aciona_por": "clique (alterna)",
+  "contatos": [
+   {
+    "pinos": [
+     "1",
+     "3"
+    ],
+    "fecha_quando": "estado==1"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "seccionador: conduz quando estado==1 (inicial 0 => ABERTO)",
+  "evidencia": "desenho/sim FUN_005530a0; nome FUN_0087aca0",
+  "confianca": "media"
+ },
+ "5006": {
+  "nome": "Seccionador IN",
+  "aba": "Fusíveis e seccionadores",
+  "papel": "interruptor",
+  "pinos": [
+   "1",
+   "3",
+   "2",
+   "4"
+  ],
+  "designacao_padrao": "-F",
+  "aciona_por": "clique (alterna)",
+  "contatos": [
+   {
+    "pinos": [
+     "1",
+     "2"
+    ],
+    "fecha_quando": "estado==1"
+   },
+   {
+    "pinos": [
+     "3",
+     "4"
+    ],
+    "fecha_quando": "estado==1"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "seccionador: conduz quando estado==1 (inicial 0 => ABERTO)",
+  "evidencia": "desenho/sim FUN_005546a0; nome FUN_0087aca0",
+  "confianca": "media"
+ },
+ "5007": {
+  "nome": "Seccionador II",
+  "aba": "Fusíveis e seccionadores",
+  "papel": "interruptor",
+  "pinos": [
+   "1",
+   "3",
+   "2",
+   "4"
+  ],
+  "designacao_padrao": "-F",
+  "aciona_por": "clique (alterna)",
+  "contatos": [
+   {
+    "pinos": [
+     "1",
+     "2"
+    ],
+    "fecha_quando": "estado==1"
+   },
+   {
+    "pinos": [
+     "3",
+     "4"
+    ],
+    "fecha_quando": "estado==1"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "seccionador: conduz quando estado==1 (inicial 0 => ABERTO)",
+  "evidencia": "desenho/sim FUN_00556860; nome FUN_0087aca0",
+  "confianca": "media"
+ },
+ "5008": {
+  "nome": "Seccionador III",
+  "aba": "Fusíveis e seccionadores",
+  "papel": "interruptor",
+  "pinos": [
+   "1",
+   "3",
+   "5",
+   "2",
+   "4",
+   "6"
+  ],
+  "designacao_padrao": "-F",
+  "aciona_por": "clique (alterna)",
+  "contatos": [
+   {
+    "pinos": [
+     "1",
+     "2"
+    ],
+    "fecha_quando": "estado==1"
+   },
+   {
+    "pinos": [
+     "3",
+     "4"
+    ],
+    "fecha_quando": "estado==1"
+   },
+   {
+    "pinos": [
+     "5",
+     "6"
+    ],
+    "fecha_quando": "estado==1"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "seccionador: conduz quando estado==1 (inicial 0 => ABERTO)",
+  "evidencia": "desenho/sim FUN_00558f00; nome FUN_0087aca0",
+  "confianca": "media"
+ },
+ "5009": {
+  "nome": "Seccionador IIIN",
+  "aba": "Fusíveis e seccionadores",
+  "papel": "interruptor",
+  "pinos": [
+   "1",
+   "3",
+   "5",
+   "7",
+   "2",
+   "4",
+   "6",
+   "8"
+  ],
+  "designacao_padrao": "-F",
+  "aciona_por": "clique (alterna)",
+  "contatos": [
+   {
+    "pinos": [
+     "1",
+     "2"
+    ],
+    "fecha_quando": "estado==1"
+   },
+   {
+    "pinos": [
+     "3",
+     "4"
+    ],
+    "fecha_quando": "estado==1"
+   },
+   {
+    "pinos": [
+     "5",
+     "6"
+    ],
+    "fecha_quando": "estado==1"
+   },
+   {
+    "pinos": [
+     "7",
+     "8"
+    ],
+    "fecha_quando": "estado==1"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "seccionador: conduz quando estado==1 (inicial 0 => ABERTO)",
+  "evidencia": "desenho/sim FUN_0055c650; nome FUN_0087aca0",
+  "confianca": "media"
+ },
+ "6000": {
+  "nome": "Automático I",
+  "aba": "Proteções (disjuntores, térmico, DR)",
+  "papel": "disjuntor",
+  "pinos": [
+   "1",
+   "3"
+  ],
+  "designacao_padrao": "-F",
+  "aciona_por": "clique (alterna; propaga a mesmo rótulo)",
+  "contatos": [
+   {
+    "pinos": [
+     "1",
+     "3"
+    ],
+    "fecha_quando": "estado==1"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "conduz quando estado==1; estado inicial 0 => ABERTO até clicar",
+  "evidencia": "desenho/sim FUN_00560900; nome FUN_0087aca0",
+  "confianca": "media"
+ },
+ "6001": {
+  "nome": "Automático IN",
+  "aba": "Proteções (disjuntores, térmico, DR)",
+  "papel": "disjuntor",
+  "pinos": [
+   "1",
+   "3",
+   "2",
+   "4"
+  ],
+  "designacao_padrao": "-F",
+  "aciona_por": "clique (alterna; propaga a mesmo rótulo)",
+  "contatos": [
+   {
+    "pinos": [
+     "1",
+     "2"
+    ],
+    "fecha_quando": "estado==1"
+   },
+   {
+    "pinos": [
+     "3",
+     "4"
+    ],
+    "fecha_quando": "estado==1"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "conduz quando estado==1; estado inicial 0 => ABERTO até clicar",
+  "evidencia": "desenho/sim FUN_00561a60; nome FUN_0087aca0",
+  "confianca": "media"
+ },
+ "6002": {
+  "nome": "Automático II",
+  "aba": "Proteções (disjuntores, térmico, DR)",
+  "papel": "disjuntor",
+  "pinos": [
+   "1",
+   "3",
+   "2",
+   "4"
+  ],
+  "designacao_padrao": "-F",
+  "aciona_por": "clique (alterna; propaga a mesmo rótulo)",
+  "contatos": [
+   {
+    "pinos": [
+     "1",
+     "2"
+    ],
+    "fecha_quando": "estado==1"
+   },
+   {
+    "pinos": [
+     "3",
+     "4"
+    ],
+    "fecha_quando": "estado==1"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "conduz quando estado==1; estado inicial 0 => ABERTO até clicar",
+  "evidencia": "desenho/sim FUN_00563900; nome FUN_0087aca0",
+  "confianca": "media"
+ },
+ "6003": {
+  "nome": "Automático III",
+  "aba": "Proteções (disjuntores, térmico, DR)",
+  "papel": "disjuntor",
+  "pinos": [
+   "1",
+   "3",
+   "5",
+   "2",
+   "4",
+   "6"
+  ],
+  "designacao_padrao": "-F",
+  "aciona_por": "clique (alterna; propaga a mesmo rótulo)",
+  "contatos": [
+   {
+    "pinos": [
+     "1",
+     "2"
+    ],
+    "fecha_quando": "estado==1"
+   },
+   {
+    "pinos": [
+     "3",
+     "4"
+    ],
+    "fecha_quando": "estado==1"
+   },
+   {
+    "pinos": [
+     "5",
+     "6"
+    ],
+    "fecha_quando": "estado==1"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "conduz quando estado==1; estado inicial 0 => ABERTO até clicar",
+  "evidencia": "desenho/sim FUN_005658f0; nome FUN_0087aca0",
+  "confianca": "media"
+ },
+ "6004": {
+  "nome": "Automático IIIN",
+  "aba": "Proteções (disjuntores, térmico, DR)",
+  "papel": "disjuntor",
+  "pinos": [
+   "1",
+   "3",
+   "5",
+   "7",
+   "2",
+   "4",
+   "6",
+   "8"
+  ],
+  "designacao_padrao": "-F",
+  "aciona_por": "clique (alterna; propaga a mesmo rótulo)",
+  "contatos": [
+   {
+    "pinos": [
+     "1",
+     "2"
+    ],
+    "fecha_quando": "estado==1"
+   },
+   {
+    "pinos": [
+     "3",
+     "4"
+    ],
+    "fecha_quando": "estado==1"
+   },
+   {
+    "pinos": [
+     "5",
+     "6"
+    ],
+    "fecha_quando": "estado==1"
+   },
+   {
+    "pinos": [
+     "7",
+     "8"
+    ],
+    "fecha_quando": "estado==1"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "conduz quando estado==1; estado inicial 0 => ABERTO até clicar",
+  "evidencia": "desenho/sim FUN_00568620; nome FUN_0087aca0",
+  "confianca": "media"
+ },
+ "6005": {
+  "nome": "Diferencial IN",
+  "aba": "Proteções (disjuntores, térmico, DR)",
+  "papel": "disjuntor",
+  "pinos": [
+   "1",
+   "3",
+   "2",
+   "4"
+  ],
+  "designacao_padrao": "-F",
+  "aciona_por": "clique (alterna; propaga a mesmo rótulo)",
+  "contatos": [
+   {
+    "pinos": [
+     "1",
+     "2"
+    ],
+    "fecha_quando": "estado==1"
+   },
+   {
+    "pinos": [
+     "3",
+     "4"
+    ],
+    "fecha_quando": "estado==1"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "conduz quando estado==1; estado inicial 0 => ABERTO até clicar",
+  "evidencia": "desenho/sim FUN_0056c150; nome FUN_0087aca0",
+  "confianca": "media"
+ },
+ "6006": {
+  "nome": "Diferencial IIIN",
+  "aba": "Proteções (disjuntores, térmico, DR)",
+  "papel": "disjuntor",
+  "pinos": [
+   "1",
+   "3",
+   "5",
+   "7",
+   "2",
+   "4",
+   "6",
+   "8"
+  ],
+  "designacao_padrao": "-F",
+  "aciona_por": "clique (alterna; propaga a mesmo rótulo)",
+  "contatos": [
+   {
+    "pinos": [
+     "1",
+     "2"
+    ],
+    "fecha_quando": "estado==1"
+   },
+   {
+    "pinos": [
+     "3",
+     "4"
+    ],
+    "fecha_quando": "estado==1"
+   },
+   {
+    "pinos": [
+     "5",
+     "6"
+    ],
+    "fecha_quando": "estado==1"
+   },
+   {
+    "pinos": [
+     "7",
+     "8"
+    ],
+    "fecha_quando": "estado==1"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "conduz quando estado==1; estado inicial 0 => ABERTO até clicar",
+  "evidencia": "desenho/sim FUN_0056e800; nome FUN_0087aca0",
+  "confianca": "media"
+ },
+ "6007": {
+  "nome": "Relé térmico",
+  "aba": "Proteções (disjuntores, térmico, DR)",
+  "papel": "termico",
+  "pinos": [
+   "1",
+   "3",
+   "5",
+   "2",
+   "4",
+   "6"
+  ],
+  "designacao_padrao": "-F",
+  "aciona_por": "clique (dispara; propaga estado aos contatos 8016..8019 de mesmo rótulo)",
+  "contatos": [
+   {
+    "pinos": [
+     "1",
+     "2"
+    ],
+    "fecha_quando": "sempre"
+   },
+   {
+    "pinos": [
+     "3",
+     "4"
+    ],
+    "fecha_quando": "sempre"
+   },
+   {
+    "pinos": [
+     "5",
+     "6"
+    ],
+    "fecha_quando": "sempre"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "polos de potência 1-2/3-4/5-6 SEMPRE conduzem (sem teste de estado)",
+  "evidencia": "FUN_005727b0 (decompilada); desenho/sim FUN_005727b0; nome FUN_0087aca0",
+  "confianca": "alta"
+ },
+ "6008": {
+  "nome": "Disyuntor II",
+  "aba": "Proteções (disjuntores, térmico, DR)",
+  "papel": "disjuntor",
+  "pinos": [
+   "1",
+   "3",
+   "2",
+   "4"
+  ],
+  "designacao_padrao": "-Q",
+  "aciona_por": "clique (alterna; propaga a mesmo rótulo)",
+  "contatos": [
+   {
+    "pinos": [
+     "1",
+     "2"
+    ],
+    "fecha_quando": "estado==1"
+   },
+   {
+    "pinos": [
+     "3",
+     "4"
+    ],
+    "fecha_quando": "estado==1"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "conduz quando estado==1; estado inicial 0 => ABERTO até clicar",
+  "evidencia": "desenho/sim FUN_00576800; nome FUN_0087aca0",
+  "confianca": "media"
+ },
+ "6009": {
+  "nome": "Disyuntor III",
+  "aba": "Proteções (disjuntores, térmico, DR)",
+  "papel": "disjuntor",
+  "pinos": [
+   "1",
+   "3",
+   "5",
+   "2",
+   "4",
+   "6"
+  ],
+  "designacao_padrao": "-Q",
+  "aciona_por": "clique (alterna; propaga a mesmo rótulo)",
+  "contatos": [
+   {
+    "pinos": [
+     "1",
+     "2"
+    ],
+    "fecha_quando": "estado==1"
+   },
+   {
+    "pinos": [
+     "3",
+     "4"
+    ],
+    "fecha_quando": "estado==1"
+   },
+   {
+    "pinos": [
+     "5",
+     "6"
+    ],
+    "fecha_quando": "estado==1"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "conduz quando estado==1; estado inicial 0 => ABERTO até clicar",
+  "evidencia": "desenho/sim FUN_00579900; nome FUN_0087aca0",
+  "confianca": "media"
+ },
+ "6010": {
+  "nome": "Disyuntor I",
+  "aba": "Proteções (disjuntores, térmico, DR)",
+  "papel": "disjuntor",
+  "pinos": [
+   "1",
+   "2"
+  ],
+  "designacao_padrao": "-Q",
+  "aciona_por": "clique (alterna; propaga a mesmo rótulo)",
+  "contatos": [
+   {
+    "pinos": [
+     "1",
+     "2"
+    ],
+    "fecha_quando": "estado==1"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "conduz quando estado==1; estado inicial 0 => ABERTO até clicar",
+  "evidencia": "desenho/sim FUN_00574870; nome FUN_0087aca0",
+  "confianca": "media"
+ },
+ "6011": {
+  "nome": "Disyuntor II (1 3 / 2 4)",
+  "aba": "Proteções (disjuntores, térmico, DR)",
+  "papel": "disjuntor",
+  "pinos": [
+   "1",
+   "3",
+   "2",
+   "4"
+  ],
+  "designacao_padrao": "-Q",
+  "aciona_por": "clique (alterna; propaga a mesmo rótulo)",
+  "contatos": [
+   {
+    "pinos": [
+     "1",
+     "2"
+    ],
+    "fecha_quando": "estado==1"
+   },
+   {
+    "pinos": [
+     "3",
+     "4"
+    ],
+    "fecha_quando": "estado==1"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "conduz quando estado==1; estado inicial 0 => ABERTO até clicar",
+  "evidencia": "desenho/sim FUN_0057daf0",
+  "nome_ausente_no_binario": true,
+  "confianca": "media"
+ },
+ "6012": {
+  "nome": "Disyuntor IIII (1 3 5 7 / 2 4 6 8)",
+  "aba": "Proteções (disjuntores, térmico, DR)",
+  "papel": "disjuntor",
+  "pinos": [
+   "1",
+   "3",
+   "5",
+   "7",
+   "2",
+   "4",
+   "6",
+   "8"
+  ],
+  "designacao_padrao": "-Q",
+  "aciona_por": "clique (alterna; propaga a mesmo rótulo)",
+  "contatos": [
+   {
+    "pinos": [
+     "1",
+     "2"
+    ],
+    "fecha_quando": "estado==1"
+   },
+   {
+    "pinos": [
+     "3",
+     "4"
+    ],
+    "fecha_quando": "estado==1"
+   },
+   {
+    "pinos": [
+     "5",
+     "6"
+    ],
+    "fecha_quando": "estado==1"
+   },
+   {
+    "pinos": [
+     "7",
+     "8"
+    ],
+    "fecha_quando": "estado==1"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "conduz quando estado==1; estado inicial 0 => ABERTO até clicar",
+  "evidencia": "desenho/sim FUN_00580850",
+  "nome_ausente_no_binario": true,
+  "confianca": "media"
+ },
+ "6013": {
+  "nome": "Protección (1 2 3)",
+  "aba": "Proteções (disjuntores, térmico, DR)",
+  "papel": "disjuntor",
+  "pinos": [
+   "1",
+   "2",
+   "3"
+  ],
+  "designacao_padrao": "-F",
+  "aciona_por": "clique (alterna; propaga a mesmo rótulo)",
+  "estado_inicial": 0,
+  "nota": "conduz quando estado==1; estado inicial 0 => ABERTO até clicar",
+  "evidencia": "desenho/sim FUN_005856d0",
+  "nome_ausente_no_binario": true,
+  "confianca": "media"
+ },
+ "6014": {
+  "nome": "Protección (1-5)",
+  "aba": "Proteções (disjuntores, térmico, DR)",
+  "papel": "disjuntor",
+  "pinos": [
+   "1",
+   "2",
+   "3",
+   "4",
+   "5"
+  ],
+  "designacao_padrao": "-F",
+  "aciona_por": "clique (alterna; propaga a mesmo rótulo)",
+  "estado_inicial": 0,
+  "nota": "conduz quando estado==1; estado inicial 0 => ABERTO até clicar",
+  "evidencia": "desenho/sim FUN_00586b40",
+  "nome_ausente_no_binario": true,
+  "confianca": "media"
+ },
+ "6015": {
+  "nome": "Disyuntor",
+  "aba": "Proteções (disjuntores, térmico, DR)",
+  "papel": "disjuntor",
+  "pinos": [
+   "1",
+   "1",
+   "1",
+   "3",
+   "3",
+   "3",
+   "5",
+   "5",
+   "5",
+   "2",
+   "2",
+   "2",
+   "4",
+   "4",
+   "4",
+   "6",
+   "6",
+   "6",
+   "13",
+   "13",
+   "13",
+   "14",
+   "14",
+   "14",
+   "21",
+   "21",
+   "21",
+   "22",
+   "22",
+   "22"
+  ],
+  "designacao_padrao": "-Q",
+  "aciona_por": "clique (alterna; propaga a mesmo rótulo)",
+  "estado_inicial": 0,
+  "nota": "conduz quando estado==1; estado inicial 0 => ABERTO até clicar",
+  "evidencia": "desenho/sim FUN_00588bb0; nome FUN_0087aca0",
+  "confianca": "media"
+ },
+ "6016": {
+  "nome": "Relé térmico",
+  "aba": "Proteções (disjuntores, térmico, DR)",
+  "papel": "disjuntor",
+  "pinos": [
+   "1",
+   "1",
+   "1",
+   "3",
+   "3",
+   "3",
+   "5",
+   "5",
+   "5",
+   "2",
+   "2",
+   "2",
+   "4",
+   "4",
+   "4",
+   "6",
+   "6",
+   "6",
+   "97",
+   "97",
+   "97",
+   "98",
+   "98",
+   "98",
+   "95",
+   "95",
+   "95",
+   "96",
+   "96",
+   "96"
+  ],
+  "designacao_padrao": "-Q",
+  "aciona_por": "clique (alterna; propaga a mesmo rótulo)",
+  "estado_inicial": 0,
+  "nota": "conduz quando estado==1; estado inicial 0 => ABERTO até clicar",
+  "evidencia": "desenho/sim FUN_0058ed60; nome FUN_0087aca0",
+  "confianca": "media"
+ },
+ "6017": {
+  "nome": "Interruptor automático",
+  "aba": "Proteções (disjuntores, térmico, DR)",
+  "papel": "disjuntor",
+  "pinos": [
+   "p1",
+   "p2",
+   "p3",
+   "p4",
+   "p5",
+   "p6",
+   "p7",
+   "p8"
+  ],
+  "designacao_padrao": "-Q",
+  "aciona_por": "clique (alterna; propaga a mesmo rótulo)",
+  "estado_inicial": 0,
+  "nota": "conduz quando estado==1; estado inicial 0 => ABERTO até clicar",
+  "evidencia": "desenho/sim FUN_00595310; nome FUN_0087aca0",
+  "confianca": "media"
+ },
+ "6018": {
+  "nome": "Interruptor diferencial",
+  "aba": "Proteções (disjuntores, térmico, DR)",
+  "papel": "disjuntor",
+  "pinos": [
+   "p1",
+   "p2",
+   "p3",
+   "p4",
+   "p5",
+   "p6",
+   "p7",
+   "p8"
+  ],
+  "designacao_padrao": "-Q",
+  "aciona_por": "clique (alterna; propaga a mesmo rótulo)",
+  "estado_inicial": 0,
+  "nota": "conduz quando estado==1; estado inicial 0 => ABERTO até clicar",
+  "evidencia": "desenho/sim FUN_0059c470; nome FUN_0087aca0",
+  "confianca": "media"
+ },
+ "6019": {
+  "nome": "Interruptor",
+  "aba": "Proteções (disjuntores, térmico, DR)",
+  "papel": "disjuntor",
+  "pinos": [
+   "p1",
+   "p2",
+   "p3",
+   "p4",
+   "p5",
+   "p6",
+   "p7",
+   "p8"
+  ],
+  "designacao_padrao": "-Q",
+  "aciona_por": "clique (alterna; propaga a mesmo rótulo)",
+  "estado_inicial": 0,
+  "nota": "conduz quando estado==1; estado inicial 0 => ABERTO até clicar",
+  "evidencia": "desenho/sim FUN_005a1bf0; nome FUN_0087aca0",
+  "confianca": "media"
+ },
+ "6020": {
+  "nome": "Seccionador",
+  "aba": "Proteções (disjuntores, térmico, DR)",
+  "papel": "disjuntor",
+  "pinos": [
+   "p1",
+   "p2",
+   "p3",
+   "p4",
+   "p5",
+   "p6",
+   "p7",
+   "p8"
+  ],
+  "designacao_padrao": "-Q",
+  "aciona_por": "clique (alterna; propaga a mesmo rótulo)",
+  "estado_inicial": 0,
+  "nota": "conduz quando estado==1; estado inicial 0 => ABERTO até clicar",
+  "evidencia": "desenho/sim FUN_005a8e60; nome FUN_0087aca0",
+  "confianca": "media"
+ },
+ "7000": {
+  "nome": "Contacto auxiliar NA",
+  "aba": "Contatos auxiliares, temporizados e relés",
+  "papel": "contato_NA",
+  "pinos": [
+   "13",
+   "14"
+  ],
+  "designacao_padrao": "-K",
+  "aciona_por": "label igual ao da bobina (cópia instantânea do estado 0x78a9c)",
+  "contatos": [
+   {
+    "pinos": [
+     "13",
+     "14"
+    ],
+    "fecha_quando": "estado==1"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "contato auxiliar instantâneo",
+  "evidencia": "FUN_005b00d0 (decompilada); desenho/sim FUN_005b00d0; nome cmpstr",
+  "confianca": "alta"
+ },
+ "7001": {
+  "nome": "Contacto auxiliar NC",
+  "aba": "Contatos auxiliares, temporizados e relés",
+  "papel": "contato_NC",
+  "pinos": [
+   "11",
+   "12"
+  ],
+  "designacao_padrao": "-K",
+  "aciona_por": "label igual ao da bobina (cópia instantânea do estado 0x78a9c)",
+  "contatos": [
+   {
+    "pinos": [
+     "11",
+     "12"
+    ],
+    "fecha_quando": "estado==0"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "contato auxiliar instantâneo",
+  "evidencia": "FUN_005b10e0 (decompilada); desenho/sim FUN_005b10e0; nome cmpstr",
+  "confianca": "alta"
+ },
+ "7002": {
+  "nome": "Contacto auxiliar NA-NC",
+  "aba": "Contatos auxiliares, temporizados e relés",
+  "papel": "contato_NA_NC",
+  "pinos": [
+   "11",
+   "13",
+   "12",
+   "14"
+  ],
+  "designacao_padrao": "-K",
+  "aciona_por": "label igual ao da bobina (cópia instantânea do estado 0x78a9c)",
+  "contatos": [
+   {
+    "pinos": [
+     "11",
+     "12"
+    ],
+    "fecha_quando": "estado==0"
+   },
+   {
+    "pinos": [
+     "13",
+     "14"
+    ],
+    "fecha_quando": "estado==1"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "contato auxiliar instantâneo",
+  "evidencia": "desenho/sim FUN_005b21f0; nome FUN_0087aca0",
+  "confianca": "alta"
+ },
+ "7003": {
+  "nome": "Contacto auxiliar conmutado",
+  "aba": "Contatos auxiliares, temporizados e relés",
+  "papel": "contato_comutado",
+  "pinos": [
+   "11",
+   "12",
+   "14"
+  ],
+  "designacao_padrao": "-K",
+  "aciona_por": "label igual ao da bobina (cópia instantânea do estado 0x78a9c)",
+  "contatos": [
+   {
+    "pinos": [
+     "11",
+     "12"
+    ],
+    "fecha_quando": "estado==0"
+   },
+   {
+    "pinos": [
+     "11",
+     "14"
+    ],
+    "fecha_quando": "estado==1"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "contato auxiliar instantâneo",
+  "evidencia": "desenho/sim FUN_005b3de0; nome FUN_0087aca0",
+  "confianca": "alta"
+ },
+ "7004": {
+  "nome": "Contacto temporizador conexión NA",
+  "aba": "Contatos auxiliares, temporizados e relés",
+  "papel": "contato_temporizado_NA",
+  "pinos": [
+   "67",
+   "68"
+  ],
+  "designacao_padrao": "-KA",
+  "aciona_por": "label igual ao do temporizador (9004 ON / 9005 OFF / 9006 ON-OFF); estado = saída temporizada 0x30e24 do temporizador",
+  "contatos": [
+   {
+    "pinos": [
+     "67",
+     "68"
+    ],
+    "fecha_quando": "estado==1"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "contato temporizado ON-delay",
+  "evidencia": "FUN_005b54d0 (decompilada); desenho/sim FUN_005b54d0; nome FUN_0087aca0",
+  "confianca": "alta"
+ },
+ "7005": {
+  "nome": "Contacto temporizador conexión NC",
+  "aba": "Contatos auxiliares, temporizados e relés",
+  "papel": "contato_temporizado_NC",
+  "pinos": [
+   "55",
+   "56"
+  ],
+  "designacao_padrao": "-KA",
+  "aciona_por": "label igual ao do temporizador (9004 ON / 9005 OFF / 9006 ON-OFF); estado = saída temporizada 0x30e24 do temporizador",
+  "contatos": [
+   {
+    "pinos": [
+     "55",
+     "56"
+    ],
+    "fecha_quando": "estado==0"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "contato temporizado ON-delay",
+  "evidencia": "desenho/sim FUN_005b6970; nome FUN_0087aca0",
+  "confianca": "alta"
+ },
+ "7006": {
+  "nome": "Contacto temporizador conexión NA-NC",
+  "aba": "Contatos auxiliares, temporizados e relés",
+  "papel": "contato_temporizado_NA_NC",
+  "pinos": [
+   "55",
+   "57",
+   "56",
+   "58"
+  ],
+  "designacao_padrao": "-KA",
+  "aciona_por": "label igual ao do temporizador (9004 ON / 9005 OFF / 9006 ON-OFF); estado = saída temporizada 0x30e24 do temporizador",
+  "contatos": [
+   {
+    "pinos": [
+     "55",
+     "56"
+    ],
+    "fecha_quando": "estado==0"
+   },
+   {
+    "pinos": [
+     "57",
+     "58"
+    ],
+    "fecha_quando": "estado==1"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "contato temporizado ON-delay",
+  "evidencia": "desenho/sim FUN_005b7f30; nome FUN_0087aca0",
+  "confianca": "media"
+ },
+ "7007": {
+  "nome": "Contacto temporizador conexión conmutado",
+  "aba": "Contatos auxiliares, temporizados e relés",
+  "papel": "contato_temporizado_comutado",
+  "pinos": [
+   "55",
+   "56",
+   "58"
+  ],
+  "designacao_padrao": "-KA",
+  "aciona_por": "label igual ao do temporizador (9004 ON / 9005 OFF / 9006 ON-OFF); estado = saída temporizada 0x30e24 do temporizador",
+  "contatos": [
+   {
+    "pinos": [
+     "55",
+     "56"
+    ],
+    "fecha_quando": "estado==0"
+   },
+   {
+    "pinos": [
+     "55",
+     "58"
+    ],
+    "fecha_quando": "estado==1"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "contato temporizado ON-delay",
+  "evidencia": "desenho/sim FUN_005ba260; nome FUN_0087aca0",
+  "confianca": "media"
+ },
+ "7008": {
+  "nome": "Contacto temporizador desconexión NA",
+  "aba": "Contatos auxiliares, temporizados e relés",
+  "papel": "contato_temporizado_NA",
+  "pinos": [
+   "67",
+   "68"
+  ],
+  "designacao_padrao": "-KA",
+  "aciona_por": "label igual ao do temporizador (9004 ON / 9005 OFF / 9006 ON-OFF); estado = saída temporizada 0x30e24 do temporizador",
+  "contatos": [
+   {
+    "pinos": [
+     "67",
+     "68"
+    ],
+    "fecha_quando": "estado==1"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "contato temporizado OFF-delay",
+  "evidencia": "desenho/sim FUN_005bbe80; nome FUN_0087aca0",
+  "confianca": "alta"
+ },
+ "7009": {
+  "nome": "Contacto temporizador desconexión NC",
+  "aba": "Contatos auxiliares, temporizados e relés",
+  "papel": "contato_temporizado_NC",
+  "pinos": [
+   "55",
+   "56"
+  ],
+  "designacao_padrao": "-KA",
+  "aciona_por": "label igual ao do temporizador (9004 ON / 9005 OFF / 9006 ON-OFF); estado = saída temporizada 0x30e24 do temporizador",
+  "contatos": [
+   {
+    "pinos": [
+     "55",
+     "56"
+    ],
+    "fecha_quando": "estado==0"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "contato temporizado OFF-delay",
+  "evidencia": "desenho/sim FUN_005bd270; nome FUN_0087aca0",
+  "confianca": "alta"
+ },
+ "7010": {
+  "nome": "Contacto temporizador desconexión NA-NC",
+  "aba": "Contatos auxiliares, temporizados e relés",
+  "papel": "contato_temporizado_NA_NC",
+  "pinos": [
+   "55",
+   "57",
+   "56",
+   "58"
+  ],
+  "designacao_padrao": "-KA",
+  "aciona_por": "label igual ao do temporizador (9004 ON / 9005 OFF / 9006 ON-OFF); estado = saída temporizada 0x30e24 do temporizador",
+  "contatos": [
+   {
+    "pinos": [
+     "55",
+     "56"
+    ],
+    "fecha_quando": "estado==0"
+   },
+   {
+    "pinos": [
+     "57",
+     "58"
+    ],
+    "fecha_quando": "estado==1"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "contato temporizado OFF-delay",
+  "evidencia": "desenho/sim FUN_005be830; nome FUN_0087aca0",
+  "confianca": "media"
+ },
+ "7011": {
+  "nome": "Contacto temporizador desconexión conmutado",
+  "aba": "Contatos auxiliares, temporizados e relés",
+  "papel": "contato_temporizado_comutado",
+  "pinos": [
+   "55",
+   "56",
+   "58"
+  ],
+  "designacao_padrao": "-KA",
+  "aciona_por": "label igual ao do temporizador (9004 ON / 9005 OFF / 9006 ON-OFF); estado = saída temporizada 0x30e24 do temporizador",
+  "contatos": [
+   {
+    "pinos": [
+     "55",
+     "56"
+    ],
+    "fecha_quando": "estado==0"
+   },
+   {
+    "pinos": [
+     "55",
+     "58"
+    ],
+    "fecha_quando": "estado==1"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "contato temporizado OFF-delay",
+  "evidencia": "desenho/sim FUN_005c0b60; nome FUN_0087aca0",
+  "confianca": "media"
+ },
+ "7012": {
+  "nome": "Contacto temporizador conexión desconexión NA",
+  "aba": "Contatos auxiliares, temporizados e relés",
+  "papel": "contato_temporizado_NA",
+  "pinos": [
+   "67",
+   "68"
+  ],
+  "designacao_padrao": "-KA",
+  "aciona_por": "label igual ao do temporizador (9004 ON / 9005 OFF / 9006 ON-OFF); estado = saída temporizada 0x30e24 do temporizador",
+  "contatos": [
+   {
+    "pinos": [
+     "67",
+     "68"
+    ],
+    "fecha_quando": "estado==1"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "contato temporizado ON_OFF-delay",
+  "evidencia": "desenho/sim FUN_005c2780; nome FUN_0087aca0",
+  "confianca": "media"
+ },
+ "7013": {
+  "nome": "Contacto temporizador conexión desconexión NC",
+  "aba": "Contatos auxiliares, temporizados e relés",
+  "papel": "contato_temporizado_NC",
+  "pinos": [
+   "55",
+   "56"
+  ],
+  "designacao_padrao": "-KA",
+  "aciona_por": "label igual ao do temporizador (9004 ON / 9005 OFF / 9006 ON-OFF); estado = saída temporizada 0x30e24 do temporizador",
+  "contatos": [
+   {
+    "pinos": [
+     "55",
+     "56"
+    ],
+    "fecha_quando": "estado==0"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "contato temporizado ON_OFF-delay",
+  "evidencia": "desenho/sim FUN_005c3cc0; nome FUN_0087aca0",
+  "confianca": "media"
+ },
+ "7014": {
+  "nome": "Contacto temporizador conexión desconexión NA-NC",
+  "aba": "Contatos auxiliares, temporizados e relés",
+  "papel": "contato_temporizado_NA_NC",
+  "pinos": [
+   "55",
+   "57",
+   "56",
+   "58"
+  ],
+  "designacao_padrao": "-KA",
+  "aciona_por": "label igual ao do temporizador (9004 ON / 9005 OFF / 9006 ON-OFF); estado = saída temporizada 0x30e24 do temporizador",
+  "contatos": [
+   {
+    "pinos": [
+     "55",
+     "56"
+    ],
+    "fecha_quando": "estado==0"
+   },
+   {
+    "pinos": [
+     "57",
+     "58"
+    ],
+    "fecha_quando": "estado==1"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "contato temporizado ON_OFF-delay",
+  "evidencia": "desenho/sim FUN_005c53d0; nome FUN_0087aca0",
+  "confianca": "media"
+ },
+ "7015": {
+  "nome": "Contacto temporizador conexión desconexión conmutado",
+  "aba": "Contatos auxiliares, temporizados e relés",
+  "papel": "contato_temporizado_comutado",
+  "pinos": [
+   "55",
+   "56",
+   "58"
+  ],
+  "designacao_padrao": "-KA",
+  "aciona_por": "label igual ao do temporizador (9004 ON / 9005 OFF / 9006 ON-OFF); estado = saída temporizada 0x30e24 do temporizador",
+  "contatos": [
+   {
+    "pinos": [
+     "55",
+     "56"
+    ],
+    "fecha_quando": "estado==0"
+   },
+   {
+    "pinos": [
+     "55",
+     "58"
+    ],
+    "fecha_quando": "estado==1"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "contato temporizado ON_OFF-delay",
+  "evidencia": "desenho/sim FUN_005c78d0; nome FUN_0087aca0",
+  "confianca": "media"
+ },
+ "7016": {
+  "nome": "Rele",
+  "aba": "Contatos auxiliares, temporizados e relés",
+  "papel": "outro",
+  "pinos": [
+   "13",
+   "14",
+   "9",
+   "1",
+   "5",
+   "10",
+   "2",
+   "6",
+   "11",
+   "3",
+   "6",
+   "12",
+   "4",
+   "8"
+  ],
+  "designacao_padrao": "-KA",
+  "aciona_por": "label (relé de base/zócalo; 7018 contator com 7019..7021 blocos aditivos)",
+  "estado_inicial": 0,
+  "nota": "relé/contator compacto com blocos de contatos auxiliares ou temporizados",
+  "evidencia": "desenho/sim FUN_005c9640; nome FUN_0087aca0",
+  "confianca": "baixa"
+ },
+ "7017": {
+  "nome": "Relé temporizado zocalo",
+  "aba": "Contatos auxiliares, temporizados e relés",
+  "papel": "outro",
+  "pinos": [
+   "13",
+   "14",
+   "9",
+   "1",
+   "5",
+   "10",
+   "2",
+   "6",
+   "11",
+   "3",
+   "6",
+   "12",
+   "4",
+   "8"
+  ],
+  "designacao_padrao": "-KA",
+  "aciona_por": "label (relé de base/zócalo; 7018 contator com 7019..7021 blocos aditivos)",
+  "estado_inicial": 0,
+  "parametros": {
+   "tempo": "label5",
+   "unidade": "label4",
+   "ver": "_modelo.temporizador"
+  },
+  "nota": "relé/contator compacto com blocos de contatos auxiliares ou temporizados",
+  "evidencia": "desenho/sim FUN_005cf450; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "7018": {
+  "nome": "Contactor",
+  "aba": "Contatos auxiliares, temporizados e relés",
+  "papel": "outro",
+  "pinos": [
+   "A1",
+   "A1",
+   "A1",
+   "A2",
+   "A2",
+   "A2",
+   "1",
+   "1",
+   "1",
+   "2",
+   "2",
+   "2",
+   "1",
+   "1",
+   "1",
+   "2",
+   "2",
+   "2",
+   "5",
+   "5",
+   "5",
+   "2",
+   "2",
+   "2",
+   "13",
+   "13",
+   "13",
+   "14",
+   "14",
+   "14",
+   "21",
+   "21",
+   "21",
+   "22",
+   "22",
+   "22"
+  ],
+  "designacao_padrao": "-KM",
+  "aciona_por": "label (relé de base/zócalo; 7018 contator com 7019..7021 blocos aditivos)",
+  "estado_inicial": 0,
+  "nota": "relé/contator compacto com blocos de contatos auxiliares ou temporizados",
+  "evidencia": "desenho/sim FUN_005d5e90; nome FUN_0087aca0",
+  "confianca": "baixa"
+ },
+ "7019": {
+  "nome": "Contactos auxiliares",
+  "aba": "Contatos auxiliares, temporizados e relés",
+  "papel": "outro",
+  "pinos": [
+   "p1",
+   "p2",
+   "p3",
+   "p4",
+   "p5",
+   "p6",
+   "p7",
+   "p8"
+  ],
+  "designacao_padrao": "-KM",
+  "aciona_por": "label (relé de base/zócalo; 7018 contator com 7019..7021 blocos aditivos)",
+  "estado_inicial": 0,
+  "nota": "relé/contator compacto com blocos de contatos auxiliares ou temporizados",
+  "evidencia": "desenho/sim FUN_005ddf00; nome FUN_0087aca0",
+  "confianca": "baixa"
+ },
+ "7020": {
+  "nome": "Contactos ON Delay",
+  "aba": "Contatos auxiliares, temporizados e relés",
+  "papel": "outro",
+  "pinos": [
+   "p1",
+   "p2",
+   "p3",
+   "p4"
+  ],
+  "designacao_padrao": "-KM",
+  "aciona_por": "label (relé de base/zócalo; 7018 contator com 7019..7021 blocos aditivos)",
+  "estado_inicial": 0,
+  "nota": "relé/contator compacto com blocos de contatos auxiliares ou temporizados",
+  "evidencia": "desenho/sim FUN_005e2d10; nome FUN_0087aca0",
+  "confianca": "baixa"
+ },
+ "7021": {
+  "nome": "Contactos OFF Delay",
+  "aba": "Contatos auxiliares, temporizados e relés",
+  "papel": "outro",
+  "pinos": [
+   "p1",
+   "p2",
+   "p3",
+   "p4"
+  ],
+  "designacao_padrao": "-KM",
+  "aciona_por": "label (relé de base/zócalo; 7018 contator com 7019..7021 blocos aditivos)",
+  "estado_inicial": 0,
+  "nota": "relé/contator compacto com blocos de contatos auxiliares ou temporizados",
+  "evidencia": "desenho/sim FUN_005e64e0; nome FUN_0087aca0",
+  "confianca": "baixa"
+ },
+ "7500": {
+  "nome": "Det. inductivo NA 2 hilos",
+  "aba": "Sensores / detectores",
+  "papel": "sensor_NA",
+  "pinos": [
+   "1",
+   "2"
+  ],
+  "designacao_padrao": "-B",
+  "aciona_por": "clique (momentâneo, estado=1 ao pressionar)",
+  "contatos": [
+   {
+    "pinos": [
+     "1",
+     "2"
+    ],
+    "fecha_quando": "estado==1"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "detector 2/3 fios; contato NA/NC",
+  "evidencia": "desenho/sim FUN_00655820; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "7501": {
+  "nome": "Det. inductivo NA 3 hilos PNP",
+  "aba": "Sensores / detectores",
+  "papel": "sensor_NA",
+  "pinos": [
+   "p1",
+   "p2",
+   "p3"
+  ],
+  "designacao_padrao": "-B",
+  "aciona_por": "clique (momentâneo, estado=1 ao pressionar)",
+  "estado_inicial": 0,
+  "nota": "detector 2/3 fios; contato NA/NC",
+  "evidencia": "desenho/sim FUN_006572b0; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "7502": {
+  "nome": "Det. inductivo NA 3 hilos NPN",
+  "aba": "Sensores / detectores",
+  "papel": "sensor_NA",
+  "pinos": [
+   "p1",
+   "p2",
+   "p3"
+  ],
+  "designacao_padrao": "-B",
+  "aciona_por": "clique (momentâneo, estado=1 ao pressionar)",
+  "estado_inicial": 0,
+  "nota": "detector 2/3 fios; contato NA/NC",
+  "evidencia": "desenho/sim FUN_006572b0; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "7503": {
+  "nome": "Det. inductivo NA 2 hilos",
+  "aba": "Sensores / detectores",
+  "papel": "sensor_NA",
+  "pinos": [
+   "1",
+   "2"
+  ],
+  "designacao_padrao": "-B",
+  "aciona_por": "clique (momentâneo, estado=1 ao pressionar)",
+  "contatos": [
+   {
+    "pinos": [
+     "1",
+     "2"
+    ],
+    "fecha_quando": "estado==1"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "detector 2/3 fios; contato NA/NC",
+  "evidencia": "desenho/sim FUN_00659330; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "7504": {
+  "nome": "Det. inductivo NA 3 hilos PNP",
+  "aba": "Sensores / detectores",
+  "papel": "sensor_NA",
+  "pinos": [
+   "1",
+   "2",
+   "S"
+  ],
+  "designacao_padrao": "-B",
+  "aciona_por": "clique (momentâneo, estado=1 ao pressionar)",
+  "contatos": [
+   {
+    "pinos": [
+     "1",
+     "2"
+    ],
+    "fecha_quando": "estado==1"
+   },
+   {
+    "pinos": [
+     "1",
+     "S"
+    ],
+    "fecha_quando": "estado==1"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "detector 2/3 fios; contato NA/NC",
+  "evidencia": "desenho/sim FUN_0065ad30; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "7505": {
+  "nome": "Det. inductivo NA 3 hilos NPN",
+  "aba": "Sensores / detectores",
+  "papel": "sensor_NA",
+  "pinos": [
+   "1",
+   "2",
+   "S"
+  ],
+  "designacao_padrao": "-B",
+  "aciona_por": "clique (momentâneo, estado=1 ao pressionar)",
+  "contatos": [
+   {
+    "pinos": [
+     "1",
+     "2"
+    ],
+    "fecha_quando": "estado==1"
+   },
+   {
+    "pinos": [
+     "1",
+     "S"
+    ],
+    "fecha_quando": "estado==1"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "detector 2/3 fios; contato NA/NC",
+  "evidencia": "desenho/sim FUN_0065ad30; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "7506": {
+  "nome": "Det. capacitivo NA 2 hilos",
+  "aba": "Sensores / detectores",
+  "papel": "sensor_NA",
+  "pinos": [
+   "1",
+   "2"
+  ],
+  "designacao_padrao": "-B",
+  "aciona_por": "clique (momentâneo, estado=1 ao pressionar)",
+  "contatos": [
+   {
+    "pinos": [
+     "1",
+     "2"
+    ],
+    "fecha_quando": "estado==1"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "detector 2/3 fios; contato NA/NC",
+  "evidencia": "desenho/sim FUN_00655820; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "7507": {
+  "nome": "Det. capacitivo NA 3 hilos PNP",
+  "aba": "Sensores / detectores",
+  "papel": "sensor_NA",
+  "pinos": [
+   "p1",
+   "p2",
+   "p3"
+  ],
+  "designacao_padrao": "-B",
+  "aciona_por": "clique (momentâneo, estado=1 ao pressionar)",
+  "estado_inicial": 0,
+  "nota": "detector 2/3 fios; contato NA/NC",
+  "evidencia": "desenho/sim FUN_006572b0; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "7508": {
+  "nome": "Det. capacitivo NA 3 hilos NPN",
+  "aba": "Sensores / detectores",
+  "papel": "sensor_NA",
+  "pinos": [
+   "p1",
+   "p2",
+   "p3"
+  ],
+  "designacao_padrao": "-B",
+  "aciona_por": "clique (momentâneo, estado=1 ao pressionar)",
+  "estado_inicial": 0,
+  "nota": "detector 2/3 fios; contato NA/NC",
+  "evidencia": "desenho/sim FUN_006572b0; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "7509": {
+  "nome": "Det. capacitivo NA 2 hilos",
+  "aba": "Sensores / detectores",
+  "papel": "sensor_NA",
+  "pinos": [
+   "1",
+   "2"
+  ],
+  "designacao_padrao": "-B",
+  "aciona_por": "clique (momentâneo, estado=1 ao pressionar)",
+  "contatos": [
+   {
+    "pinos": [
+     "1",
+     "2"
+    ],
+    "fecha_quando": "estado==1"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "detector 2/3 fios; contato NA/NC",
+  "evidencia": "desenho/sim FUN_00659330; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "7510": {
+  "nome": "Det. capacitivo NA 3 hilos PNP",
+  "aba": "Sensores / detectores",
+  "papel": "sensor_NA",
+  "pinos": [
+   "1",
+   "2",
+   "S"
+  ],
+  "designacao_padrao": "-B",
+  "aciona_por": "clique (momentâneo, estado=1 ao pressionar)",
+  "contatos": [
+   {
+    "pinos": [
+     "1",
+     "2"
+    ],
+    "fecha_quando": "estado==1"
+   },
+   {
+    "pinos": [
+     "1",
+     "S"
+    ],
+    "fecha_quando": "estado==1"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "detector 2/3 fios; contato NA/NC",
+  "evidencia": "desenho/sim FUN_0065ad30; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "7511": {
+  "nome": "Det. capacitivo NA 3 hilos NPN",
+  "aba": "Sensores / detectores",
+  "papel": "sensor_NA",
+  "pinos": [
+   "1",
+   "2",
+   "S"
+  ],
+  "designacao_padrao": "-B",
+  "aciona_por": "clique (momentâneo, estado=1 ao pressionar)",
+  "contatos": [
+   {
+    "pinos": [
+     "1",
+     "2"
+    ],
+    "fecha_quando": "estado==1"
+   },
+   {
+    "pinos": [
+     "1",
+     "S"
+    ],
+    "fecha_quando": "estado==1"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "detector 2/3 fios; contato NA/NC",
+  "evidencia": "desenho/sim FUN_0065ad30; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "7512": {
+  "nome": "Det. magnético NA 2 hilos",
+  "aba": "Sensores / detectores",
+  "papel": "sensor_NA",
+  "pinos": [
+   "1",
+   "2"
+  ],
+  "designacao_padrao": "-B",
+  "aciona_por": "clique (momentâneo, estado=1 ao pressionar)",
+  "contatos": [
+   {
+    "pinos": [
+     "1",
+     "2"
+    ],
+    "fecha_quando": "estado==1"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "detector 2/3 fios; contato NA/NC",
+  "evidencia": "desenho/sim FUN_00655820; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "7513": {
+  "nome": "Det. magnético NA 3 hilos PNP",
+  "aba": "Sensores / detectores",
+  "papel": "sensor_NA",
+  "pinos": [
+   "p1",
+   "p2",
+   "p3"
+  ],
+  "designacao_padrao": "-B",
+  "aciona_por": "clique (momentâneo, estado=1 ao pressionar)",
+  "estado_inicial": 0,
+  "nota": "detector 2/3 fios; contato NA/NC",
+  "evidencia": "desenho/sim FUN_006572b0; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "7514": {
+  "nome": "Det. magnético NA 3 hilos NPN",
+  "aba": "Sensores / detectores",
+  "papel": "sensor_NA",
+  "pinos": [
+   "p1",
+   "p2",
+   "p3"
+  ],
+  "designacao_padrao": "-B",
+  "aciona_por": "clique (momentâneo, estado=1 ao pressionar)",
+  "estado_inicial": 0,
+  "nota": "detector 2/3 fios; contato NA/NC",
+  "evidencia": "desenho/sim FUN_006572b0; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "7515": {
+  "nome": "Det. magnético NA 2 hilos",
+  "aba": "Sensores / detectores",
+  "papel": "sensor_NA",
+  "pinos": [
+   "1",
+   "2"
+  ],
+  "designacao_padrao": "-B",
+  "aciona_por": "clique (momentâneo, estado=1 ao pressionar)",
+  "contatos": [
+   {
+    "pinos": [
+     "1",
+     "2"
+    ],
+    "fecha_quando": "estado==1"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "detector 2/3 fios; contato NA/NC",
+  "evidencia": "desenho/sim FUN_00659330; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "7516": {
+  "nome": "Det. magnético NA 3 hilos PNP",
+  "aba": "Sensores / detectores",
+  "papel": "sensor_NA",
+  "pinos": [
+   "1",
+   "2",
+   "S"
+  ],
+  "designacao_padrao": "-B",
+  "aciona_por": "clique (momentâneo, estado=1 ao pressionar)",
+  "contatos": [
+   {
+    "pinos": [
+     "1",
+     "2"
+    ],
+    "fecha_quando": "estado==1"
+   },
+   {
+    "pinos": [
+     "1",
+     "S"
+    ],
+    "fecha_quando": "estado==1"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "detector 2/3 fios; contato NA/NC",
+  "evidencia": "desenho/sim FUN_0065ad30; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "7517": {
+  "nome": "Det. magnético NA 3 hilos NPN",
+  "aba": "Sensores / detectores",
+  "papel": "sensor_NA",
+  "pinos": [
+   "1",
+   "2",
+   "S"
+  ],
+  "designacao_padrao": "-B",
+  "aciona_por": "clique (momentâneo, estado=1 ao pressionar)",
+  "contatos": [
+   {
+    "pinos": [
+     "1",
+     "2"
+    ],
+    "fecha_quando": "estado==1"
+   },
+   {
+    "pinos": [
+     "1",
+     "S"
+    ],
+    "fecha_quando": "estado==1"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "detector 2/3 fios; contato NA/NC",
+  "evidencia": "desenho/sim FUN_0065ad30; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "7520": {
+  "nome": "Det. inductivo NC 2 hilos",
+  "aba": "Sensores / detectores",
+  "papel": "sensor_NC",
+  "pinos": [
+   "1",
+   "2"
+  ],
+  "designacao_padrao": "-B",
+  "aciona_por": "clique (momentâneo, estado=1 ao pressionar)",
+  "contatos": [
+   {
+    "pinos": [
+     "1",
+     "2"
+    ],
+    "fecha_quando": "estado==0"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "detector 2/3 fios; contato NA/NC",
+  "evidencia": "desenho/sim FUN_0065ce40; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "7521": {
+  "nome": "Det. inductivo NC 3 hilos PNP",
+  "aba": "Sensores / detectores",
+  "papel": "sensor_NC",
+  "pinos": [
+   "p1",
+   "p2",
+   "p3"
+  ],
+  "designacao_padrao": "-B",
+  "aciona_por": "clique (momentâneo, estado=1 ao pressionar)",
+  "estado_inicial": 0,
+  "nota": "detector 2/3 fios; contato NA/NC",
+  "evidencia": "desenho/sim FUN_0065e910; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "7522": {
+  "nome": "Det. inductivo NC 3 hilos NPN",
+  "aba": "Sensores / detectores",
+  "papel": "sensor_NC",
+  "pinos": [
+   "p1",
+   "p2",
+   "p3"
+  ],
+  "designacao_padrao": "-B",
+  "aciona_por": "clique (momentâneo, estado=1 ao pressionar)",
+  "estado_inicial": 0,
+  "nota": "detector 2/3 fios; contato NA/NC",
+  "evidencia": "desenho/sim FUN_0065e910; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "7523": {
+  "nome": "Det. inductivo NC 2 hilos",
+  "aba": "Sensores / detectores",
+  "papel": "sensor_NC",
+  "pinos": [
+   "1",
+   "2"
+  ],
+  "designacao_padrao": "-B",
+  "aciona_por": "clique (momentâneo, estado=1 ao pressionar)",
+  "contatos": [
+   {
+    "pinos": [
+     "1",
+     "2"
+    ],
+    "fecha_quando": "estado==0"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "detector 2/3 fios; contato NA/NC",
+  "evidencia": "desenho/sim FUN_006609d0; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "7524": {
+  "nome": "Det. inductivo NC 3 hilos PNP",
+  "aba": "Sensores / detectores",
+  "papel": "sensor_NC",
+  "pinos": [
+   "1",
+   "2",
+   "S"
+  ],
+  "designacao_padrao": "-B",
+  "aciona_por": "clique (momentâneo, estado=1 ao pressionar)",
+  "contatos": [
+   {
+    "pinos": [
+     "1",
+     "2"
+    ],
+    "fecha_quando": "estado==0"
+   },
+   {
+    "pinos": [
+     "1",
+     "S"
+    ],
+    "fecha_quando": "estado==0"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "detector 2/3 fios; contato NA/NC",
+  "evidencia": "desenho/sim FUN_00662410; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "7525": {
+  "nome": "Det. inductivo NC 3 hilos NPN",
+  "aba": "Sensores / detectores",
+  "papel": "sensor_NC",
+  "pinos": [
+   "1",
+   "2",
+   "S"
+  ],
+  "designacao_padrao": "-B",
+  "aciona_por": "clique (momentâneo, estado=1 ao pressionar)",
+  "contatos": [
+   {
+    "pinos": [
+     "1",
+     "2"
+    ],
+    "fecha_quando": "estado==0"
+   },
+   {
+    "pinos": [
+     "1",
+     "S"
+    ],
+    "fecha_quando": "estado==0"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "detector 2/3 fios; contato NA/NC",
+  "evidencia": "desenho/sim FUN_00662410; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "7526": {
+  "nome": "Det. capacitivo NC 2 hilos",
+  "aba": "Sensores / detectores",
+  "papel": "sensor_NC",
+  "pinos": [
+   "1",
+   "2"
+  ],
+  "designacao_padrao": "-B",
+  "aciona_por": "clique (momentâneo, estado=1 ao pressionar)",
+  "contatos": [
+   {
+    "pinos": [
+     "1",
+     "2"
+    ],
+    "fecha_quando": "estado==0"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "detector 2/3 fios; contato NA/NC",
+  "evidencia": "desenho/sim FUN_0065ce40; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "7527": {
+  "nome": "Det. capacitivo NC 3 hilos PNP",
+  "aba": "Sensores / detectores",
+  "papel": "sensor_NC",
+  "pinos": [
+   "p1",
+   "p2",
+   "p3"
+  ],
+  "designacao_padrao": "-B",
+  "aciona_por": "clique (momentâneo, estado=1 ao pressionar)",
+  "estado_inicial": 0,
+  "nota": "detector 2/3 fios; contato NA/NC",
+  "evidencia": "desenho/sim FUN_0065e910; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "7528": {
+  "nome": "Det. capacitivo NC 3 hilos NPN",
+  "aba": "Sensores / detectores",
+  "papel": "sensor_NC",
+  "pinos": [
+   "p1",
+   "p2",
+   "p3"
+  ],
+  "designacao_padrao": "-B",
+  "aciona_por": "clique (momentâneo, estado=1 ao pressionar)",
+  "estado_inicial": 0,
+  "nota": "detector 2/3 fios; contato NA/NC",
+  "evidencia": "desenho/sim FUN_0065e910; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "7529": {
+  "nome": "Det. capacitivo NC 2 hilos",
+  "aba": "Sensores / detectores",
+  "papel": "sensor_NC",
+  "pinos": [
+   "1",
+   "2"
+  ],
+  "designacao_padrao": "-B",
+  "aciona_por": "clique (momentâneo, estado=1 ao pressionar)",
+  "contatos": [
+   {
+    "pinos": [
+     "1",
+     "2"
+    ],
+    "fecha_quando": "estado==0"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "detector 2/3 fios; contato NA/NC",
+  "evidencia": "desenho/sim FUN_006609d0; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "7530": {
+  "nome": "Det. capacitivo NC 3 hilos PNP",
+  "aba": "Sensores / detectores",
+  "papel": "sensor_NC",
+  "pinos": [
+   "1",
+   "2",
+   "S"
+  ],
+  "designacao_padrao": "-B",
+  "aciona_por": "clique (momentâneo, estado=1 ao pressionar)",
+  "contatos": [
+   {
+    "pinos": [
+     "1",
+     "2"
+    ],
+    "fecha_quando": "estado==0"
+   },
+   {
+    "pinos": [
+     "1",
+     "S"
+    ],
+    "fecha_quando": "estado==0"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "detector 2/3 fios; contato NA/NC",
+  "evidencia": "desenho/sim FUN_00662410; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "7531": {
+  "nome": "Det. capacitivo NC 3 hilos NPN",
+  "aba": "Sensores / detectores",
+  "papel": "sensor_NC",
+  "pinos": [
+   "1",
+   "2",
+   "S"
+  ],
+  "designacao_padrao": "-B",
+  "aciona_por": "clique (momentâneo, estado=1 ao pressionar)",
+  "contatos": [
+   {
+    "pinos": [
+     "1",
+     "2"
+    ],
+    "fecha_quando": "estado==0"
+   },
+   {
+    "pinos": [
+     "1",
+     "S"
+    ],
+    "fecha_quando": "estado==0"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "detector 2/3 fios; contato NA/NC",
+  "evidencia": "desenho/sim FUN_00662410; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "7532": {
+  "nome": "Det. magnético NC 2 hilos",
+  "aba": "Sensores / detectores",
+  "papel": "sensor_NC",
+  "pinos": [
+   "1",
+   "2"
+  ],
+  "designacao_padrao": "-B",
+  "aciona_por": "clique (momentâneo, estado=1 ao pressionar)",
+  "contatos": [
+   {
+    "pinos": [
+     "1",
+     "2"
+    ],
+    "fecha_quando": "estado==0"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "detector 2/3 fios; contato NA/NC",
+  "evidencia": "desenho/sim FUN_0065ce40; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "7533": {
+  "nome": "Det. magnético NC 3 hilos PNP",
+  "aba": "Sensores / detectores",
+  "papel": "sensor_NC",
+  "pinos": [
+   "p1",
+   "p2",
+   "p3"
+  ],
+  "designacao_padrao": "-B",
+  "aciona_por": "clique (momentâneo, estado=1 ao pressionar)",
+  "estado_inicial": 0,
+  "nota": "detector 2/3 fios; contato NA/NC",
+  "evidencia": "desenho/sim FUN_0065e910; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "7534": {
+  "nome": "Det. magnético NC 3 hilos NPN",
+  "aba": "Sensores / detectores",
+  "papel": "sensor_NC",
+  "pinos": [
+   "p1",
+   "p2",
+   "p3"
+  ],
+  "designacao_padrao": "-B",
+  "aciona_por": "clique (momentâneo, estado=1 ao pressionar)",
+  "estado_inicial": 0,
+  "nota": "detector 2/3 fios; contato NA/NC",
+  "evidencia": "desenho/sim FUN_0065e910; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "7535": {
+  "nome": "Det. magnético NC 2 hilos",
+  "aba": "Sensores / detectores",
+  "papel": "sensor_NC",
+  "pinos": [
+   "1",
+   "2"
+  ],
+  "designacao_padrao": "-B",
+  "aciona_por": "clique (momentâneo, estado=1 ao pressionar)",
+  "contatos": [
+   {
+    "pinos": [
+     "1",
+     "2"
+    ],
+    "fecha_quando": "estado==0"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "detector 2/3 fios; contato NA/NC",
+  "evidencia": "desenho/sim FUN_006609d0; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "7536": {
+  "nome": "Det. magnético NC 3 hilos PNP",
+  "aba": "Sensores / detectores",
+  "papel": "sensor_NC",
+  "pinos": [
+   "1",
+   "2",
+   "S"
+  ],
+  "designacao_padrao": "-B",
+  "aciona_por": "clique (momentâneo, estado=1 ao pressionar)",
+  "contatos": [
+   {
+    "pinos": [
+     "1",
+     "2"
+    ],
+    "fecha_quando": "estado==0"
+   },
+   {
+    "pinos": [
+     "1",
+     "S"
+    ],
+    "fecha_quando": "estado==0"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "detector 2/3 fios; contato NA/NC",
+  "evidencia": "desenho/sim FUN_00662410; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "7537": {
+  "nome": "Det. magnético NC 3 hilos NPN",
+  "aba": "Sensores / detectores",
+  "papel": "sensor_NC",
+  "pinos": [
+   "1",
+   "2",
+   "S"
+  ],
+  "designacao_padrao": "-B",
+  "aciona_por": "clique (momentâneo, estado=1 ao pressionar)",
+  "contatos": [
+   {
+    "pinos": [
+     "1",
+     "2"
+    ],
+    "fecha_quando": "estado==0"
+   },
+   {
+    "pinos": [
+     "1",
+     "S"
+    ],
+    "fecha_quando": "estado==0"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "detector 2/3 fios; contato NA/NC",
+  "evidencia": "desenho/sim FUN_00662410; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "7550": {
+  "nome": "Barrera fotoeléctrica reflex",
+  "aba": "Sensores / detectores",
+  "papel": "sensor",
+  "pinos": [
+   "1",
+   "2",
+   "3",
+   "5",
+   "5"
+  ],
+  "designacao_padrao": "-B",
+  "aciona_por": "clique (momentâneo, estado=1 ao pressionar)",
+  "estado_inicial": 0,
+  "nota": "detector 2/3 fios; contato NA/NC",
+  "evidencia": "desenho/sim FUN_00664560; nome FUN_0087aca0",
+  "confianca": "baixa"
+ },
+ "7551": {
+  "nome": "Barrera foto. emisor",
+  "aba": "Sensores / detectores",
+  "papel": "sensor",
+  "pinos": [
+   "1",
+   "2"
+  ],
+  "designacao_padrao": "-B",
+  "aciona_por": "clique (momentâneo, estado=1 ao pressionar)",
+  "contatos": [
+   {
+    "pinos": [
+     "1",
+     "2"
+    ],
+    "fecha_quando": "estado==1"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "detector 2/3 fios; contato NA/NC",
+  "evidencia": "desenho/sim FUN_00666a80; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "7552": {
+  "nome": "Barrera foto. emisor",
+  "aba": "Sensores / detectores",
+  "papel": "sensor",
+  "pinos": [
+   "1",
+   "2"
+  ],
+  "designacao_padrao": "-B",
+  "aciona_por": "clique (momentâneo, estado=1 ao pressionar)",
+  "contatos": [
+   {
+    "pinos": [
+     "1",
+     "2"
+    ],
+    "fecha_quando": "estado==1"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "detector 2/3 fios; contato NA/NC",
+  "evidencia": "desenho/sim FUN_00667cc0; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "7553": {
+  "nome": "Barrera foto. receptor NA 2 hilos",
+  "aba": "Sensores / detectores",
+  "papel": "sensor_NA",
+  "pinos": [
+   "1",
+   "2"
+  ],
+  "designacao_padrao": "-B",
+  "aciona_por": "clique (momentâneo, estado=1 ao pressionar)",
+  "contatos": [
+   {
+    "pinos": [
+     "1",
+     "2"
+    ],
+    "fecha_quando": "estado==1"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "detector 2/3 fios; contato NA/NC",
+  "evidencia": "desenho/sim FUN_00668f80; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "7554": {
+  "nome": "Barrera foto. receptor NA 3 hilos PNP",
+  "aba": "Sensores / detectores",
+  "papel": "sensor_NA",
+  "pinos": [
+   "p1",
+   "p2",
+   "p3"
+  ],
+  "designacao_padrao": "-B",
+  "aciona_por": "clique (momentâneo, estado=1 ao pressionar)",
+  "estado_inicial": 0,
+  "nota": "detector 2/3 fios; contato NA/NC",
+  "evidencia": "desenho/sim FUN_0066a270; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "7555": {
+  "nome": "Barrera foto. receptor NA 3 hilos NPN",
+  "aba": "Sensores / detectores",
+  "papel": "sensor_NA",
+  "pinos": [
+   "p1",
+   "p2",
+   "p3"
+  ],
+  "designacao_padrao": "-B",
+  "aciona_por": "clique (momentâneo, estado=1 ao pressionar)",
+  "estado_inicial": 0,
+  "nota": "detector 2/3 fios; contato NA/NC",
+  "evidencia": "desenho/sim FUN_0066a270; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "7556": {
+  "nome": "Barrera foto. receptor NA 2 hilos",
+  "aba": "Sensores / detectores",
+  "papel": "sensor_NA",
+  "pinos": [
+   "1",
+   "2"
+  ],
+  "designacao_padrao": "-B",
+  "aciona_por": "clique (momentâneo, estado=1 ao pressionar)",
+  "contatos": [
+   {
+    "pinos": [
+     "1",
+     "2"
+    ],
+    "fecha_quando": "estado==1"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "detector 2/3 fios; contato NA/NC",
+  "evidencia": "desenho/sim FUN_0066b760; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "7557": {
+  "nome": "Barrera foto. receptor NA 3 hilos PNP",
+  "aba": "Sensores / detectores",
+  "papel": "sensor_NA",
+  "pinos": [
+   "1",
+   "2",
+   "S"
+  ],
+  "designacao_padrao": "-B",
+  "aciona_por": "clique (momentâneo, estado=1 ao pressionar)",
+  "contatos": [
+   {
+    "pinos": [
+     "1",
+     "2"
+    ],
+    "fecha_quando": "estado==1"
+   },
+   {
+    "pinos": [
+     "1",
+     "S"
+    ],
+    "fecha_quando": "estado==1"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "detector 2/3 fios; contato NA/NC",
+  "evidencia": "desenho/sim FUN_0066cad0; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "7558": {
+  "nome": "Barrera foto. receptor NA 3 hilos NPN",
+  "aba": "Sensores / detectores",
+  "papel": "sensor_NA",
+  "pinos": [
+   "1",
+   "2",
+   "S"
+  ],
+  "designacao_padrao": "-B",
+  "aciona_por": "clique (momentâneo, estado=1 ao pressionar)",
+  "contatos": [
+   {
+    "pinos": [
+     "1",
+     "2"
+    ],
+    "fecha_quando": "estado==1"
+   },
+   {
+    "pinos": [
+     "1",
+     "S"
+    ],
+    "fecha_quando": "estado==1"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "detector 2/3 fios; contato NA/NC",
+  "evidencia": "desenho/sim FUN_0066cad0; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "7559": {
+  "nome": "Barrera foto. receptor NC 2 hilos",
+  "aba": "Sensores / detectores",
+  "papel": "sensor_NC",
+  "pinos": [
+   "1",
+   "2"
+  ],
+  "designacao_padrao": "-B",
+  "aciona_por": "clique (momentâneo, estado=1 ao pressionar)",
+  "contatos": [
+   {
+    "pinos": [
+     "1",
+     "2"
+    ],
+    "fecha_quando": "estado==0"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "detector 2/3 fios; contato NA/NC",
+  "evidencia": "desenho/sim FUN_0066e040; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "7560": {
+  "nome": "Barrera foto. receptor NC 3 hilos PNP",
+  "aba": "Sensores / detectores",
+  "papel": "sensor_NC",
+  "pinos": [
+   "p1",
+   "p2",
+   "p3"
+  ],
+  "designacao_padrao": "-B",
+  "aciona_por": "clique (momentâneo, estado=1 ao pressionar)",
+  "estado_inicial": 0,
+  "nota": "detector 2/3 fios; contato NA/NC",
+  "evidencia": "desenho/sim FUN_0066f370; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "7561": {
+  "nome": "Barrera foto. receptor NC 3 hilos NPN",
+  "aba": "Sensores / detectores",
+  "papel": "sensor_NC",
+  "pinos": [
+   "p1",
+   "p2",
+   "p3"
+  ],
+  "designacao_padrao": "-B",
+  "aciona_por": "clique (momentâneo, estado=1 ao pressionar)",
+  "estado_inicial": 0,
+  "nota": "detector 2/3 fios; contato NA/NC",
+  "evidencia": "desenho/sim FUN_0066f370; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "7562": {
+  "nome": "Barrera foto. receptor NC 2 hilos",
+  "aba": "Sensores / detectores",
+  "papel": "sensor_NC",
+  "pinos": [
+   "1",
+   "2"
+  ],
+  "designacao_padrao": "-B",
+  "aciona_por": "clique (momentâneo, estado=1 ao pressionar)",
+  "contatos": [
+   {
+    "pinos": [
+     "1",
+     "2"
+    ],
+    "fecha_quando": "estado==0"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "detector 2/3 fios; contato NA/NC",
+  "evidencia": "desenho/sim FUN_006708a0; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "7563": {
+  "nome": "Barrera foto. receptor NC 3 hilos PNP",
+  "aba": "Sensores / detectores",
+  "papel": "sensor_NC",
+  "pinos": [
+   "1",
+   "2",
+   "S"
+  ],
+  "designacao_padrao": "-B",
+  "aciona_por": "clique (momentâneo, estado=1 ao pressionar)",
+  "contatos": [
+   {
+    "pinos": [
+     "1",
+     "2"
+    ],
+    "fecha_quando": "estado==0"
+   },
+   {
+    "pinos": [
+     "1",
+     "S"
+    ],
+    "fecha_quando": "estado==0"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "detector 2/3 fios; contato NA/NC",
+  "evidencia": "desenho/sim FUN_00671c60; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "7564": {
+  "nome": "Barrera foto. receptor NC 3 hilos NPN",
+  "aba": "Sensores / detectores",
+  "papel": "sensor_NC",
+  "pinos": [
+   "1",
+   "2",
+   "S"
+  ],
+  "designacao_padrao": "-B",
+  "aciona_por": "clique (momentâneo, estado=1 ao pressionar)",
+  "contatos": [
+   {
+    "pinos": [
+     "1",
+     "2"
+    ],
+    "fecha_quando": "estado==0"
+   },
+   {
+    "pinos": [
+     "1",
+     "S"
+    ],
+    "fecha_quando": "estado==0"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "detector 2/3 fios; contato NA/NC",
+  "evidencia": "desenho/sim FUN_00671c60; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "7570": {
+  "nome": "Presostato NA 2 hilos",
+  "aba": "Sensores / detectores",
+  "papel": "sensor_NA",
+  "pinos": [
+   "1",
+   "2"
+  ],
+  "designacao_padrao": "-B",
+  "aciona_por": "clique (momentâneo, estado=1 ao pressionar)",
+  "contatos": [
+   {
+    "pinos": [
+     "1",
+     "2"
+    ],
+    "fecha_quando": "estado==1"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "detector 2/3 fios; contato NA/NC",
+  "evidencia": "desenho/sim FUN_00655820; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "7571": {
+  "nome": "Presostato NA 3 hilos PNP",
+  "aba": "Sensores / detectores",
+  "papel": "sensor_NA",
+  "pinos": [
+   "p1",
+   "p2",
+   "p3"
+  ],
+  "designacao_padrao": "-B",
+  "aciona_por": "clique (momentâneo, estado=1 ao pressionar)",
+  "estado_inicial": 0,
+  "nota": "detector 2/3 fios; contato NA/NC",
+  "evidencia": "desenho/sim FUN_006572b0; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "7572": {
+  "nome": "Presostato NA 3 hilos NPN",
+  "aba": "Sensores / detectores",
+  "papel": "sensor_NA",
+  "pinos": [
+   "p1",
+   "p2",
+   "p3"
+  ],
+  "designacao_padrao": "-B",
+  "aciona_por": "clique (momentâneo, estado=1 ao pressionar)",
+  "estado_inicial": 0,
+  "nota": "detector 2/3 fios; contato NA/NC",
+  "evidencia": "desenho/sim FUN_006572b0; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "7573": {
+  "nome": "Presostato NA 2 hilos",
+  "aba": "Sensores / detectores",
+  "papel": "sensor_NA",
+  "pinos": [
+   "1",
+   "2"
+  ],
+  "designacao_padrao": "-B",
+  "aciona_por": "clique (momentâneo, estado=1 ao pressionar)",
+  "contatos": [
+   {
+    "pinos": [
+     "1",
+     "2"
+    ],
+    "fecha_quando": "estado==1"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "detector 2/3 fios; contato NA/NC",
+  "evidencia": "desenho/sim FUN_00659330; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "7574": {
+  "nome": "Presostato NA 3 hilos PNP",
+  "aba": "Sensores / detectores",
+  "papel": "sensor_NA",
+  "pinos": [
+   "1",
+   "2",
+   "S"
+  ],
+  "designacao_padrao": "-B",
+  "aciona_por": "clique (momentâneo, estado=1 ao pressionar)",
+  "contatos": [
+   {
+    "pinos": [
+     "1",
+     "2"
+    ],
+    "fecha_quando": "estado==1"
+   },
+   {
+    "pinos": [
+     "1",
+     "S"
+    ],
+    "fecha_quando": "estado==1"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "detector 2/3 fios; contato NA/NC",
+  "evidencia": "desenho/sim FUN_0065ad30; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "7575": {
+  "nome": "Presostato NA 3 hilos NPN",
+  "aba": "Sensores / detectores",
+  "papel": "sensor_NA",
+  "pinos": [
+   "1",
+   "2",
+   "S"
+  ],
+  "designacao_padrao": "-B",
+  "aciona_por": "clique (momentâneo, estado=1 ao pressionar)",
+  "contatos": [
+   {
+    "pinos": [
+     "1",
+     "2"
+    ],
+    "fecha_quando": "estado==1"
+   },
+   {
+    "pinos": [
+     "1",
+     "S"
+    ],
+    "fecha_quando": "estado==1"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "detector 2/3 fios; contato NA/NC",
+  "evidencia": "desenho/sim FUN_0065ad30; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "7576": {
+  "nome": "Vacuostato NA 2 hilos",
+  "aba": "Sensores / detectores",
+  "papel": "sensor_NA",
+  "pinos": [
+   "1",
+   "2"
+  ],
+  "designacao_padrao": "-B",
+  "aciona_por": "clique (momentâneo, estado=1 ao pressionar)",
+  "contatos": [
+   {
+    "pinos": [
+     "1",
+     "2"
+    ],
+    "fecha_quando": "estado==1"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "detector 2/3 fios; contato NA/NC",
+  "evidencia": "desenho/sim FUN_00655820; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "7577": {
+  "nome": "Vacuostato NA 3 hilos PNP",
+  "aba": "Sensores / detectores",
+  "papel": "sensor_NA",
+  "pinos": [
+   "p1",
+   "p2",
+   "p3"
+  ],
+  "designacao_padrao": "-B",
+  "aciona_por": "clique (momentâneo, estado=1 ao pressionar)",
+  "estado_inicial": 0,
+  "nota": "detector 2/3 fios; contato NA/NC",
+  "evidencia": "desenho/sim FUN_006572b0; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "7578": {
+  "nome": "Vacuostato NA 3 hilos NPN",
+  "aba": "Sensores / detectores",
+  "papel": "sensor_NA",
+  "pinos": [
+   "p1",
+   "p2",
+   "p3"
+  ],
+  "designacao_padrao": "-B",
+  "aciona_por": "clique (momentâneo, estado=1 ao pressionar)",
+  "estado_inicial": 0,
+  "nota": "detector 2/3 fios; contato NA/NC",
+  "evidencia": "desenho/sim FUN_006572b0; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "7579": {
+  "nome": "Vacuostato NA 2 hilos",
+  "aba": "Sensores / detectores",
+  "papel": "sensor_NA",
+  "pinos": [
+   "1",
+   "2"
+  ],
+  "designacao_padrao": "-B",
+  "aciona_por": "clique (momentâneo, estado=1 ao pressionar)",
+  "contatos": [
+   {
+    "pinos": [
+     "1",
+     "2"
+    ],
+    "fecha_quando": "estado==1"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "detector 2/3 fios; contato NA/NC",
+  "evidencia": "desenho/sim FUN_00659330; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "7580": {
+  "nome": "Vacuostato NA 3 hilos PNP",
+  "aba": "Sensores / detectores",
+  "papel": "sensor_NA",
+  "pinos": [
+   "1",
+   "2",
+   "S"
+  ],
+  "designacao_padrao": "-B",
+  "aciona_por": "clique (momentâneo, estado=1 ao pressionar)",
+  "contatos": [
+   {
+    "pinos": [
+     "1",
+     "2"
+    ],
+    "fecha_quando": "estado==1"
+   },
+   {
+    "pinos": [
+     "1",
+     "S"
+    ],
+    "fecha_quando": "estado==1"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "detector 2/3 fios; contato NA/NC",
+  "evidencia": "desenho/sim FUN_0065ad30; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "7581": {
+  "nome": "Vacuostato NA 3 hilos NPN",
+  "aba": "Sensores / detectores",
+  "papel": "sensor_NA",
+  "pinos": [
+   "1",
+   "2",
+   "S"
+  ],
+  "designacao_padrao": "-B",
+  "aciona_por": "clique (momentâneo, estado=1 ao pressionar)",
+  "contatos": [
+   {
+    "pinos": [
+     "1",
+     "2"
+    ],
+    "fecha_quando": "estado==1"
+   },
+   {
+    "pinos": [
+     "1",
+     "S"
+    ],
+    "fecha_quando": "estado==1"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "detector 2/3 fios; contato NA/NC",
+  "evidencia": "desenho/sim FUN_0065ad30; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "7582": {
+  "nome": "Presostato NC 2 hilos",
+  "aba": "Sensores / detectores",
+  "papel": "sensor_NC",
+  "pinos": [
+   "1",
+   "2"
+  ],
+  "designacao_padrao": "-B",
+  "aciona_por": "clique (momentâneo, estado=1 ao pressionar)",
+  "contatos": [
+   {
+    "pinos": [
+     "1",
+     "2"
+    ],
+    "fecha_quando": "estado==0"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "detector 2/3 fios; contato NA/NC",
+  "evidencia": "desenho/sim FUN_0065ce40; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "7583": {
+  "nome": null,
+  "aba": "Sensores / detectores",
+  "papel": "sensor",
+  "pinos": [
+   "p1",
+   "p2",
+   "p3"
+  ],
+  "designacao_padrao": "-B",
+  "aciona_por": "clique (momentâneo, estado=1 ao pressionar)",
+  "estado_inicial": 0,
+  "nota": "detector 2/3 fios; contato NA/NC",
+  "evidencia": "desenho/sim FUN_0065e910",
+  "nome_ausente_no_binario": true,
+  "confianca": "baixa"
+ },
+ "7584": {
+  "nome": "Presostato NC 3 hilos NPN",
+  "aba": "Sensores / detectores",
+  "papel": "sensor_NC",
+  "pinos": [
+   "p1",
+   "p2",
+   "p3"
+  ],
+  "designacao_padrao": "-B",
+  "aciona_por": "clique (momentâneo, estado=1 ao pressionar)",
+  "estado_inicial": 0,
+  "nota": "detector 2/3 fios; contato NA/NC",
+  "evidencia": "desenho/sim FUN_0065e910; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "7585": {
+  "nome": "Presostato NC 2 hilos",
+  "aba": "Sensores / detectores",
+  "papel": "sensor_NC",
+  "pinos": [
+   "1",
+   "2"
+  ],
+  "designacao_padrao": "-B",
+  "aciona_por": "clique (momentâneo, estado=1 ao pressionar)",
+  "contatos": [
+   {
+    "pinos": [
+     "1",
+     "2"
+    ],
+    "fecha_quando": "estado==0"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "detector 2/3 fios; contato NA/NC",
+  "evidencia": "desenho/sim FUN_006609d0; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "7586": {
+  "nome": "Presostato NC 3 hilos PNP",
+  "aba": "Sensores / detectores",
+  "papel": "sensor_NC",
+  "pinos": [
+   "1",
+   "2",
+   "S"
+  ],
+  "designacao_padrao": "-B",
+  "aciona_por": "clique (momentâneo, estado=1 ao pressionar)",
+  "contatos": [
+   {
+    "pinos": [
+     "1",
+     "2"
+    ],
+    "fecha_quando": "estado==0"
+   },
+   {
+    "pinos": [
+     "1",
+     "S"
+    ],
+    "fecha_quando": "estado==0"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "detector 2/3 fios; contato NA/NC",
+  "evidencia": "desenho/sim FUN_00662410; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "7587": {
+  "nome": "Presostato NC 3 hilos NPN",
+  "aba": "Sensores / detectores",
+  "papel": "sensor_NC",
+  "pinos": [
+   "1",
+   "2",
+   "S"
+  ],
+  "designacao_padrao": "-B",
+  "aciona_por": "clique (momentâneo, estado=1 ao pressionar)",
+  "contatos": [
+   {
+    "pinos": [
+     "1",
+     "2"
+    ],
+    "fecha_quando": "estado==0"
+   },
+   {
+    "pinos": [
+     "1",
+     "S"
+    ],
+    "fecha_quando": "estado==0"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "detector 2/3 fios; contato NA/NC",
+  "evidencia": "desenho/sim FUN_00662410; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "7588": {
+  "nome": "Vacuostato NC 2 hilos",
+  "aba": "Sensores / detectores",
+  "papel": "sensor_NC",
+  "pinos": [
+   "1",
+   "2"
+  ],
+  "designacao_padrao": "-B",
+  "aciona_por": "clique (momentâneo, estado=1 ao pressionar)",
+  "contatos": [
+   {
+    "pinos": [
+     "1",
+     "2"
+    ],
+    "fecha_quando": "estado==0"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "detector 2/3 fios; contato NA/NC",
+  "evidencia": "desenho/sim FUN_0065ce40; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "7589": {
+  "nome": "Vacuostato NC 3 hilos PNP",
+  "aba": "Sensores / detectores",
+  "papel": "sensor_NC",
+  "pinos": [
+   "p1",
+   "p2",
+   "p3"
+  ],
+  "designacao_padrao": "-B",
+  "aciona_por": "clique (momentâneo, estado=1 ao pressionar)",
+  "estado_inicial": 0,
+  "nota": "detector 2/3 fios; contato NA/NC",
+  "evidencia": "desenho/sim FUN_0065e910; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "7590": {
+  "nome": "Vacuostato NC 3 hilos NPN",
+  "aba": "Sensores / detectores",
+  "papel": "sensor_NC",
+  "pinos": [
+   "p1",
+   "p2",
+   "p3"
+  ],
+  "designacao_padrao": "-B",
+  "aciona_por": "clique (momentâneo, estado=1 ao pressionar)",
+  "estado_inicial": 0,
+  "nota": "detector 2/3 fios; contato NA/NC",
+  "evidencia": "desenho/sim FUN_0065e910; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "7591": {
+  "nome": "Vacuostato NC 2 hilos",
+  "aba": "Sensores / detectores",
+  "papel": "sensor_NC",
+  "pinos": [
+   "1",
+   "2"
+  ],
+  "designacao_padrao": "-B",
+  "aciona_por": "clique (momentâneo, estado=1 ao pressionar)",
+  "contatos": [
+   {
+    "pinos": [
+     "1",
+     "2"
+    ],
+    "fecha_quando": "estado==0"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "detector 2/3 fios; contato NA/NC",
+  "evidencia": "desenho/sim FUN_006609d0; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "7592": {
+  "nome": "Vacuostato NC 3 hilos PNP",
+  "aba": "Sensores / detectores",
+  "papel": "sensor_NC",
+  "pinos": [
+   "1",
+   "2",
+   "S"
+  ],
+  "designacao_padrao": "-B",
+  "aciona_por": "clique (momentâneo, estado=1 ao pressionar)",
+  "contatos": [
+   {
+    "pinos": [
+     "1",
+     "2"
+    ],
+    "fecha_quando": "estado==0"
+   },
+   {
+    "pinos": [
+     "1",
+     "S"
+    ],
+    "fecha_quando": "estado==0"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "detector 2/3 fios; contato NA/NC",
+  "evidencia": "desenho/sim FUN_00662410; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "7593": {
+  "nome": "Vacuostato NC 3 hilos NPN",
+  "aba": "Sensores / detectores",
+  "papel": "sensor_NC",
+  "pinos": [
+   "1",
+   "2",
+   "S"
+  ],
+  "designacao_padrao": "-B",
+  "aciona_por": "clique (momentâneo, estado=1 ao pressionar)",
+  "contatos": [
+   {
+    "pinos": [
+     "1",
+     "2"
+    ],
+    "fecha_quando": "estado==0"
+   },
+   {
+    "pinos": [
+     "1",
+     "S"
+    ],
+    "fecha_quando": "estado==0"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "detector 2/3 fios; contato NA/NC",
+  "evidencia": "desenho/sim FUN_00662410; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "7594": {
+  "nome": "Termostato NA 2 hilos",
+  "aba": "Sensores / detectores",
+  "papel": "sensor_NA",
+  "pinos": [
+   "1",
+   "2"
+  ],
+  "designacao_padrao": "-B",
+  "aciona_por": "clique (momentâneo, estado=1 ao pressionar)",
+  "contatos": [
+   {
+    "pinos": [
+     "1",
+     "2"
+    ],
+    "fecha_quando": "estado==1"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "detector 2/3 fios; contato NA/NC",
+  "evidencia": "desenho/sim FUN_00655820; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "7595": {
+  "nome": "Termostato NA 3 hilos NPN",
+  "aba": "Sensores / detectores",
+  "papel": "sensor_NA",
+  "pinos": [
+   "p1",
+   "p2",
+   "p3"
+  ],
+  "designacao_padrao": "-B",
+  "aciona_por": "clique (momentâneo, estado=1 ao pressionar)",
+  "estado_inicial": 0,
+  "nota": "detector 2/3 fios; contato NA/NC",
+  "evidencia": "desenho/sim FUN_006572b0; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "7596": {
+  "nome": null,
+  "aba": "Sensores / detectores",
+  "papel": "sensor",
+  "pinos": [
+   "p1",
+   "p2",
+   "p3"
+  ],
+  "designacao_padrao": "-B",
+  "aciona_por": "clique (momentâneo, estado=1 ao pressionar)",
+  "estado_inicial": 0,
+  "nota": "detector 2/3 fios; contato NA/NC",
+  "evidencia": "desenho/sim FUN_006572b0",
+  "nome_ausente_no_binario": true,
+  "confianca": "baixa"
+ },
+ "7597": {
+  "nome": null,
+  "aba": "Sensores / detectores",
+  "papel": "sensor",
+  "pinos": [
+   "1",
+   "2"
+  ],
+  "designacao_padrao": "-B",
+  "aciona_por": "clique (momentâneo, estado=1 ao pressionar)",
+  "contatos": [
+   {
+    "pinos": [
+     "1",
+     "2"
+    ],
+    "fecha_quando": "estado==1"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "detector 2/3 fios; contato NA/NC",
+  "evidencia": "desenho/sim FUN_00659330",
+  "nome_ausente_no_binario": true,
+  "confianca": "baixa"
+ },
+ "7598": {
+  "nome": null,
+  "aba": "Sensores / detectores",
+  "papel": "sensor",
+  "pinos": [
+   "1",
+   "2",
+   "S"
+  ],
+  "designacao_padrao": "-B",
+  "aciona_por": "clique (momentâneo, estado=1 ao pressionar)",
+  "contatos": [
+   {
+    "pinos": [
+     "1",
+     "2"
+    ],
+    "fecha_quando": "estado==1"
+   },
+   {
+    "pinos": [
+     "1",
+     "S"
+    ],
+    "fecha_quando": "estado==1"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "detector 2/3 fios; contato NA/NC",
+  "evidencia": "desenho/sim FUN_0065ad30",
+  "nome_ausente_no_binario": true,
+  "confianca": "baixa"
+ },
+ "7599": {
+  "nome": null,
+  "aba": "Sensores / detectores",
+  "papel": "sensor",
+  "pinos": [
+   "1",
+   "2",
+   "S"
+  ],
+  "designacao_padrao": "-B",
+  "aciona_por": "clique (momentâneo, estado=1 ao pressionar)",
+  "contatos": [
+   {
+    "pinos": [
+     "1",
+     "2"
+    ],
+    "fecha_quando": "estado==1"
+   },
+   {
+    "pinos": [
+     "1",
+     "S"
+    ],
+    "fecha_quando": "estado==1"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "detector 2/3 fios; contato NA/NC",
+  "evidencia": "desenho/sim FUN_0065ad30",
+  "nome_ausente_no_binario": true,
+  "confianca": "baixa"
+ },
+ "7600": {
+  "nome": "Termostato NC 2 hilos",
+  "aba": "Sensores / detectores",
+  "papel": "sensor_NC",
+  "pinos": [
+   "1",
+   "2"
+  ],
+  "designacao_padrao": "-B",
+  "aciona_por": "clique (momentâneo, estado=1 ao pressionar)",
+  "contatos": [
+   {
+    "pinos": [
+     "1",
+     "2"
+    ],
+    "fecha_quando": "estado==0"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "detector 2/3 fios; contato NA/NC",
+  "evidencia": "desenho/sim FUN_0065ce40; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "7601": {
+  "nome": "Termostato NC 3 hilos PNP",
+  "aba": "Sensores / detectores",
+  "papel": "sensor_NC",
+  "pinos": [
+   "p1",
+   "p2",
+   "p3"
+  ],
+  "designacao_padrao": "-B",
+  "aciona_por": "clique (momentâneo, estado=1 ao pressionar)",
+  "estado_inicial": 0,
+  "nota": "detector 2/3 fios; contato NA/NC",
+  "evidencia": "desenho/sim FUN_0065e910; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "7602": {
+  "nome": "Termostato NC 3 hilos NPN",
+  "aba": "Sensores / detectores",
+  "papel": "sensor_NC",
+  "pinos": [
+   "p1",
+   "p2",
+   "p3"
+  ],
+  "designacao_padrao": "-B",
+  "aciona_por": "clique (momentâneo, estado=1 ao pressionar)",
+  "estado_inicial": 0,
+  "nota": "detector 2/3 fios; contato NA/NC",
+  "evidencia": "desenho/sim FUN_0065e910; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "7603": {
+  "nome": "Termostato NC 2 hilos",
+  "aba": "Sensores / detectores",
+  "papel": "sensor_NC",
+  "pinos": [
+   "1",
+   "2"
+  ],
+  "designacao_padrao": "-B",
+  "aciona_por": "clique (momentâneo, estado=1 ao pressionar)",
+  "contatos": [
+   {
+    "pinos": [
+     "1",
+     "2"
+    ],
+    "fecha_quando": "estado==0"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "detector 2/3 fios; contato NA/NC",
+  "evidencia": "desenho/sim FUN_006609d0; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "7604": {
+  "nome": "Termostato NC 3 hilos PNP",
+  "aba": "Sensores / detectores",
+  "papel": "sensor_NC",
+  "pinos": [
+   "1",
+   "2",
+   "S"
+  ],
+  "designacao_padrao": "-B",
+  "aciona_por": "clique (momentâneo, estado=1 ao pressionar)",
+  "contatos": [
+   {
+    "pinos": [
+     "1",
+     "2"
+    ],
+    "fecha_quando": "estado==0"
+   },
+   {
+    "pinos": [
+     "1",
+     "S"
+    ],
+    "fecha_quando": "estado==0"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "detector 2/3 fios; contato NA/NC",
+  "evidencia": "desenho/sim FUN_00662410; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "7605": {
+  "nome": "Termostato NC 3 hilos NPN",
+  "aba": "Sensores / detectores",
+  "papel": "sensor_NC",
+  "pinos": [
+   "1",
+   "2",
+   "S"
+  ],
+  "designacao_padrao": "-B",
+  "aciona_por": "clique (momentâneo, estado=1 ao pressionar)",
+  "contatos": [
+   {
+    "pinos": [
+     "1",
+     "2"
+    ],
+    "fecha_quando": "estado==0"
+   },
+   {
+    "pinos": [
+     "1",
+     "S"
+    ],
+    "fecha_quando": "estado==0"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "detector 2/3 fios; contato NA/NC",
+  "evidencia": "desenho/sim FUN_00662410; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "7883": {
+  "nome": "Presostato NC 3 hilos PNP",
+  "aba": "Botões, interruptores, fins de curso",
+  "papel": "outro",
+  "estado_inicial": 0,
+  "evidencia": "nome cmpstr",
+  "confianca": "baixa"
+ },
+ "8000": {
+  "nome": "Contacto pulsador NA",
+  "aba": "Botões, interruptores, fins de curso",
+  "papel": "botao_NA",
+  "pinos": [
+   "13",
+   "14"
+  ],
+  "designacao_padrao": "-S",
+  "aciona_por": "entrada externa (clique momentâneo: estado=1 enquanto pressionado)",
+  "contatos": [
+   {
+    "pinos": [
+     "13",
+     "14"
+    ],
+    "fecha_quando": "estado==1"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "pulsador NA; clique em FUN_0043ee20 (pressionar => estado=1 e propaga a mesmo rótulo)",
+  "evidencia": "FUN_005ea9b0 (decompilada); desenho/sim FUN_005ea9b0; nome FUN_0087aca0",
+  "confianca": "alta"
+ },
+ "8001": {
+  "nome": "Contacto pulsador NC",
+  "aba": "Botões, interruptores, fins de curso",
+  "papel": "botao_NC",
+  "pinos": [
+   "11",
+   "12"
+  ],
+  "designacao_padrao": "-S",
+  "aciona_por": "entrada externa (clique momentâneo)",
+  "contatos": [
+   {
+    "pinos": [
+     "11",
+     "12"
+    ],
+    "fecha_quando": "estado==0"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "pulsador NC; clique em FUN_0043ee20 (pressionar => estado=1 e propaga a mesmo rótulo)",
+  "evidencia": "FUN_005ec030 (decompilada); desenho/sim FUN_005ec030; nome FUN_0087aca0",
+  "confianca": "alta"
+ },
+ "8002": {
+  "nome": "Contacto pulsador NA-NC",
+  "aba": "Botões, interruptores, fins de curso",
+  "papel": "botao_NA_NC",
+  "pinos": [
+   "11",
+   "13",
+   "12",
+   "14"
+  ],
+  "designacao_padrao": "-S",
+  "aciona_por": "entrada externa (clique momentâneo)",
+  "contatos": [
+   {
+    "pinos": [
+     "11",
+     "12"
+    ],
+    "fecha_quando": "estado==0"
+   },
+   {
+    "pinos": [
+     "13",
+     "14"
+    ],
+    "fecha_quando": "estado==1"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "pulsador duplo/comutado",
+  "evidencia": "desenho/sim FUN_005ed880; nome FUN_0087aca0",
+  "confianca": "media"
+ },
+ "8003": {
+  "nome": "Contacto pulsador conmutado",
+  "aba": "Botões, interruptores, fins de curso",
+  "papel": "botao_comutado",
+  "pinos": [
+   "11",
+   "12",
+   "14"
+  ],
+  "designacao_padrao": "-S",
+  "aciona_por": "entrada externa (clique momentâneo)",
+  "contatos": [
+   {
+    "pinos": [
+     "11",
+     "12"
+    ],
+    "fecha_quando": "estado==0"
+   },
+   {
+    "pinos": [
+     "11",
+     "14"
+    ],
+    "fecha_quando": "estado==1"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "pulsador duplo/comutado",
+  "evidencia": "desenho/sim FUN_006046e0; nome FUN_0087aca0",
+  "confianca": "media"
+ },
+ "8004": {
+  "nome": "Contacto pulsador seta NA",
+  "aba": "Botões, interruptores, fins de curso",
+  "papel": "botao_NA",
+  "pinos": [
+   "13",
+   "14"
+  ],
+  "designacao_padrao": "-S",
+  "aciona_por": "entrada externa (clique momentâneo: estado=1 enquanto pressionado)",
+  "contatos": [
+   {
+    "pinos": [
+     "13",
+     "14"
+    ],
+    "fecha_quando": "estado==1"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "pulsador NA; clique em FUN_0043ee20 (pressionar => estado=1 e propaga a mesmo rótulo)",
+  "evidencia": "desenho/sim FUN_00606590; nome FUN_0087aca0",
+  "confianca": "media"
+ },
+ "8005": {
+  "nome": "Contacto pulsador seta NC",
+  "aba": "Botões, interruptores, fins de curso",
+  "papel": "botao_NC",
+  "pinos": [
+   "11",
+   "12"
+  ],
+  "designacao_padrao": "-S",
+  "aciona_por": "entrada externa (clique momentâneo)",
+  "contatos": [
+   {
+    "pinos": [
+     "11",
+     "12"
+    ],
+    "fecha_quando": "estado==0"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "pulsador NC; clique em FUN_0043ee20 (pressionar => estado=1 e propaga a mesmo rótulo)",
+  "evidencia": "desenho/sim FUN_00607ad0; nome FUN_0087aca0",
+  "confianca": "media"
+ },
+ "8006": {
+  "nome": "Contacto pulsador seta NA-NC",
+  "aba": "Botões, interruptores, fins de curso",
+  "papel": "botao_NA_NC",
+  "pinos": [
+   "11",
+   "13",
+   "12",
+   "14"
+  ],
+  "designacao_padrao": "-S",
+  "aciona_por": "entrada externa (clique momentâneo)",
+  "contatos": [
+   {
+    "pinos": [
+     "11",
+     "12"
+    ],
+    "fecha_quando": "estado==0"
+   },
+   {
+    "pinos": [
+     "13",
+     "14"
+    ],
+    "fecha_quando": "estado==1"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "pulsador duplo/comutado",
+  "evidencia": "desenho/sim FUN_006091e0; nome FUN_0087aca0",
+  "confianca": "media"
+ },
+ "8007": {
+  "nome": "Contacto pulsador seta conmutado",
+  "aba": "Botões, interruptores, fins de curso",
+  "papel": "botao_comutado",
+  "pinos": [
+   "11",
+   "12",
+   "14"
+  ],
+  "designacao_padrao": "-S",
+  "aciona_por": "entrada externa (clique momentâneo)",
+  "contatos": [
+   {
+    "pinos": [
+     "11",
+     "12"
+    ],
+    "fecha_quando": "estado==0"
+   },
+   {
+    "pinos": [
+     "11",
+     "14"
+    ],
+    "fecha_quando": "estado==1"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "pulsador duplo/comutado",
+  "evidencia": "desenho/sim FUN_0060b6e0; nome FUN_0087aca0",
+  "confianca": "media"
+ },
+ "8008": {
+  "nome": "Contacto interruptor NA",
+  "aba": "Botões, interruptores, fins de curso",
+  "papel": "interruptor",
+  "pinos": [
+   "13",
+   "14"
+  ],
+  "designacao_padrao": "-S",
+  "aciona_por": "clique (alterna, retentivo)",
+  "contatos": [
+   {
+    "pinos": [
+     "13",
+     "14"
+    ],
+    "fecha_quando": "estado==1"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "contato de interruptor/seletor retentivo: NA",
+  "evidencia": "desenho/sim FUN_0060d560; nome FUN_0087aca0",
+  "confianca": "media"
+ },
+ "8009": {
+  "nome": "Contacto interruptor NC",
+  "aba": "Botões, interruptores, fins de curso",
+  "papel": "interruptor",
+  "pinos": [
+   "11",
+   "12"
+  ],
+  "designacao_padrao": "-S",
+  "aciona_por": "clique (alterna, retentivo)",
+  "contatos": [
+   {
+    "pinos": [
+     "11",
+     "12"
+    ],
+    "fecha_quando": "estado==0"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "contato de interruptor/seletor retentivo: NC",
+  "evidencia": "desenho/sim FUN_0060ebe0; nome FUN_0087aca0",
+  "confianca": "media"
+ },
+ "8010": {
+  "nome": "Contacto interruptor NA-NC",
+  "aba": "Botões, interruptores, fins de curso",
+  "papel": "interruptor",
+  "pinos": [
+   "11",
+   "13",
+   "12",
+   "14"
+  ],
+  "designacao_padrao": "-S",
+  "aciona_por": "clique (alterna, retentivo)",
+  "contatos": [
+   {
+    "pinos": [
+     "11",
+     "12"
+    ],
+    "fecha_quando": "estado==0"
+   },
+   {
+    "pinos": [
+     "13",
+     "14"
+    ],
+    "fecha_quando": "estado==1"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "contato de interruptor/seletor retentivo: NA-NC",
+  "evidencia": "desenho/sim FUN_00610430; nome FUN_0087aca0",
+  "confianca": "media"
+ },
+ "8011": {
+  "nome": "Contacto interruptor conmutado",
+  "aba": "Botões, interruptores, fins de curso",
+  "papel": "interruptor",
+  "pinos": [
+   "11",
+   "12",
+   "14"
+  ],
+  "designacao_padrao": "-S",
+  "aciona_por": "clique (alterna, retentivo)",
+  "contatos": [
+   {
+    "pinos": [
+     "11",
+     "12"
+    ],
+    "fecha_quando": "estado==0"
+   },
+   {
+    "pinos": [
+     "11",
+     "14"
+    ],
+    "fecha_quando": "estado==1"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "contato de interruptor/seletor retentivo: comutado",
+  "evidencia": "desenho/sim FUN_00612a70; nome FUN_0087aca0",
+  "confianca": "media"
+ },
+ "8012": {
+  "nome": "Contacto final de carrera NA",
+  "aba": "Botões, interruptores, fins de curso",
+  "papel": "fim_de_curso",
+  "pinos": [
+   "13",
+   "14"
+  ],
+  "designacao_padrao": "-S",
+  "aciona_por": "entrada externa (clique momentâneo)",
+  "contatos": [
+   {
+    "pinos": [
+     "13",
+     "14"
+    ],
+    "fecha_quando": "estado==1"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "fim de curso NA; clique em FUN_0043ee20 (pressionar => estado=1 e propaga a mesmo rótulo)",
+  "evidencia": "desenho/sim FUN_00614920; nome FUN_0087aca0",
+  "confianca": "media"
+ },
+ "8013": {
+  "nome": "Contacto final de carrera NC",
+  "aba": "Botões, interruptores, fins de curso",
+  "papel": "fim_de_curso",
+  "pinos": [
+   "11",
+   "12"
+  ],
+  "designacao_padrao": "-S",
+  "aciona_por": "entrada externa (clique momentâneo)",
+  "contatos": [
+   {
+    "pinos": [
+     "11",
+     "12"
+    ],
+    "fecha_quando": "estado==0"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "fim de curso NC; clique em FUN_0043ee20 (pressionar => estado=1 e propaga a mesmo rótulo)",
+  "evidencia": "desenho/sim FUN_00615d10; nome FUN_0087aca0",
+  "confianca": "media"
+ },
+ "8014": {
+  "nome": "Contacto final de carrera NA-NC",
+  "aba": "Botões, interruptores, fins de curso",
+  "papel": "fim_de_curso",
+  "pinos": [
+   "11",
+   "13",
+   "12",
+   "14"
+  ],
+  "designacao_padrao": "-S",
+  "aciona_por": "entrada externa (clique momentâneo)",
+  "contatos": [
+   {
+    "pinos": [
+     "11",
+     "12"
+    ],
+    "fecha_quando": "estado==0"
+   },
+   {
+    "pinos": [
+     "13",
+     "14"
+    ],
+    "fecha_quando": "estado==1"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "fim de curso NA-NC",
+  "evidencia": "desenho/sim FUN_006172d0; nome FUN_0087aca0",
+  "confianca": "media"
+ },
+ "8015": {
+  "nome": "Contacto final de carrera conmutado",
+  "aba": "Botões, interruptores, fins de curso",
+  "papel": "fim_de_curso",
+  "pinos": [
+   "11",
+   "12",
+   "14"
+  ],
+  "designacao_padrao": "-S",
+  "aciona_por": "entrada externa (clique momentâneo)",
+  "contatos": [
+   {
+    "pinos": [
+     "11",
+     "12"
+    ],
+    "fecha_quando": "estado==0"
+   },
+   {
+    "pinos": [
+     "11",
+     "14"
+    ],
+    "fecha_quando": "estado==1"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "fim de curso comutado",
+  "evidencia": "desenho/sim FUN_00619680; nome FUN_0087aca0",
+  "confianca": "media"
+ },
+ "8016": {
+  "nome": "Contacto relé térmico NA (97-98)",
+  "aba": "Contatos auxiliares, temporizados e relés",
+  "papel": "contato_NA",
+  "pinos": [
+   "97",
+   "98"
+  ],
+  "designacao_padrao": "-F",
+  "aciona_por": "label igual ao do relé térmico 6007 (clique no 6007 dispara)",
+  "contatos": [
+   {
+    "pinos": [
+     "97",
+     "98"
+    ],
+    "fecha_quando": "estado==1"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "contato 97-98 do térmico (fecha quando disparado)",
+  "evidencia": "FUN_0061b2a0 (decompilada); desenho/sim FUN_0061b2a0",
+  "nome_ausente_no_binario": true,
+  "confianca": "alta"
+ },
+ "8017": {
+  "nome": "Contacto relé térmico NC (95-96)",
+  "aba": "Contatos auxiliares, temporizados e relés",
+  "papel": "contato_NC",
+  "pinos": [
+   "95",
+   "96"
+  ],
+  "designacao_padrao": "-F",
+  "aciona_por": "label igual ao do relé térmico 6007 (clique no 6007 dispara)",
+  "contatos": [
+   {
+    "pinos": [
+     "95",
+     "96"
+    ],
+    "fecha_quando": "estado==0"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "contato 95-96 do térmico (abre quando disparado)",
+  "evidencia": "FUN_0061ca70 (decompilada); desenho/sim FUN_0061ca70",
+  "nome_ausente_no_binario": true,
+  "confianca": "alta"
+ },
+ "8018": {
+  "nome": "Contacto relé térmico NA-NC (95-96/97-98)",
+  "aba": "Contatos auxiliares, temporizados e relés",
+  "papel": "contato_NA_NC",
+  "pinos": [
+   "95",
+   "96",
+   "97",
+   "98"
+  ],
+  "designacao_padrao": "-F",
+  "aciona_por": "label igual ao do relé térmico 6007",
+  "contatos": [
+   {
+    "pinos": [
+     "95",
+     "97"
+    ],
+    "fecha_quando": "estado==0"
+   },
+   {
+    "pinos": [
+     "96",
+     "98"
+    ],
+    "fecha_quando": "estado==1"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "contatos 95-96/97-98 do térmico",
+  "evidencia": "desenho/sim FUN_0061e410",
+  "nome_ausente_no_binario": true,
+  "confianca": "media"
+ },
+ "8019": {
+  "nome": "Contacto relé térmico conmutado (95-96-98)",
+  "aba": "Contatos auxiliares, temporizados e relés",
+  "papel": "contato_comutado",
+  "pinos": [
+   "95",
+   "96",
+   "98"
+  ],
+  "designacao_padrao": "-F",
+  "aciona_por": "label igual ao do relé térmico 6007",
+  "contatos": [
+   {
+    "pinos": [
+     "95",
+     "96"
+    ],
+    "fecha_quando": "estado==0"
+   },
+   {
+    "pinos": [
+     "95",
+     "98"
+    ],
+    "fecha_quando": "estado==1"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "contatos 95-96/97-98 do térmico",
+  "evidencia": "desenho/sim FUN_00620ba0",
+  "nome_ausente_no_binario": true,
+  "confianca": "media"
+ },
+ "8020": {
+  "nome": "Selector 2 posiciones (11-12-14)",
+  "aba": "Botões, interruptores, fins de curso",
+  "papel": "seletor",
+  "pinos": [
+   "11",
+   "12",
+   "14"
+  ],
+  "designacao_padrao": "-S",
+  "aciona_por": "clique (alterna)",
+  "contatos": [
+   {
+    "pinos": [
+     "11",
+     "12"
+    ],
+    "fecha_quando": "estado==1"
+   },
+   {
+    "pinos": [
+     "11",
+     "14"
+    ],
+    "fecha_quando": "estado==2"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "seletor 2 posições 11-12/11-14 (estados 1/2)",
+  "evidencia": "desenho/sim FUN_00622ba0",
+  "nome_ausente_no_binario": true,
+  "confianca": "baixa"
+ },
+ "8021": {
+  "nome": "Selector 3 posiciones (1-2-3-4)",
+  "aba": "Botões, interruptores, fins de curso",
+  "papel": "seletor",
+  "pinos": [
+   "1",
+   "2",
+   "3",
+   "4"
+  ],
+  "designacao_padrao": "-S",
+  "aciona_por": "clique (cicla 0->1->2)",
+  "contatos": [
+   {
+    "pinos": [
+     "1",
+     "3"
+    ],
+    "fecha_quando": "estado==0"
+   },
+   {
+    "pinos": [
+     "2",
+     "4"
+    ],
+    "fecha_quando": "estado==1"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "seletor 3 posições",
+  "evidencia": "desenho/sim FUN_006249e0",
+  "nome_ausente_no_binario": true,
+  "confianca": "media"
+ },
+ "8022": {
+  "nome": "Selector/llave (1-2-3-4)",
+  "aba": "Botões, interruptores, fins de curso",
+  "papel": "interruptor",
+  "pinos": [
+   "1",
+   "2",
+   "3",
+   "4"
+  ],
+  "designacao_padrao": "-S",
+  "aciona_por": "clique",
+  "contatos": [
+   {
+    "pinos": [
+     "1",
+     "3"
+    ],
+    "fecha_quando": "estado==0"
+   },
+   {
+    "pinos": [
+     "2",
+     "4"
+    ],
+    "fecha_quando": "estado==1"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "chave/botão (8022 alterna; 8023 momentâneo)",
+  "evidencia": "desenho/sim FUN_00626e50",
+  "nome_ausente_no_binario": true,
+  "confianca": "baixa"
+ },
+ "8023": {
+  "nome": "Botón pulsador",
+  "aba": "Botões, interruptores, fins de curso",
+  "papel": "interruptor",
+  "aciona_por": "clique",
+  "estado_inicial": 0,
+  "nota": "chave/botão (8022 alterna; 8023 momentâneo)",
+  "evidencia": "nome cmpstr",
+  "confianca": "baixa"
+ },
+ "8100": {
+  "nome": "Pulsador",
+  "aba": "Painel (botoeira/piloto/LED)",
+  "papel": "botao_NA",
+  "pinos": [
+   ".1",
+   ".3",
+   ".2",
+   ".4"
+  ],
+  "designacao_padrao": "-S",
+  "aciona_por": "clique/painel",
+  "contatos": [
+   {
+    "pinos": [
+     ".1",
+     ".2"
+    ],
+    "fecha_quando": "estado==0"
+   },
+   {
+    "pinos": [
+     ".3",
+     ".4"
+    ],
+    "fecha_quando": "estado==1"
+   }
+  ],
+  "estado_inicial": 0,
+  "nota": "elementos de painel com imagem (pulsador/piloto/LED/botoeira)",
+  "evidencia": "desenho/sim FUN_005efec0; nome FUN_0087aca0",
+  "confianca": "baixa"
+ },
+ "8101": {
+  "nome": "Piloto",
+  "aba": "Painel (botoeira/piloto/LED)",
+  "papel": "lampada",
+  "pinos": [
+   "X1",
+   "X2"
+  ],
+  "designacao_padrao": "-H",
+  "aciona_por": "clique/painel",
+  "estado_inicial": 0,
+  "nota": "elementos de painel com imagem (pulsador/piloto/LED/botoeira)",
+  "evidencia": "desenho/sim FUN_005f5a30; nome FUN_0087aca0",
+  "confianca": "baixa"
+ },
+ "8102": {
+  "nome": "Botonera",
+  "aba": "Painel (botoeira/piloto/LED)",
+  "papel": "outro",
+  "pinos": [
+   "13",
+   "14",
+   "13",
+   "14",
+   "11",
+   "12",
+   "13",
+   "14",
+   "X1",
+   "X1",
+   "X1",
+   "X1",
+   "X2"
+  ],
+  "designacao_padrao": "-H",
+  "aciona_por": "clique/painel",
+  "estado_inicial": 0,
+  "nota": "elementos de painel com imagem (pulsador/piloto/LED/botoeira)",
+  "evidencia": "desenho/sim FUN_005f96f0; nome FUN_0087aca0",
+  "confianca": "baixa"
+ },
+ "8103": {
+  "nome": "LED",
+  "aba": "Painel (botoeira/piloto/LED)",
+  "papel": "lampada",
+  "pinos": [
+   "p1",
+   "p2"
+  ],
+  "designacao_padrao": "-H",
+  "aciona_por": "clique/painel",
+  "estado_inicial": 0,
+  "nota": "elementos de painel com imagem (pulsador/piloto/LED/botoeira)",
+  "evidencia": "desenho/sim FUN_005f7d90; nome FUN_0087aca0",
+  "confianca": "baixa"
+ },
+ "9000": {
+  "nome": "Bobina monoestable",
+  "aba": "Bobinas e sinalização",
+  "papel": "bobina",
+  "pinos": [
+   "A1",
+   "A2"
+  ],
+  "designacao_padrao": "-K",
+  "aciona_por": "energiza com tensão entre os 2 pinos (pares de fase distintos, fase-N ou +/-)",
+  "estado_inicial": 0,
+  "nota": "bobina monoestável",
+  "evidencia": "FUN_006292a0 (decompilada); desenho/sim FUN_006292a0; nome FUN_0087aca0",
+  "confianca": "alta"
+ },
+ "9001": {
+  "nome": "Bobina biestable",
+  "aba": "Bobinas e sinalização",
+  "papel": "bobina",
+  "pinos": [
+   "A1",
+   "B1",
+   "A2"
+  ],
+  "designacao_padrao": "-K",
+  "aciona_por": "energiza com tensão entre os 2 pinos (pares de fase distintos, fase-N ou +/-)",
+  "estado_inicial": 0,
+  "nota": "biestável (A1 liga / B1 desliga)",
+  "evidencia": "desenho/sim FUN_0062a320; nome FUN_0087aca0",
+  "confianca": "media"
+ },
+ "9002": {
+  "nome": "Telerruptor",
+  "aba": "Bobinas e sinalização",
+  "papel": "bobina",
+  "pinos": [
+   "A1",
+   "A2"
+  ],
+  "designacao_padrao": "-KA",
+  "aciona_por": "energiza com tensão entre os 2 pinos (pares de fase distintos, fase-N ou +/-)",
+  "estado_inicial": 0,
+  "nota": "telerruptor (alterna a cada pulso)",
+  "evidencia": "desenho/sim FUN_0062b920; nome FUN_0087aca0",
+  "confianca": "media"
+ },
+ "9003": {
+  "nome": "Electroválvula",
+  "aba": "Bobinas e sinalização",
+  "papel": "bobina",
+  "pinos": [
+   "A1",
+   "A2"
+  ],
+  "designacao_padrao": "-EV",
+  "aciona_por": "tensão entre os pinos",
+  "estado_inicial": 0,
+  "nota": "eletroválvula (aciona pneumática por rótulo)",
+  "evidencia": "desenho/sim FUN_0062cb10; nome FUN_0087aca0",
+  "confianca": "media"
+ },
+ "9004": {
+  "nome": "Temporizador a la conexión",
+  "aba": "Bobinas e sinalização",
+  "papel": "temporizador_ON",
+  "pinos": [
+   "A1",
+   "A2"
+  ],
+  "designacao_padrao": "-K",
+  "aciona_por": "tensão entre os pinos",
+  "estado_inicial": 0,
+  "parametros": {
+   "tempo": "label5",
+   "unidade": "label4",
+   "ver": "_modelo.temporizador"
+  },
+  "nota": "retardo na energização",
+  "evidencia": "FUN_0062dbe0 (decompilada); desenho/sim FUN_0062dbe0; nome FUN_0087aca0",
+  "confianca": "alta"
+ },
+ "9005": {
+  "nome": "Temporizador a la desconexión",
+  "aba": "Bobinas e sinalização",
+  "papel": "temporizador_OFF",
+  "pinos": [
+   "A1",
+   "A2"
+  ],
+  "designacao_padrao": "-K",
+  "aciona_por": "tensão entre os pinos",
+  "estado_inicial": 0,
+  "parametros": {
+   "tempo": "label5",
+   "unidade": "label4",
+   "ver": "_modelo.temporizador"
+  },
+  "nota": "retardo na desenergização",
+  "evidencia": "desenho/sim FUN_0062f4e0; nome FUN_0087aca0",
+  "confianca": "media"
+ },
+ "9006": {
+  "nome": "Temporizador a la conexión desconexión",
+  "aba": "Bobinas e sinalização",
+  "papel": "temporizador_ON_OFF",
+  "pinos": [
+   "A1",
+   "A2"
+  ],
+  "designacao_padrao": "-K",
+  "aciona_por": "tensão entre os pinos",
+  "estado_inicial": 0,
+  "parametros": {
+   "tempo": "label5",
+   "unidade": "label4",
+   "ver": "_modelo.temporizador"
+  },
+  "nota": "retardo na energização e na desenergização",
+  "evidencia": "desenho/sim FUN_00630d40; nome FUN_0087aca0",
+  "confianca": "media"
+ },
+ "9007": {
+  "nome": "Temporizador intermitente",
+  "aba": "Bobinas e sinalização",
+  "papel": "temporizador_intermitente",
+  "pinos": [
+   "A1",
+   "A2"
+  ],
+  "designacao_padrao": "-K",
+  "aciona_por": "tensão entre os pinos",
+  "estado_inicial": 0,
+  "parametros": {
+   "tempo": "label5",
+   "unidade": "label4",
+   "ver": "_modelo.temporizador"
+  },
+  "nota": "pisca (alterna a saída a cada período)",
+  "evidencia": "desenho/sim FUN_00632a20; nome FUN_0087aca0",
+  "confianca": "media"
+ },
+ "9008": {
+  "nome": "Señalización óptica",
+  "aba": "Bobinas e sinalização",
+  "papel": "lampada",
+  "pinos": [
+   "X1",
+   "X2"
+  ],
+  "designacao_padrao": "-H",
+  "aciona_por": "tensão entre X1 e X2",
+  "estado_inicial": 0,
+  "parametros": {
+   "cor": "rótulo comparado com nomes de cor (Ordinal_813) — afeta só o desenho"
+  },
+  "nota": "sinalização óptica (9009 intermitente)",
+  "evidencia": "FUN_006367b0 (decompilada); desenho/sim FUN_006367b0; nome FUN_0087aca0",
+  "confianca": "alta"
+ },
+ "9009": {
+  "nome": "Señalización óptica intermitente",
+  "aba": "Bobinas e sinalização",
+  "papel": "lampada",
+  "pinos": [
+   "X1",
+   "X2"
+  ],
+  "designacao_padrao": "-H",
+  "aciona_por": "tensão entre X1 e X2",
+  "estado_inicial": 0,
+  "parametros": {
+   "cor": "rótulo comparado com nomes de cor (Ordinal_813) — afeta só o desenho"
+  },
+  "nota": "sinalização óptica (9009 intermitente)",
+  "evidencia": "desenho/sim FUN_0063e830; nome FUN_0087aca0",
+  "confianca": "media"
+ },
+ "9010": {
+  "nome": "Timbre",
+  "aba": "Bobinas e sinalização",
+  "papel": "sinalizador",
+  "pinos": [
+   "X1",
+   "X2"
+  ],
+  "designacao_padrao": "-H",
+  "aciona_por": "tensão entre X1 e X2",
+  "estado_inicial": 0,
+  "nota": "sinalização acústica (campainha, buzzer, sirene, buzina)",
+  "evidencia": "desenho/sim FUN_0063fc90; nome FUN_0087aca0",
+  "confianca": "media"
+ },
+ "9011": {
+  "nome": "Zumbador",
+  "aba": "Bobinas e sinalização",
+  "papel": "sinalizador",
+  "pinos": [
+   "X1",
+   "X2"
+  ],
+  "designacao_padrao": "-H",
+  "aciona_por": "tensão entre X1 e X2",
+  "estado_inicial": 0,
+  "nota": "sinalização acústica (campainha, buzzer, sirene, buzina)",
+  "evidencia": "desenho/sim FUN_00640e20; nome FUN_0087aca0",
+  "confianca": "media"
+ },
+ "9012": {
+  "nome": "Sirena",
+  "aba": "Bobinas e sinalização",
+  "papel": "sinalizador",
+  "pinos": [
+   "X1",
+   "X2"
+  ],
+  "designacao_padrao": "-H",
+  "aciona_por": "tensão entre X1 e X2",
+  "estado_inicial": 0,
+  "nota": "sinalização acústica (campainha, buzzer, sirene, buzina)",
+  "evidencia": "desenho/sim FUN_00641fb0; nome FUN_0087aca0",
+  "confianca": "media"
+ },
+ "9013": {
+  "nome": "Bocina",
+  "aba": "Bobinas e sinalização",
+  "papel": "sinalizador",
+  "pinos": [
+   "X1",
+   "X2"
+  ],
+  "designacao_padrao": "-H",
+  "aciona_por": "tensão entre X1 e X2",
+  "estado_inicial": 0,
+  "nota": "sinalização acústica (campainha, buzzer, sirene, buzina)",
+  "evidencia": "desenho/sim FUN_00642f50; nome FUN_0087aca0",
+  "confianca": "media"
+ },
+ "9014": {
+  "nome": "Bobina (A1 A2)",
+  "aba": "Bobinas e sinalização",
+  "papel": "bobina",
+  "pinos": [
+   "A1",
+   "A2"
+  ],
+  "designacao_padrao": "-K",
+  "aciona_por": "energiza com tensão entre os 2 pinos (pares de fase distintos, fase-N ou +/-)",
+  "estado_inicial": 0,
+  "nota": "bobina (variante)",
+  "evidencia": "desenho/sim FUN_00643fd0",
+  "nome_ausente_no_binario": true,
+  "confianca": "media"
+ },
+ "9015": {
+  "nome": "Temporizador generador de pulsos",
+  "aba": "Bobinas e sinalização",
+  "papel": "temporizador_pulso",
+  "pinos": [
+   "A1",
+   "A2"
+  ],
+  "designacao_padrao": "-K",
+  "aciona_por": "tensão entre os pinos",
+  "estado_inicial": 0,
+  "parametros": {
+   "tempo": "label5",
+   "unidade": "label4",
+   "ver": "_modelo.temporizador"
+  },
+  "nota": "gerador de pulsos",
+  "evidencia": "desenho/sim FUN_00634780; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "9016": {
+  "nome": "Contador (A1 C D R A2)",
+  "aba": "Bobinas e sinalização",
+  "papel": "outro",
+  "pinos": [
+   "A1",
+   "C",
+   "D",
+   "R",
+   "A2"
+  ],
+  "designacao_padrao": "-C",
+  "aciona_por": "tensão",
+  "estado_inicial": 0,
+  "nota": "contador (A1,C,D,R,A2)",
+  "evidencia": "desenho/sim FUN_00645c10",
+  "nome_ausente_no_binario": true,
+  "confianca": "baixa"
+ },
+ "9040": {
+  "nome": "Medidor (L1 L2 L3 N)",
+  "aba": "Bobinas e sinalização",
+  "papel": "outro",
+  "pinos": [
+   "L1",
+   "L2",
+   "L3",
+   "N"
+  ],
+  "designacao_padrao": "-C",
+  "estado_inicial": 0,
+  "nota": "medidores/proteções especiais (L1 L2 L3 N)",
+  "evidencia": "desenho/sim FUN_00648840",
+  "nome_ausente_no_binario": true,
+  "confianca": "baixa"
+ },
+ "9041": {
+  "nome": "Medidor (L1 L2 L3)",
+  "aba": "Bobinas e sinalização",
+  "papel": "outro",
+  "pinos": [
+   "L1",
+   "L2",
+   "L3"
+  ],
+  "designacao_padrao": "-C",
+  "estado_inicial": 0,
+  "nota": "medidores/proteções especiais (L1 L2 L3 N)",
+  "evidencia": "desenho/sim FUN_00649c70",
+  "nome_ausente_no_binario": true,
+  "confianca": "baixa"
+ },
+ "9042": {
+  "nome": "Medidor (L1 L2 L3 N)",
+  "aba": "Bobinas e sinalização",
+  "papel": "outro",
+  "pinos": [
+   "L1",
+   "L2",
+   "L3",
+   "N"
+  ],
+  "designacao_padrao": "-C",
+  "estado_inicial": 0,
+  "nota": "medidores/proteções especiais (L1 L2 L3 N)",
+  "evidencia": "desenho/sim FUN_0064ad20",
+  "nome_ausente_no_binario": true,
+  "confianca": "baixa"
+ },
+ "9043": {
+  "nome": "Medidor (L1 L2 L3)",
+  "aba": "Bobinas e sinalização",
+  "papel": "outro",
+  "pinos": [
+   "L1",
+   "L2",
+   "L3"
+  ],
+  "designacao_padrao": "-C",
+  "estado_inicial": 0,
+  "nota": "medidores/proteções especiais (L1 L2 L3 N)",
+  "evidencia": "desenho/sim FUN_0064c0d0",
+  "nome_ausente_no_binario": true,
+  "confianca": "baixa"
+ },
+ "9044": {
+  "nome": "Protección con bobina (1 3 / 2 4, A1 A2)",
+  "aba": "Bobinas e sinalização",
+  "papel": "outro",
+  "pinos": [
+   "1",
+   "3",
+   "2",
+   "4",
+   "A1",
+   "A2"
+  ],
+  "designacao_padrao": "-F",
+  "estado_inicial": 0,
+  "nota": "medidores/proteções especiais (L1 L2 L3 N)",
+  "evidencia": "desenho/sim FUN_0064d120",
+  "nome_ausente_no_binario": true,
+  "confianca": "baixa"
+ },
+ "9045": {
+  "nome": "Protección IIII (1-8)",
+  "aba": "Bobinas e sinalização",
+  "papel": "outro",
+  "pinos": [
+   "1",
+   "3",
+   "5",
+   "7",
+   "2",
+   "4",
+   "6",
+   "8",
+   "A1",
+   "A2",
+   "A1",
+   "A2",
+   "A1",
+   "A2"
+  ],
+  "designacao_padrao": "-F",
+  "estado_inicial": 0,
+  "nota": "medidores/proteções especiais (L1 L2 L3 N)",
+  "evidencia": "desenho/sim FUN_0064fbd0",
+  "nome_ausente_no_binario": true,
+  "confianca": "baixa"
+ },
+ "10000": {
+  "nome": "Función lógica AND 2",
+  "aba": "Lógica / Ladder / CLP",
+  "papel": "logica",
+  "pinos": [
+   "p1",
+   "p2",
+   "p3"
+  ],
+  "designacao_padrao": "-U",
+  "estado_inicial": 0,
+  "nota": "porta lógica / ladder / temporizador CLP (10050 NA, 10051 NC, 10060 bobina)",
+  "evidencia": "desenho/sim FUN_00673210; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "10001": {
+  "nome": "Función lógica AND 3",
+  "aba": "Lógica / Ladder / CLP",
+  "papel": "logica",
+  "pinos": [
+   "p1",
+   "p2",
+   "p3",
+   "p4"
+  ],
+  "designacao_padrao": "-U",
+  "estado_inicial": 0,
+  "nota": "porta lógica / ladder / temporizador CLP (10050 NA, 10051 NC, 10060 bobina)",
+  "evidencia": "desenho/sim FUN_00674750; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "10002": {
+  "nome": "Función lógica AND 4",
+  "aba": "Lógica / Ladder / CLP",
+  "papel": "logica",
+  "pinos": [
+   "p1",
+   "p2",
+   "p3",
+   "p4",
+   "p5"
+  ],
+  "designacao_padrao": "-U",
+  "estado_inicial": 0,
+  "nota": "porta lógica / ladder / temporizador CLP (10050 NA, 10051 NC, 10060 bobina)",
+  "evidencia": "desenho/sim FUN_006760b0; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "10003": {
+  "nome": "Función lógica AND 2",
+  "aba": "Lógica / Ladder / CLP",
+  "papel": "logica",
+  "pinos": [
+   "p1",
+   "p2",
+   "p3",
+   "p4",
+   "p5",
+   "p6"
+  ],
+  "designacao_padrao": "-U",
+  "estado_inicial": 0,
+  "nota": "porta lógica / ladder / temporizador CLP (10050 NA, 10051 NC, 10060 bobina)",
+  "evidencia": "desenho/sim FUN_00677e30; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "10010": {
+  "nome": "Función lógica OR 2",
+  "aba": "Lógica / Ladder / CLP",
+  "papel": "logica",
+  "pinos": [
+   "p1",
+   "p2",
+   "p3"
+  ],
+  "designacao_padrao": "-U",
+  "estado_inicial": 0,
+  "nota": "porta lógica / ladder / temporizador CLP (10050 NA, 10051 NC, 10060 bobina)",
+  "evidencia": "desenho/sim FUN_00679fc0; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "10011": {
+  "nome": "Función lógica OR 3",
+  "aba": "Lógica / Ladder / CLP",
+  "papel": "logica",
+  "pinos": [
+   "p1",
+   "p2",
+   "p3",
+   "p4"
+  ],
+  "designacao_padrao": "-U",
+  "estado_inicial": 0,
+  "nota": "porta lógica / ladder / temporizador CLP (10050 NA, 10051 NC, 10060 bobina)",
+  "evidencia": "desenho/sim FUN_0067b610; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "10012": {
+  "nome": "Función lógica OR 4",
+  "aba": "Lógica / Ladder / CLP",
+  "papel": "logica",
+  "pinos": [
+   "p1",
+   "p2",
+   "p3",
+   "p4",
+   "p5"
+  ],
+  "designacao_padrao": "-U",
+  "estado_inicial": 0,
+  "nota": "porta lógica / ladder / temporizador CLP (10050 NA, 10051 NC, 10060 bobina)",
+  "evidencia": "desenho/sim FUN_0067d070; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "10013": {
+  "nome": "Función lógica OR 2",
+  "aba": "Lógica / Ladder / CLP",
+  "papel": "logica",
+  "pinos": [
+   "p1",
+   "p2",
+   "p3",
+   "p4",
+   "p5",
+   "p6"
+  ],
+  "designacao_padrao": "-U",
+  "estado_inicial": 0,
+  "nota": "porta lógica / ladder / temporizador CLP (10050 NA, 10051 NC, 10060 bobina)",
+  "evidencia": "desenho/sim FUN_0067eee0; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "10020": {
+  "nome": "Función lógica NAND 2",
+  "aba": "Lógica / Ladder / CLP",
+  "papel": "logica",
+  "pinos": [
+   "p1",
+   "p2",
+   "p3"
+  ],
+  "designacao_padrao": "-U",
+  "estado_inicial": 0,
+  "nota": "porta lógica / ladder / temporizador CLP (10050 NA, 10051 NC, 10060 bobina)",
+  "evidencia": "desenho/sim FUN_00681170; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "10021": {
+  "nome": "Función lógica NAND 3",
+  "aba": "Lógica / Ladder / CLP",
+  "papel": "logica",
+  "pinos": [
+   "p1",
+   "p2",
+   "p3",
+   "p4"
+  ],
+  "designacao_padrao": "-U",
+  "estado_inicial": 0,
+  "nota": "porta lógica / ladder / temporizador CLP (10050 NA, 10051 NC, 10060 bobina)",
+  "evidencia": "desenho/sim FUN_00682ad0; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "10022": {
+  "nome": "Función lógica NAND 4",
+  "aba": "Lógica / Ladder / CLP",
+  "papel": "logica",
+  "pinos": [
+   "p1",
+   "p2",
+   "p3",
+   "p4",
+   "p5"
+  ],
+  "designacao_padrao": "-U",
+  "estado_inicial": 0,
+  "nota": "porta lógica / ladder / temporizador CLP (10050 NA, 10051 NC, 10060 bobina)",
+  "evidencia": "desenho/sim FUN_00684800; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "10023": {
+  "nome": "Función lógica NAND 2",
+  "aba": "Lógica / Ladder / CLP",
+  "papel": "logica",
+  "pinos": [
+   "p1",
+   "p2",
+   "p3",
+   "p4",
+   "p5",
+   "p6"
+  ],
+  "designacao_padrao": "-U",
+  "estado_inicial": 0,
+  "nota": "porta lógica / ladder / temporizador CLP (10050 NA, 10051 NC, 10060 bobina)",
+  "evidencia": "desenho/sim FUN_00686950; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "10030": {
+  "nome": "Función lógica NOR 2",
+  "aba": "Lógica / Ladder / CLP",
+  "papel": "logica",
+  "pinos": [
+   "p1",
+   "p2",
+   "p3"
+  ],
+  "designacao_padrao": "-U",
+  "estado_inicial": 0,
+  "nota": "porta lógica / ladder / temporizador CLP (10050 NA, 10051 NC, 10060 bobina)",
+  "evidencia": "desenho/sim FUN_00688ec0; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "10031": {
+  "nome": "Función lógica NOR 3",
+  "aba": "Lógica / Ladder / CLP",
+  "papel": "logica",
+  "pinos": [
+   "p1",
+   "p2",
+   "p3",
+   "p4"
+  ],
+  "designacao_padrao": "-U",
+  "estado_inicial": 0,
+  "nota": "porta lógica / ladder / temporizador CLP (10050 NA, 10051 NC, 10060 bobina)",
+  "evidencia": "desenho/sim FUN_0068a910; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "10032": {
+  "nome": "Función lógica NOR 4",
+  "aba": "Lógica / Ladder / CLP",
+  "papel": "logica",
+  "pinos": [
+   "p1",
+   "p2",
+   "p3",
+   "p4",
+   "p5"
+  ],
+  "designacao_padrao": "-U",
+  "estado_inicial": 0,
+  "nota": "porta lógica / ladder / temporizador CLP (10050 NA, 10051 NC, 10060 bobina)",
+  "evidencia": "desenho/sim FUN_0068c750; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "10033": {
+  "nome": "Función lógica NOR 2",
+  "aba": "Lógica / Ladder / CLP",
+  "papel": "logica",
+  "pinos": [
+   "p1",
+   "p2",
+   "p3",
+   "p4",
+   "p5",
+   "p6"
+  ],
+  "designacao_padrao": "-U",
+  "estado_inicial": 0,
+  "nota": "porta lógica / ladder / temporizador CLP (10050 NA, 10051 NC, 10060 bobina)",
+  "evidencia": "desenho/sim FUN_0068e9b0; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "10040": {
+  "nome": "Función lógica INV",
+  "aba": "Lógica / Ladder / CLP",
+  "papel": "logica",
+  "pinos": [
+   "p1",
+   "p2"
+  ],
+  "designacao_padrao": "-U",
+  "estado_inicial": 0,
+  "nota": "porta lógica / ladder / temporizador CLP (10050 NA, 10051 NC, 10060 bobina)",
+  "evidencia": "desenho/sim FUN_00691030; nome FUN_0087aca0",
+  "confianca": "baixa"
+ },
+ "10041": {
+  "nome": "Función lógica EXOR",
+  "aba": "Lógica / Ladder / CLP",
+  "papel": "logica",
+  "pinos": [
+   "p1",
+   "p2",
+   "p3"
+  ],
+  "designacao_padrao": "-U",
+  "estado_inicial": 0,
+  "nota": "porta lógica / ladder / temporizador CLP (10050 NA, 10051 NC, 10060 bobina)",
+  "evidencia": "desenho/sim FUN_00692460; nome FUN_0087aca0",
+  "confianca": "baixa"
+ },
+ "10050": {
+  "nome": "Contacto NA",
+  "aba": "Lógica / Ladder / CLP",
+  "papel": "logica",
+  "pinos": [
+   "p1",
+   "p2"
+  ],
+  "designacao_padrao": "-U",
+  "estado_inicial": 0,
+  "nota": "porta lógica / ladder / temporizador CLP (10050 NA, 10051 NC, 10060 bobina)",
+  "evidencia": "desenho/sim FUN_00693a70; nome FUN_0087aca0",
+  "confianca": "media"
+ },
+ "10051": {
+  "nome": "Contacto NC",
+  "aba": "Lógica / Ladder / CLP",
+  "papel": "logica",
+  "pinos": [
+   "p1",
+   "p2"
+  ],
+  "designacao_padrao": "-U",
+  "estado_inicial": 0,
+  "nota": "porta lógica / ladder / temporizador CLP (10050 NA, 10051 NC, 10060 bobina)",
+  "evidencia": "desenho/sim FUN_00695470; nome FUN_0087aca0",
+  "confianca": "media"
+ },
+ "10052": {
+  "nome": "Flanco ascendente",
+  "aba": "Lógica / Ladder / CLP",
+  "papel": "logica",
+  "pinos": [
+   "p1",
+   "p2"
+  ],
+  "designacao_padrao": "-U",
+  "estado_inicial": 0,
+  "nota": "porta lógica / ladder / temporizador CLP (10050 NA, 10051 NC, 10060 bobina)",
+  "evidencia": "desenho/sim FUN_00696f80; nome FUN_0087aca0",
+  "confianca": "baixa"
+ },
+ "10053": {
+  "nome": "Flanco descendente",
+  "aba": "Lógica / Ladder / CLP",
+  "papel": "logica",
+  "pinos": [
+   "p1",
+   "p2"
+  ],
+  "designacao_padrao": "-U",
+  "estado_inicial": 0,
+  "nota": "porta lógica / ladder / temporizador CLP (10050 NA, 10051 NC, 10060 bobina)",
+  "evidencia": "desenho/sim FUN_0069ac70; nome FUN_0087aca0",
+  "confianca": "baixa"
+ },
+ "10060": {
+  "nome": "Asignar",
+  "aba": "Lógica / Ladder / CLP",
+  "papel": "logica",
+  "pinos": [
+   "p1",
+   "p2"
+  ],
+  "designacao_padrao": "-U",
+  "estado_inicial": 0,
+  "nota": "porta lógica / ladder / temporizador CLP (10050 NA, 10051 NC, 10060 bobina)",
+  "evidencia": "desenho/sim FUN_006a10e0; nome FUN_0087aca0",
+  "confianca": "media"
+ },
+ "10061": {
+  "nome": "Set",
+  "aba": "Lógica / Ladder / CLP",
+  "papel": "logica",
+  "pinos": [
+   "p1",
+   "p2"
+  ],
+  "designacao_padrao": "-U",
+  "estado_inicial": 0,
+  "nota": "porta lógica / ladder / temporizador CLP (10050 NA, 10051 NC, 10060 bobina)",
+  "evidencia": "desenho/sim FUN_006a2770; nome FUN_0087aca0",
+  "confianca": "baixa"
+ },
+ "10062": {
+  "nome": "Reset",
+  "aba": "Lógica / Ladder / CLP",
+  "papel": "logica",
+  "pinos": [
+   "p1",
+   "p2"
+  ],
+  "designacao_padrao": "-U",
+  "estado_inicial": 0,
+  "nota": "porta lógica / ladder / temporizador CLP (10050 NA, 10051 NC, 10060 bobina)",
+  "evidencia": "desenho/sim FUN_006a3e90; nome FUN_0087aca0",
+  "confianca": "baixa"
+ },
+ "10063": {
+  "nome": "Contador de pulsos",
+  "aba": "Lógica / Ladder / CLP",
+  "papel": "logica",
+  "pinos": [
+   "p1",
+   "p2",
+   "p3",
+   "p4"
+  ],
+  "designacao_padrao": "-C",
+  "estado_inicial": 0,
+  "nota": "porta lógica / ladder / temporizador CLP (10050 NA, 10051 NC, 10060 bobina)",
+  "evidencia": "desenho/sim FUN_006a55c0; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "10064": {
+  "nome": "Biestable RS",
+  "aba": "Lógica / Ladder / CLP",
+  "papel": "logica",
+  "pinos": [
+   "p1",
+   "p2",
+   "p3"
+  ],
+  "designacao_padrao": "-U",
+  "estado_inicial": 0,
+  "nota": "porta lógica / ladder / temporizador CLP (10050 NA, 10051 NC, 10060 bobina)",
+  "evidencia": "desenho/sim FUN_006c65e0; nome FUN_0087aca0",
+  "confianca": "baixa"
+ },
+ "10065": {
+  "nome": "Bivisor Binario",
+  "aba": "Lógica / Ladder / CLP",
+  "papel": "logica",
+  "pinos": [
+   "p1",
+   "p2",
+   "p3"
+  ],
+  "designacao_padrao": "-U",
+  "estado_inicial": 0,
+  "nota": "porta lógica / ladder / temporizador CLP (10050 NA, 10051 NC, 10060 bobina)",
+  "evidencia": "desenho/sim FUN_006c84e0; nome FUN_0087aca0",
+  "confianca": "baixa"
+ },
+ "10066": {
+  "nome": "Temporizador a la conexión",
+  "aba": "Lógica / Ladder / CLP",
+  "papel": "logica",
+  "pinos": [
+   "p1",
+   "p2"
+  ],
+  "designacao_padrao": "-T",
+  "estado_inicial": 0,
+  "parametros": {
+   "tempo": "label5",
+   "unidade": "label4",
+   "ver": "_modelo.temporizador"
+  },
+  "nota": "porta lógica / ladder / temporizador CLP (10050 NA, 10051 NC, 10060 bobina)",
+  "evidencia": "desenho/sim FUN_006cae00; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "10067": {
+  "nome": "Temporizador a la desconexión",
+  "aba": "Lógica / Ladder / CLP",
+  "papel": "logica",
+  "pinos": [
+   "p1",
+   "p2"
+  ],
+  "designacao_padrao": "-T",
+  "estado_inicial": 0,
+  "parametros": {
+   "tempo": "label5",
+   "unidade": "label4",
+   "ver": "_modelo.temporizador"
+  },
+  "nota": "porta lógica / ladder / temporizador CLP (10050 NA, 10051 NC, 10060 bobina)",
+  "evidencia": "desenho/sim FUN_006cf800; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "10068": {
+  "nome": "Temporizador intermitente",
+  "aba": "Lógica / Ladder / CLP",
+  "papel": "logica",
+  "pinos": [
+   "p1",
+   "p2"
+  ],
+  "designacao_padrao": "-T",
+  "estado_inicial": 0,
+  "parametros": {
+   "tempo": "label5",
+   "unidade": "label4",
+   "ver": "_modelo.temporizador"
+  },
+  "nota": "porta lógica / ladder / temporizador CLP (10050 NA, 10051 NC, 10060 bobina)",
+  "evidencia": "desenho/sim FUN_006d1bc0; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "10069": {
+  "nome": "Temporizador generador de pulsos",
+  "aba": "Lógica / Ladder / CLP",
+  "papel": "logica",
+  "pinos": [
+   "p1",
+   "p2"
+  ],
+  "designacao_padrao": "-T",
+  "estado_inicial": 0,
+  "parametros": {
+   "tempo": "label5",
+   "unidade": "label4",
+   "ver": "_modelo.temporizador"
+  },
+  "nota": "porta lógica / ladder / temporizador CLP (10050 NA, 10051 NC, 10060 bobina)",
+  "evidencia": "desenho/sim FUN_006d41a0; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "10070": {
+  "nome": "Prueba",
+  "aba": "Lógica / Ladder / CLP",
+  "papel": "logica",
+  "pinos": [
+   "p1"
+  ],
+  "designacao_padrao": "-I",
+  "estado_inicial": 0,
+  "nota": "porta lógica / ladder / temporizador CLP (10050 NA, 10051 NC, 10060 bobina)",
+  "evidencia": "desenho/sim FUN_006d6940; nome FUN_0087aca0",
+  "confianca": "baixa"
+ },
+ "10071": {
+  "nome": "Visualiza",
+  "aba": "Lógica / Ladder / CLP",
+  "papel": "logica",
+  "pinos": [
+   "p1"
+  ],
+  "designacao_padrao": "-Q",
+  "estado_inicial": 0,
+  "nota": "porta lógica / ladder / temporizador CLP (10050 NA, 10051 NC, 10060 bobina)",
+  "evidencia": "desenho/sim FUN_006d7650; nome FUN_0087aca0",
+  "confianca": "baixa"
+ },
+ "10072": {
+  "nome": "Display BCD",
+  "aba": "Lógica / Ladder / CLP",
+  "papel": "logica",
+  "pinos": [
+   "a",
+   "b",
+   "c",
+   "d"
+  ],
+  "designacao_padrao": "-D",
+  "estado_inicial": 0,
+  "nota": "porta lógica / ladder / temporizador CLP (10050 NA, 10051 NC, 10060 bobina)",
+  "evidencia": "desenho/sim FUN_006d8380; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "10073": {
+  "nome": "Display 7 segmentos",
+  "aba": "Lógica / Ladder / CLP",
+  "papel": "logica",
+  "pinos": [
+   "a",
+   "b",
+   "c",
+   "d",
+   "e",
+   "f",
+   "g",
+   "."
+  ],
+  "designacao_padrao": "-D",
+  "estado_inicial": 0,
+  "nota": "porta lógica / ladder / temporizador CLP (10050 NA, 10051 NC, 10060 bobina)",
+  "evidencia": "desenho/sim FUN_006dca90; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "10074": {
+  "nome": "Decodificador (1 2 4 8 C)",
+  "aba": "Lógica / Ladder / CLP",
+  "papel": "logica",
+  "pinos": [
+   "1",
+   "2",
+   "4",
+   "8",
+   "C"
+  ],
+  "designacao_padrao": "-D",
+  "estado_inicial": 0,
+  "nota": "porta lógica / ladder / temporizador CLP (10050 NA, 10051 NC, 10060 bobina)",
+  "evidencia": "desenho/sim FUN_006e0020",
+  "nome_ausente_no_binario": true,
+  "confianca": "baixa"
+ },
+ "10075": {
+  "nome": "Contador ascendente-descendente",
+  "aba": "Lógica / Ladder / CLP",
+  "papel": "logica",
+  "pinos": [
+   "p1",
+   "p2",
+   "p3",
+   "p4",
+   "p5"
+  ],
+  "designacao_padrao": "-C",
+  "estado_inicial": 0,
+  "nota": "porta lógica / ladder / temporizador CLP (10050 NA, 10051 NC, 10060 bobina)",
+  "evidencia": "desenho/sim FUN_006a8620; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "10076": {
+  "nome": null,
+  "aba": "Lógica / Ladder / CLP",
+  "papel": "logica",
+  "pinos": [
+   "p1",
+   "p2"
+  ],
+  "designacao_padrao": "FIRST",
+  "estado_inicial": 0,
+  "nota": "porta lógica / ladder / temporizador CLP (10050 NA, 10051 NC, 10060 bobina)",
+  "evidencia": "desenho/sim FUN_0069fc40",
+  "nome_ausente_no_binario": true,
+  "confianca": "baixa"
+ },
+ "10077": {
+  "nome": null,
+  "aba": "Lógica / Ladder / CLP",
+  "papel": "logica",
+  "pinos": [
+   "p1",
+   "p2",
+   "p3",
+   "p4",
+   "p5",
+   "p6",
+   "p7",
+   "p8"
+  ],
+  "designacao_padrao": "-C",
+  "estado_inicial": 0,
+  "nota": "porta lógica / ladder / temporizador CLP (10050 NA, 10051 NC, 10060 bobina)",
+  "evidencia": "desenho/sim FUN_006ac310",
+  "nome_ausente_no_binario": true,
+  "confianca": "baixa"
+ },
+ "10078": {
+  "nome": null,
+  "aba": "Lógica / Ladder / CLP",
+  "papel": "logica",
+  "pinos": [
+   "p1",
+   "p2",
+   "p3",
+   "p4",
+   "p5",
+   "p6"
+  ],
+  "designacao_padrao": "-C",
+  "estado_inicial": 0,
+  "nota": "porta lógica / ladder / temporizador CLP (10050 NA, 10051 NC, 10060 bobina)",
+  "evidencia": "desenho/sim FUN_006b0c20",
+  "nome_ausente_no_binario": true,
+  "confianca": "baixa"
+ },
+ "10080": {
+  "nome": null,
+  "aba": "Lógica / Ladder / CLP",
+  "papel": "logica",
+  "pinos": [
+   "p1",
+   "p2",
+   "p3",
+   "p4",
+   "p5",
+   "p6",
+   "p7",
+   "p8",
+   "p9",
+   "p10",
+   "p11"
+  ],
+  "designacao_padrao": "-C",
+  "estado_inicial": 0,
+  "nota": "porta lógica / ladder / temporizador CLP (10050 NA, 10051 NC, 10060 bobina)",
+  "evidencia": "desenho/sim FUN_006bf650",
+  "nome_ausente_no_binario": true,
+  "confianca": "baixa"
+ },
+ "10081": {
+  "nome": "Temporizador pulso a la conexión",
+  "aba": "Lógica / Ladder / CLP",
+  "papel": "logica",
+  "pinos": [
+   "p1",
+   "p2"
+  ],
+  "designacao_padrao": "-T",
+  "estado_inicial": 0,
+  "parametros": {
+   "tempo": "label5",
+   "unidade": "label4",
+   "ver": "_modelo.temporizador"
+  },
+  "nota": "porta lógica / ladder / temporizador CLP (10050 NA, 10051 NC, 10060 bobina)",
+  "evidencia": "desenho/sim FUN_006cd2f0; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "10082": {
+  "nome": null,
+  "aba": "Lógica / Ladder / CLP",
+  "papel": "logica",
+  "pinos": [
+   "p1",
+   "p2",
+   "p3",
+   "p4",
+   "p5",
+   "p6",
+   "p7",
+   "p8",
+   "p9",
+   "p10",
+   "p11",
+   "p12",
+   "p13"
+  ],
+  "designacao_padrao": "-C",
+  "estado_inicial": 0,
+  "nota": "porta lógica / ladder / temporizador CLP (10050 NA, 10051 NC, 10060 bobina)",
+  "evidencia": "desenho/sim FUN_006b45b0",
+  "nome_ausente_no_binario": true,
+  "confianca": "baixa"
+ },
+ "10083": {
+  "nome": null,
+  "aba": "Lógica / Ladder / CLP",
+  "papel": "logica",
+  "pinos": [
+   "p1",
+   "p2",
+   "p3",
+   "p4",
+   "p5",
+   "p6",
+   "p7",
+   "p8",
+   "p9",
+   "p10",
+   "p11",
+   "p12",
+   "p13",
+   "p14"
+  ],
+  "designacao_padrao": "-C",
+  "estado_inicial": 0,
+  "nota": "porta lógica / ladder / temporizador CLP (10050 NA, 10051 NC, 10060 bobina)",
+  "evidencia": "desenho/sim FUN_006ba680",
+  "nome_ausente_no_binario": true,
+  "confianca": "baixa"
+ },
+ "10100": {
+  "nome": "Etapa 0 GRAFCET",
+  "aba": "GRAFCET",
+  "papel": "grafcet",
+  "estado_inicial": 0,
+  "nota": "elemento GRAFCET",
+  "evidencia": "nome FUN_0087aca0",
+  "confianca": "baixa"
+ },
+ "10101": {
+  "nome": "Etapa GRAFCET",
+  "aba": "GRAFCET",
+  "papel": "grafcet",
+  "estado_inicial": 0,
+  "nota": "elemento GRAFCET",
+  "evidencia": "nome FUN_0087aca0",
+  "confianca": "baixa"
+ },
+ "10102": {
+  "nome": null,
+  "aba": "GRAFCET",
+  "papel": "grafcet",
+  "estado_inicial": 0,
+  "nota": "elemento GRAFCET",
+  "evidencia": "dispatch FUN_0040d2b0",
+  "nome_ausente_no_binario": true,
+  "confianca": "baixa"
+ },
+ "10103": {
+  "nome": "Acción GRAFCET",
+  "aba": "GRAFCET",
+  "papel": "grafcet",
+  "estado_inicial": 0,
+  "nota": "elemento GRAFCET",
+  "evidencia": "nome cmpstr",
+  "confianca": "baixa"
+ },
+ "10106": {
+  "nome": "Línea enlace GRAFCET",
+  "aba": "GRAFCET",
+  "papel": "grafcet",
+  "estado_inicial": 0,
+  "nota": "elemento GRAFCET",
+  "evidencia": "nome FUN_0087aca0",
+  "confianca": "baixa"
+ },
+ "10107": {
+  "nome": "Enlace de entrada GRAFCET",
+  "aba": "GRAFCET",
+  "papel": "grafcet",
+  "estado_inicial": 0,
+  "nota": "elemento GRAFCET",
+  "evidencia": "nome FUN_0087aca0",
+  "confianca": "baixa"
+ },
+ "10108": {
+  "nome": "Enlace de Salida GRAFCET",
+  "aba": "GRAFCET",
+  "papel": "grafcet",
+  "estado_inicial": 0,
+  "nota": "elemento GRAFCET",
+  "evidencia": "nome FUN_0087aca0",
+  "confianca": "baixa"
+ },
+ "10111": {
+  "nome": "Macro Etapa GRAFCET",
+  "aba": "GRAFCET",
+  "papel": "grafcet",
+  "estado_inicial": 0,
+  "nota": "elemento GRAFCET",
+  "evidencia": "nome FUN_0087aca0",
+  "confianca": "baixa"
+ },
+ "10112": {
+  "nome": "Y GRAFCET",
+  "aba": "GRAFCET",
+  "papel": "grafcet",
+  "estado_inicial": 0,
+  "nota": "elemento GRAFCET",
+  "evidencia": "nome FUN_0087aca0",
+  "confianca": "baixa"
+ },
+ "10200": {
+  "nome": null,
+  "aba": "PLC (LOGO/S7/ET200/Arduino)",
+  "papel": "plc",
+  "estado_inicial": 0,
+  "nota": "CLP/IO",
+  "evidencia": "dispatch FUN_0040d2b0",
+  "nome_ausente_no_binario": true,
+  "confianca": "baixa"
+ },
+ "10201": {
+  "nome": null,
+  "aba": "PLC (LOGO/S7/ET200/Arduino)",
+  "papel": "plc",
+  "estado_inicial": 0,
+  "nota": "CLP/IO",
+  "evidencia": "dispatch FUN_0040d2b0",
+  "nome_ausente_no_binario": true,
+  "confianca": "baixa"
+ },
+ "10202": {
+  "nome": "Logo",
+  "aba": "PLC (LOGO/S7/ET200/Arduino)",
+  "papel": "plc",
+  "estado_inicial": 0,
+  "nota": "CLP/IO",
+  "evidencia": "nome cmpstr",
+  "confianca": "baixa"
+ },
+ "10203": {
+  "nome": "S7-1200",
+  "aba": "PLC (LOGO/S7/ET200/Arduino)",
+  "papel": "plc",
+  "estado_inicial": 0,
+  "nota": "CLP/IO",
+  "evidencia": "nome cmpstr",
+  "confianca": "baixa"
+ },
+ "10204": {
+  "nome": "Entrada digital PLC",
+  "aba": "PLC (LOGO/S7/ET200/Arduino)",
+  "papel": "plc",
+  "pinos": [
+   "p1"
+  ],
+  "designacao_padrao": "I0.0",
+  "estado_inicial": 0,
+  "nota": "CLP/IO",
+  "evidencia": "desenho/sim FUN_007693a0; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "10205": {
+  "nome": "Salida digital PLC",
+  "aba": "PLC (LOGO/S7/ET200/Arduino)",
+  "papel": "plc",
+  "pinos": [
+   "p1"
+  ],
+  "designacao_padrao": "Q0.0",
+  "estado_inicial": 0,
+  "nota": "CLP/IO",
+  "evidencia": "desenho/sim FUN_0076a950; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "10206": {
+  "nome": "CPU PLC",
+  "aba": "PLC (LOGO/S7/ET200/Arduino)",
+  "papel": "plc",
+  "pinos": [
+   "p1",
+   "p2",
+   "p3",
+   "p4",
+   "p5"
+  ],
+  "designacao_padrao": "-CPU",
+  "estado_inicial": 0,
+  "nota": "CLP/IO",
+  "evidencia": "desenho/sim FUN_0076bab0; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "10207": {
+  "nome": "Alimentación I/O digital PLC",
+  "aba": "PLC (LOGO/S7/ET200/Arduino)",
+  "papel": "plc",
+  "pinos": [
+   "p1"
+  ],
+  "designacao_padrao": "1M",
+  "estado_inicial": 0,
+  "nota": "CLP/IO",
+  "evidencia": "desenho/sim FUN_0076ea10; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "10208": {
+  "nome": "Alimentación I/O digital PLC",
+  "aba": "PLC (LOGO/S7/ET200/Arduino)",
+  "papel": "plc",
+  "pinos": [
+   "p1"
+  ],
+  "designacao_padrao": "1L",
+  "estado_inicial": 0,
+  "nota": "CLP/IO",
+  "evidencia": "desenho/sim FUN_0076f4b0; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "10209": {
+  "nome": "S7-1500",
+  "aba": "PLC (LOGO/S7/ET200/Arduino)",
+  "papel": "plc",
+  "pinos": [
+   "1L+",
+   "1M",
+   "2L+",
+   "2M"
+  ],
+  "designacao_padrao": "S7_1500_3D",
+  "estado_inicial": 0,
+  "nota": "CLP/IO",
+  "evidencia": "desenho/sim FUN_00736440; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "10210": {
+  "nome": "S7-1500 DI/DO",
+  "aba": "PLC (LOGO/S7/ET200/Arduino)",
+  "papel": "plc",
+  "estado_inicial": 0,
+  "nota": "CLP/IO",
+  "evidencia": "nome cmpstr",
+  "confianca": "baixa"
+ },
+ "10211": {
+  "nome": "ET-200",
+  "aba": "PLC (LOGO/S7/ET200/Arduino)",
+  "papel": "plc",
+  "pinos": [
+   "1L+",
+   "1M",
+   "2L+",
+   "2M"
+  ],
+  "designacao_padrao": "ET_200_3D",
+  "estado_inicial": 0,
+  "nota": "CLP/IO",
+  "evidencia": "desenho/sim FUN_0074da50; nome cmpstr",
+  "confianca": "baixa"
+ },
+ "10212": {
+  "nome": "ET-200 DI",
+  "aba": "PLC (LOGO/S7/ET200/Arduino)",
+  "papel": "plc",
+  "estado_inicial": 0,
+  "nota": "CLP/IO",
+  "evidencia": "nome cmpstr",
+  "confianca": "baixa"
+ },
+ "10213": {
+  "nome": "ET-200 DO",
+  "aba": "PLC (LOGO/S7/ET200/Arduino)",
+  "papel": "plc",
+  "estado_inicial": 0,
+  "nota": "CLP/IO",
+  "evidencia": "nome cmpstr",
+  "confianca": "baixa"
+ },
+ "10214": {
+  "nome": "I9,I10,I11,I12",
+  "aba": "PLC (LOGO/S7/ET200/Arduino)",
+  "papel": "plc",
+  "estado_inicial": 0,
+  "nota": "CLP/IO",
+  "evidencia": "nome cmpstr",
+  "confianca": "baixa"
+ },
+ "10215": {
+  "nome": "I0.0...I1.7",
+  "aba": "PLC (LOGO/S7/ET200/Arduino)",
+  "papel": "plc",
+  "estado_inicial": 0,
+  "nota": "CLP/IO",
+  "evidencia": "nome cmpstr",
+  "confianca": "baixa"
+ },
+ "10220": {
+  "nome": "Arduino UNO",
+  "aba": "PLC (LOGO/S7/ET200/Arduino)",
+  "papel": "plc",
+  "estado_inicial": 0,
+  "nota": "CLP/IO",
+  "evidencia": "nome cmpstr",
+  "confianca": "baixa"
+ },
+ "10500": {
+  "nome": "Actuador de simple efecto",
+  "aba": "Pneumática / atuadores",
+  "papel": "pneumatica",
+  "aciona_por": "eletroválvula 9003 de mesmo rótulo / sensores magnéticos",
+  "estado_inicial": 0,
+  "nota": "atuador pneumático/elétrico",
+  "evidencia": "nome cmpstr",
+  "confianca": "baixa"
+ },
+ "10501": {
+  "nome": "Actuador de doble efecto",
+  "aba": "Pneumática / atuadores",
+  "papel": "pneumatica",
+  "aciona_por": "eletroválvula 9003 de mesmo rótulo / sensores magnéticos",
+  "estado_inicial": 0,
+  "nota": "atuador pneumático/elétrico",
+  "evidencia": "nome cmpstr",
+  "confianca": "baixa"
+ },
+ "10502": {
+  "nome": "Actuador sin vástago",
+  "aba": "Pneumática / atuadores",
+  "papel": "pneumatica",
+  "aciona_por": "eletroválvula 9003 de mesmo rótulo / sensores magnéticos",
+  "estado_inicial": 0,
+  "nota": "atuador pneumático/elétrico",
+  "evidencia": "nome cmpstr",
+  "confianca": "baixa"
+ },
+ "10503": {
+  "nome": "Actuador sin vástago magnético",
+  "aba": "Pneumática / atuadores",
+  "papel": "pneumatica",
+  "aciona_por": "eletroválvula 9003 de mesmo rótulo / sensores magnéticos",
+  "estado_inicial": 0,
+  "nota": "atuador pneumático/elétrico",
+  "evidencia": "nome cmpstr",
+  "confianca": "baixa"
+ },
+ "10504": {
+  "nome": "Actuador de doble efecto",
+  "aba": "Pneumática / atuadores",
+  "papel": "pneumatica",
+  "aciona_por": "eletroválvula 9003 de mesmo rótulo / sensores magnéticos",
+  "estado_inicial": 0,
+  "nota": "atuador pneumático/elétrico",
+  "evidencia": "nome cmpstr",
+  "confianca": "baixa"
+ },
+ "10505": {
+  "nome": "Pinza neumática simple efecto",
+  "aba": "Pneumática / atuadores",
+  "papel": "pneumatica",
+  "aciona_por": "eletroválvula 9003 de mesmo rótulo / sensores magnéticos",
+  "estado_inicial": 0,
+  "nota": "atuador pneumático/elétrico",
+  "evidencia": "nome cmpstr",
+  "confianca": "baixa"
+ },
+ "10506": {
+  "nome": "Pinza neumática",
+  "aba": "Pneumática / atuadores",
+  "papel": "pneumatica",
+  "aciona_por": "eletroválvula 9003 de mesmo rótulo / sensores magnéticos",
+  "estado_inicial": 0,
+  "nota": "atuador pneumático/elétrico",
+  "evidencia": "nome cmpstr",
+  "confianca": "baixa"
+ },
+ "10507": {
+  "nome": "Ventosa",
+  "aba": "Pneumática / atuadores",
+  "papel": "pneumatica",
+  "aciona_por": "eletroválvula 9003 de mesmo rótulo / sensores magnéticos",
+  "estado_inicial": 0,
+  "nota": "atuador pneumático/elétrico",
+  "evidencia": "nome cmpstr",
+  "confianca": "baixa"
+ },
+ "10508": {
+  "nome": "Motor neumático",
+  "aba": "Pneumática / atuadores",
+  "papel": "pneumatica",
+  "aciona_por": "eletroválvula 9003 de mesmo rótulo / sensores magnéticos",
+  "estado_inicial": 0,
+  "nota": "atuador pneumático/elétrico",
+  "evidencia": "nome cmpstr",
+  "confianca": "baixa"
+ },
+ "10509": {
+  "nome": "Motor neumático reversible",
+  "aba": "Pneumática / atuadores",
+  "papel": "pneumatica",
+  "aciona_por": "eletroválvula 9003 de mesmo rótulo / sensores magnéticos",
+  "estado_inicial": 0,
+  "nota": "atuador pneumático/elétrico",
+  "evidencia": "nome cmpstr",
+  "confianca": "baixa"
+ },
+ "10550": {
+  "nome": "Actuador lineal eléctrico",
+  "aba": "Pneumática / atuadores",
+  "papel": "pneumatica",
+  "aciona_por": "eletroválvula 9003 de mesmo rótulo / sensores magnéticos",
+  "estado_inicial": 0,
+  "nota": "atuador pneumático/elétrico",
+  "evidencia": "nome cmpstr",
+  "confianca": "baixa"
+ }
+}
