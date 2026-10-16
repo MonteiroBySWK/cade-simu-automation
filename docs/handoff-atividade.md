@@ -6,12 +6,13 @@ Gerar, do zero e por agente, um `.cad` de **partida intercalar de 2 motores** qu
 (iv) tenha fiação limpa (sem curto, sem atravessar símbolo).
 
 ## Artefato final
-- Especificação: `tools/examples/intercalada.spec.json` (símbolos + conexões + trilhos).
+- Especificação: `tools/examples/intercalada.layout.json` (topologia, **sem x/y**; motor `tools/layout.py`).
+  A `.spec.json` antiga (coordenadas manuais) segue válida mas usa fonte 3004 x3 + PE no neutro (**defeituosa**, ver abaixo).
 - Saída: `out/intercalada.cad` (gitignored).
 - **Regenerar SEMPRE com o gate:**
   ```bash
-  python3 tools/build_spec.py tools/examples/intercalada.spec.json out/intercalada.cad
-  # tem de imprimir: GATE: OK
+  python3 tools/build_spec.py tools/examples/intercalada.layout.json out/intercalada.cad
+  # tem de imprimir: GATE: OK  (build+validate+testes+geo_check)
   python3 tools/wires_check.py out/intercalada.cad   # tem de imprimir: FIOS: ok
   ```
 
@@ -75,3 +76,17 @@ python3 tools/wine_mgr.py up out/intercalada.cad   # senha 4962 automática
 python3 tools/wine_mgr.py max && python3 tools/wine_mgr.py ws 10
 python3 tools/wine_mgr.py shot /tmp/x.png
 ```
+
+## Atualização 2026-10-15 (RE do binário + gate geométrico)
+- **Conectividade é por GEOMETRIA** (extremo-a-extremo; T só com 4001). Nets em `nums[21/22]` são
+  descartadas ao iniciar a simulação (docs/re-engenharia.md §9).
+- **Fases**: cada pino de fonte estampa um char (L1→1, L2→2, L3→3, N→N, PE→P); duas estampas na
+  mesma net = **curto**. O desenho antigo (3×`3004` + `3002` PE no trilho N) tinha curto N×P e L3
+  solto — o gate antigo não via. Agora: **fonte única `3007`** (L1,L2,L3,N,PE) e **trilho PE
+  separado** (`"pe":"PE"` no grupo de potência).
+- **Gate** = build + validate + `cad_test` (casos em `"testes"` da spec; sem testes reprova) +
+  `tools/geo_check.py` (curto de fase, pino solto; usa `docs/pinos-binario.json`).
+- Pinos: `tools/apply_bin_pins.py --override-ab` mescla o binário em `symbol_pins.json` (327 classes).
+- Validado no app (Wine): fonte colore L1/L2/L3/N/PE; S1 energiza KM1, selo mantém, lâmpada acende.
+- Dúvida aberta: tamanho real da folha. O gabarito do curso (`Intercalar_atv.cad`) usa y até 440;
+  `SHEET_X/Y=455/295` em `layout.py` é conservador, não verdade do binário.
