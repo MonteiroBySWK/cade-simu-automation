@@ -174,5 +174,153 @@
         "pe": "PE"
       }
     ]
-  }
+  },
+  "testes": [
+    {
+      "nome": "repouso = tudo desligado",
+      "entradas": {},
+      "esperado": [],
+      "status": "OK"
+    },
+    {
+      "nome": "S1 liga KM1",
+      "entradas": {
+        "S1": true
+      },
+      "esperado": [
+        "KM1"
+      ],
+      "status": "OK"
+    },
+    {
+      "nome": "S2 liga KM2",
+      "entradas": {
+        "S2": true
+      },
+      "esperado": [
+        "KM2"
+      ],
+      "status": "OK"
+    },
+    {
+      "nome": "selo mantem KM1",
+      "entradas": {},
+      "esperado": [
+        "KM1"
+      ],
+      "status": "OK",
+      "inicial": [
+        "KM1"
+      ]
+    },
+    {
+      "nome": "selo mantem KM2",
+      "entradas": {},
+      "esperado": [
+        "KM2"
+      ],
+      "status": "OK",
+      "inicial": [
+        "KM2"
+      ]
+    },
+    {
+      "nome": "KM2 bloqueado com KM1 ligado",
+      "entradas": {
+        "S2": true
+      },
+      "esperado": [
+        "KM1"
+      ],
+      "status": "OK",
+      "inicial": [
+        "KM1"
+      ]
+    },
+    {
+      "nome": "KM1 bloqueado com KM2 ligado",
+      "entradas": {
+        "S1": true
+      },
+      "esperado": [
+        "KM2"
+      ],
+      "status": "OK",
+      "inicial": [
+        "KM2"
+      ]
+    },
+    {
+      "nome": "S0 desliga tudo",
+      "entradas": {
+        "S0": true
+      },
+      "esperado": [],
+      "status": "OK",
+      "inicial": [
+        "KM1"
+      ]
+    },
+    {
+      "nome": "S0 desliga (de KM2)",
+      "entradas": {
+        "S0": true
+      },
+      "esperado": [],
+      "status": "OK",
+      "inicial": [
+        "KM2"
+      ]
+    },
+    {
+      "nome": "sem auto-religamento",
+      "entradas": {},
+      "esperado": [],
+      "status": "OK"
+    },
+    {
+      "nome": "RT1 aberto bloqueia",
+      "entradas": {
+        "RT1": true,
+        "S1": true
+      },
+      "esperado": [],
+      "status": "OK"
+    },
+    {
+      "nome": "RT2 aberto bloqueia",
+      "entradas": {
+        "RT2": true,
+        "S1": true
+      },
+      "esperado": [],
+      "status": "OK"
+    },
+    {
+      "nome": "RT1 aberto bloqueia S2",
+      "entradas": {
+        "RT1": true,
+        "S2": true
+      },
+      "esperado": [],
+      "status": "OK"
+    },
+    {
+      "nome": "RT2 aberto bloqueia S2",
+      "entradas": {
+        "RT2": true,
+        "S2": true
+      },
+      "esperado": [],
+      "status": "OK"
+    },
+    {
+      "nome": "S1+S2 simultaneo = corrida",
+      "entradas": {
+        "S1": true,
+        "S2": true
+      },
+      "status": "RACE"
+    }
+  ]
 }

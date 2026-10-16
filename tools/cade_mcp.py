@@ -107,48 +107,25 @@ def cad_inspect(path: str) -> str:
 
 
 @mcp.tool()
-def cad_preview(path: str, scale: int = 2) -> str:
-    """Renderiza o esquema como PNG (base64, imagem MCP). Canvas ajustado ao conteúdo."""
-    from PIL import Image, ImageDraw
-    d = Path(path).read_bytes().decode("latin1")
-    _, ents, _ = split_entities(d)
-    ps = [p for p in map(parse_ent, ents) if p]
-    xs, ys = [], []
-    for p in ps:
-        n = p["nums"]
-        if len(n) < 16:
-            continue
-        try:
-            ints = [int(v) for v in (n[8], n[9], n[10], n[11], n[14], n[15])]
-        except ValueError:
-            continue
-        xs += [ints[0], ints[2], ints[0] + ints[4]]
-        ys += [ints[1], ints[3], ints[1] + ints[5]]
-    mx, my = (max(xs) if xs else 440), (max(ys) if ys else 220)
-    W, H = max(200, mx + 20), max(160, my + 20)
-    img = Image.new("RGB", (W * scale, H * scale), "white")
-    dr = ImageDraw.Draw(img)
-    S = lambda v: int(v) * scale
-    for p in ps:
-        n = p["nums"]
-        if len(n) < 16:
-            continue
-        x, y = int(n[8]), int(n[9])
-        if p["id"] in ("4000", "4001", "4009", "4010", "4018", "4019"):
-            x2, y2 = int(n[10]), int(n[11])
-            if x == x2 and y == y2:
-                dr.ellipse([S(x) - 2, S(y) - 2, S(x) + 2, S(y) + 2], fill="red")
-            else:
-                dr.line([S(x), S(y), S(x2), S(y2)], fill="red" if p["id"] in ("4000", "4001") else "green")
-        elif p["id"] == "8":
-            dr.text((S(x), S(y)), p["raw"].split("#")[-1][:30], fill="black")
-        else:
-            w, h = int(n[14]), int(n[15])
-            dr.rectangle([S(x), S(y), S(x + w), S(y + h)], outline="black")
+def cad_preview(path: str, scale: int = 3, png_path: str = "") -> str:
+    """VER o circuito: renderiza o .cad como PNG (data URI base64; com png_path tambem grava o arquivo).
+
+    Quando usar: SEMPRE depois do cad_design/cad_gate verde e antes de entregar.
+    O desenho mostra o que o simulador vai ver (conectividade por geometria):
+      - fios coloridos pela FASE da rede: L1 laranja, L2 roxo, L3 azul, N ciano, PE verde
+        (cinza = rede do comando, sem fonte direta);
+      - circulo VERMELHO cheio com '?' = pino SOLTO (nenhum fio termina nele);
+      - fio vermelho grosso com X = CURTO (duas fases/N/PE na mesma rede);
+      - nome de cada pino ao lado (1/3/5, 2/4/6, U1/V1/W1/PE, L1..PE) e rotulo+classe do simbolo.
+    Erro comum: achar que 'abriu' basta — pino vermelho ou fio vermelho = reprovado."""
+    import cad_render
+    img = cad_render.renderizar(path, max(1, int(scale)))
+    if png_path:
+        Path(png_path).parent.mkdir(parents=True, exist_ok=True)
+        img.save(png_path)
     buf = io.BytesIO()
     img.save(buf, format="PNG")
-    b64 = base64.b64encode(buf.getvalue()).decode()
-    return f"data:image/png;base64,{b64}"
+    return "data:image/png;base64," + base64.b64encode(buf.getvalue()).decode()
 
 
 @mcp.tool()
@@ -236,17 +213,214 @@ def _lib():
     return _LIB
 
 
+def _json_tools(nome, padrao=None):
+    try:
+        return json.loads((ROOT / "tools" / nome).read_text())
+    except Exception:
+        return {} if padrao is None else padrao
+
+
+def _nomes():
+    d = _json_tools("symbol_names.json")
+    return {k: v for k, v in d.items() if not k.startswith("_")}
+
+
 @mcp.tool()
 def cad_symbols() -> str:
-    """Lista as classes de símbolo disponíveis (ID + exemplo de rótulo) para montar do zero."""
+    """Lista as classes de simbolo (ID, nome/descricao quando conhecidos, tamanho, pinos nomeados).
+
+    Quando usar: para ESCOLHER classes antes de montar o layout. Para detalhes de uma classe
+    (offsets de pino, para que serve) use cad_pins(classe). Campos: classe, nome, uso,
+    exemplo_rotulo, largura, altura, pinos. 'nome' vem de tools/symbol_names.json
+    (so o que esta documentado; ausente = desconhecido, nao presuma).
+    Erro comum: usar classe que nao esta aqui — cad_build/cad_design recusam."""
     _, protos, _, _ = _lib()
+    nomes, dims, pins = _nomes(), _json_tools("symbol_dims.json"), _json_tools("symbol_pins.json")
     itens = []
     for cid, p in sorted(protos.items()):
         if cid in ("4000", "4001", "4002", "4009", "4010", "4011", "4003", "4004"):
             continue  # conectores/cabos: use `fios`
         lab = [x for x in p["labels"] if x]
-        itens.append({"classe": cid, "exemplo_rotulo": lab[0] if lab else ""})
+        n = nomes.get(cid, {})
+        w, h = (dims.get(cid) or [None, None])[:2]
+        pn = (pins.get(cid, {}).get("pins") or {})
+        itens.append({"classe": cid, "nome": n.get("nome"), "uso": n.get("uso"),
+                      "exemplo_rotulo": lab[0] if lab else "",
+                      "largura": w, "altura": h, "pinos": sorted(pn) or None})
     return json.dumps({"simbolos": itens, "n": len(itens)}, ensure_ascii=False)
+
+
+@mcp.tool()
+def cad_pins(classe: str) -> str:
+    """Pinos e geometria de UMA classe: nomes, offsets (dx,dy) a partir de (x,y), largura/altura e 'para que serve'.
+
+    Quando usar: antes de ligar um simbolo desconhecido, ou ao receber 'pino X da classe Y nao existe'.
+    Retorno: {classe, nome, uso, largura, altura, pinos:{nome:[dx,dy]}, pinos_ab, pinos_binario, fonte_nome}.
+      pinos      = nomeados (1/3/5/2/4/6, U1/V1/W1/PE, L1..PE) — USE ESTES em conexoes/DSL;
+      pinos_ab   = A (topo/entrada) e B (base/saida) dos contatos e bobinas;
+      pinos_binario = p1..pN extraidos do executavel (verdade geometrica; ordem de desenho).
+    Erro comum: ligar so A/B de simbolo multi-terminal e deixar U1/V1/W1/PE ou 3/5/4/6 soltos."""
+    _, protos, _, _ = _lib()
+    cid = str(classe).strip()
+    pins, dims = _json_tools("symbol_pins.json"), _json_tools("symbol_dims.json")
+    try:
+        binario = json.loads((ROOT / "docs" / "pinos-binario.json").read_text()).get("classes", {})
+    except Exception:
+        binario = {}
+    if cid not in protos and cid not in pins and cid not in binario:
+        return json.dumps({"erro": f"classe {cid} desconhecida. Use cad_symbols."}, ensure_ascii=False)
+    n = _nomes().get(cid, {})
+    pe = pins.get(cid, {})
+    w, h = (dims.get(cid) or [None, None])[:2]
+    lab = [x for x in (protos.get(cid, {}).get("labels") or []) if x]
+    out = {"classe": cid, "nome": n.get("nome"), "uso": n.get("uso"),
+           "fonte_nome": n.get("fonte"),
+           "largura": w, "altura": h,
+           "exemplo_rotulo": lab[0] if lab else "",
+           "pinos": pe.get("pins") or {},
+           "pinos_ab": {k: pe[k] for k in ("A", "B") if k in pe},
+           "pinos_binario": (binario.get(cid) or {}).get("pins", {})}
+    if not n:
+        out["aviso"] = "nome desconhecido (nao documentado); use exemplo_rotulo e os pinos como guia"
+    return json.dumps(out, ensure_ascii=False)
+
+
+EXEMPLOS = ROOT / "tools" / "examples"
+
+
+@mcp.tool()
+def cad_examples() -> str:
+    """Lista os layouts de exemplo (few-shot): nome, titulo, resumo e n de testes.
+
+    Quando usar: PRIMEIRO passo de qualquer pedido de circuito — ache o exemplo mais proximo do
+    enunciado e leia com cad_example(nome). Copiar a estrutura de um exemplo que passa o gate e o
+    caminho de menor erro. Todos passam o gate (cad_design) por construcao."""
+    itens = []
+    for f in sorted(EXEMPLOS.glob("*.layout.json")):
+        try:
+            d = json.loads(f.read_text())
+        except Exception:
+            continue
+        lay = d.get("layout", d)
+        cmd = lay.get("comando", [])
+        ramos = sum(len(b.get("ramos", [])) for b in cmd)
+        pot = lay.get("potencia", [])
+        itens.append({"nome": f.name[:-len(".layout.json")],
+                      "titulo": d.get("titulo") or lay.get("titulo"),
+                      "descricao": d.get("descricao") or f"{ramos} degrau(s) de comando, {len(pot)} grupo(s) de potencia",
+                      "n_testes": len(d.get("testes") or lay.get("testes") or [])})
+    return json.dumps({"exemplos": itens, "n": len(itens),
+                       "uso": "cad_example(nome) devolve o layout.json completo; adapte e envie a cad_design"},
+                      ensure_ascii=False, indent=1)
+
+
+@mcp.tool()
+def cad_example(nome: str) -> str:
+    """Devolve o layout.json (DSL topologica + testes) do exemplo `nome` (veja cad_examples).
+
+    Quando usar: como modelo para o seu cad_design. O JSON retornado pode ser enviado
+    inalterado a cad_design(layout_json=..., out_path=...) e passa o gate."""
+    base = Path(str(nome)).name
+    for cand in (EXEMPLOS / f"{base}.layout.json", EXEMPLOS / base):
+        if cand.is_file() and cand.name.endswith(".layout.json"):
+            return cand.read_text()
+    disp = [f.name[:-len(".layout.json")] for f in sorted(EXEMPLOS.glob("*.layout.json"))]
+    return json.dumps({"erro": f"exemplo '{nome}' nao existe", "disponiveis": disp}, ensure_ascii=False)
+
+
+def _proximo_passo(r, path):
+    if r["ok"] and r["fios"]["ok"] is not False:
+        return (f"Gate verde. Chame cad_preview(path='{path}') e confira: nenhuma fase misturada, "
+                f"nenhum pino vermelho. Se estiver certo, entregue o .cad e resuma os testes que passaram.")
+    if r["ok"]:
+        return (f"Gate verde, mas {len(r['fios']['atravessam'])} fio(s) atravessam simbolo (estetico). "
+                f"Veja cad_preview; se o desenho estiver legivel, entregue; senao reordene serie/ramos.")
+    if r["erros"]:
+        e = r["erros"][0]
+        if e.startswith("layout invalido"):
+            return f"Corrija o layout_json: {e}. Use cad_example('partida_direta') como molde e tente de novo."
+        if e.startswith("CURTO"):
+            return f"Corrija o curto de fase: {e}. Depois chame cad_design de novo."
+        if "solto" in e:
+            return f"Ligue o pino solto: {e}. Depois chame cad_design de novo."
+        if e.startswith("sem testes") or e.startswith("teste"):
+            return f"Ajuste os testes ou o circuito: {e}. Depois chame cad_design de novo."
+        return f"Corrija: {e}. Depois chame cad_design de novo."
+    return "Revise o relatorio do gate."
+
+
+def _relatorio(r, path):
+    return {"ok": r["ok"], "path": str(path),
+            "gate": {"build": r["build"], "testes": {k: r["testes"][k] for k in
+                                                     ("ok", "passaram", "total", "falhas")},
+                     "geo": {"curtos": r["geo"]["curtos_msg"], "soltos": r["geo"]["soltos_msg"]},
+                     "fios": r["fios"]},
+            "avisos": r["avisos"], "erros": r["erros"],
+            "proximo_passo": _proximo_passo(r, path)}
+
+
+@mcp.tool()
+def cad_design(layout_json: str, out_path: str) -> str:
+    """FERRAMENTA PRINCIPAL: layout TOPOLOGICO (sem x/y) -> .cad pronto + gate completo, numa chamada.
+
+    layout_json = string JSON no formato de cad_examples/cad_example (DSL de docs/dsl-layout.md):
+      {"titulo","layout":{"trilhos","fontes","comando","potencia"},"testes":[...]}
+      (aceita tambem o layout 'puro' com "testes" dentro; ou spec baixa com "simbolos").
+    O motor posiciona tudo, roteia os fios, calcula os nets e roda: build+validate, testes
+    funcionais (cad_test), geo_check (curto de fase / pino solto) e wires_check (estetica).
+    Retorno JSON: {ok, path, gate:{build,testes,geo:{curtos,soltos},fios}, avisos, erros, proximo_passo}.
+    ok=false -> leia 'erros' (acionaveis) e 'proximo_passo', corrija o layout e chame de novo.
+
+    Erros comuns que o gate pega: fonte 3004 por fase (use UMA 3007 com pinos), PE ligado ao
+    neutro (use trilho "PE" + "pe":"PE"), pino de motor/contator solto, circuito SEM "testes",
+    chave de teste que nao existe (a chave e o rotulo sem '-': '-S1' -> 'S1')."""
+    try:
+        spec = json.loads(layout_json)
+    except json.JSONDecodeError as e:
+        return json.dumps({"ok": False, "path": out_path, "erros": [f"layout invalido: JSON malformado: {e}"],
+                           "proximo_passo": "Envie um JSON valido (string). Veja cad_example."},
+                          ensure_ascii=False, indent=1)
+    import build_spec
+    Path(out_path).parent.mkdir(parents=True, exist_ok=True)
+    try:
+        r = build_spec.construir(spec, out_path)
+    except Exception as e:  # layout fora da folha, classe sem pino etc. chegam aqui como ValueError
+        r = {"ok": False, "path": out_path, "build": {"ok": False, "mensagem": ""},
+             "testes": {"ok": False, "passaram": None, "total": None, "falhas": []},
+             "geo": {"curtos_msg": [], "soltos_msg": []}, "fios": {"ok": None, "atravessam": []},
+             "avisos": [], "erros": [f"layout invalido: {type(e).__name__}: {e}"]}
+    return json.dumps(_relatorio(r, out_path), ensure_ascii=False, indent=1)
+
+
+@mcp.tool()
+def cad_gate(path: str, testes_json: str = "[]") -> str:
+    """Gate completo de um .cad EXISTENTE: validate + testes funcionais + geo_check + wires_check.
+
+    Quando usar: depois de editar/gerar um .cad por outro caminho (cad_build manual, cad_emit,
+    arquivo de terceiros), ou para reconferir. Para criar do zero prefira cad_design (ja inclui).
+    testes_json: [{"nome","entradas":{"S1":true},"inicial":["KM1"],"esperado":["KM1"],"status":"OK"}].
+      Sem casos o gate so tem suite embutida p/ circuito com KM1+KM2; senao reprova (SEM_TESTES).
+    Retorno: mesmo JSON de cad_design, com mensagens acionaveis, p.ex.
+      'pino L3 da fonte -X (3007) solto em (42,55): ligue-o ao trilho L3'."""
+    import build_spec
+    try:
+        testes = json.loads(testes_json)
+    except json.JSONDecodeError as e:
+        return json.dumps({"ok": False, "path": path, "erros": [f"testes_json invalido: {e}"]}, ensure_ascii=False)
+    if not Path(path).is_file():
+        return json.dumps({"ok": False, "path": path, "erros": [f"arquivo nao existe: {path}"]}, ensure_ascii=False)
+    code, out = _run("validate", path)
+    r = {"ok": False, "path": path, "build": {"ok": code == 0, "mensagem": out},
+         "testes": {}, "geo": {}, "fios": {}, "avisos": [], "erros": [], "_teste_raw": ""}
+    if code != 0:
+        r["erros"].append(f"arquivo invalido: {out}")
+        r["testes"] = {"ok": False, "passaram": None, "total": None, "falhas": []}
+        r["geo"] = {"curtos_msg": [], "soltos_msg": []}
+        r["fios"] = {"ok": None, "atravessam": []}
+        return json.dumps(_relatorio(r, path), ensure_ascii=False, indent=1)
+    build_spec.gate(path, testes, r)
+    r["ok"] = bool(r["testes"]["ok"] and not r["geo"]["curtos"] and not r["geo"]["soltos"])
+    return json.dumps(_relatorio(r, path), ensure_ascii=False, indent=1)
 
 
 @mcp.tool()
