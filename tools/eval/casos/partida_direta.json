@@ -1,0 +1,105 @@
+{
+  "id": "partida_direta",
+  "titulo": "Partida direta de 1 motor trifasico",
+  "dificuldade": 1,
+  "enunciado": "Monte o diagrama de comando e potencia de uma partida direta de um motor trifasico de inducao no CADe_SIMU. O motor e acionado pelo contator -KM1, protegido por disjuntor -Q1 e rele termico -F1 (contato NF -RT1 no comando). O botao -S1 (NA) liga, o botao -S0 (NF) desliga, o contato auxiliar NA de -KM1 faz o selo e a lampada -H1 sinaliza motor ligado (em paralelo com a bobina). Se o termico atuar, o motor desliga e nao parte.",
+  "restricoes": [
+    "Use UMA fonte trifasica multi-terminal (classe 3007) e trilho PE separado do neutro.",
+    "Ligue TODOS os terminais (nenhum pino solto; U1/V1/W1/PE do motor, 1-3-5/2-4-6 do contator).",
+    "Os rotulos dos simbolos devem ser exatamente os do enunciado (os testes usam esses nomes).",
+    "Selo = contato NA do proprio -KM1 em paralelo com -S1.",
+    "Termico e -S0 em serie no comando, antes de -S1."
+  ],
+  "obrigatorios": {
+    "classes": {
+      "2001": 1,
+      "6007": 1,
+      "1000": 1,
+      "9000": 1,
+      "8017": 1,
+      "8001": 1,
+      "8000": 1,
+      "7000": 1
+    },
+    "uma_de": [
+      [
+        "6009",
+        "6010"
+      ]
+    ],
+    "rotulos": [
+      "-S0",
+      "-S1",
+      "-KM1",
+      "-RT1",
+      "-H1"
+    ]
+  },
+  "testes": [
+    {
+      "nome": "repouso desligado",
+      "entradas": {},
+      "status": "OK",
+      "esperado": []
+    },
+    {
+      "nome": "S1 liga KM1",
+      "entradas": {
+        "S1": true
+      },
+      "status": "OK",
+      "esperado": [
+        "KM1"
+      ]
+    },
+    {
+      "nome": "selo mantem KM1",
+      "entradas": {},
+      "status": "OK",
+      "esperado": [
+        "KM1"
+      ],
+      "inicial": [
+        "KM1"
+      ]
+    },
+    {
+      "nome": "S0 desliga",
+      "entradas": {
+        "S0": true
+      },
+      "status": "OK",
+      "esperado": [],
+      "inicial": [
+        "KM1"
+      ]
+    },
+    {
+      "nome": "sem auto-religamento",
+      "entradas": {},
+      "status": "OK",
+      "esperado": []
+    },
+    {
+      "nome": "RT1 aberto bloqueia a partida",
+      "entradas": {
+        "RT1": true,
+        "S1": true
+      },
+      "status": "OK",
+      "esperado": []
+    },
+    {
+      "nome": "RT1 aberto derruba KM1",
+      "entradas": {
+        "RT1": true
+      },
+      "status": "OK",
+      "esperado": [],
+      "inicial": [
+        "KM1"
+      ]
+    }
+  ],
+  "golden": "partida_direta"
+}
