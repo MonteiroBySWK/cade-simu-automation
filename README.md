@@ -45,10 +45,8 @@ Este repo é um **servidor MCP** (`tools/cade_mcp.py`, stdio): qualquer agente
 conecta e passa a validar, gerar, inspecionar e **ver** circuitos:
 
 ```bash
-uv venv tools/.venv-mcp
-uv pip install --python tools/.venv-mcp/bin/python "mcp<2" pillow numpy
-cargo build --manifest-path src/cade_cli/Cargo.toml
-# claude mcp add cade-simu -- tools/.venv-mcp/bin/python tools/cade_mcp.py
+python scripts/dev.py setup         # cargo build + venv + deps
+python scripts/dev.py install-mcp   # registra no Claude Code e no opencode (CLIs oficiais)
 ```
 
 Ferramentas (caminho de menor resistência primeiro):
