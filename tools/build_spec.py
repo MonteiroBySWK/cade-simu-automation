@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Gera um .cad a partir de uma especificacao JSON, via cad_build, e roda o GATE.
 
-Uso: python3 tools/build_spec.py tools/examples/intercalada.spec.json out/x.cad
+Uso: python3 tools/build_spec.py tools/examples/intercalada.layout.json out/x.cad
      python3 tools/build_spec.py tools/examples/intercalada.layout.json out/x.cad  # DSL topologica
 
 Como biblioteca (usado por cad_design / eval):
@@ -58,7 +58,9 @@ def lint_layout(layout_d, low=None):
     if not layout_d:
         return av
     pins = json.loads((TOOLS / "symbol_pins.json").read_text(encoding="utf-8"))
-    trilhos = layout_d.get("trilhos", {})
+    trilhos = {k: v for k, v in layout_d.get("trilhos", {}).items() if k not in ("x0", "x1")}
+    for nome in (layout_d.get("trilhos_comando") or {}).get("nomes", []):
+        trilhos.setdefault(nome, None)            # trilhos de comando (C1/C2) tambem valem
     for f in layout_d.get("fontes", []):
         if not f.get("pinos") and len(f.get("fases") or []) > 1:
             av.append(f"fonte {f.get('classe', '3004')} por fase ({f.get('id')}): desenho legado que gera "

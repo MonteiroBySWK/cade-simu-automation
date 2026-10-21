@@ -7,7 +7,7 @@ Gerar, do zero e por agente, um `.cad` de **partida intercalar de 2 motores** qu
 
 ## Artefato final
 - Especificação: `tools/examples/intercalada.layout.json` (topologia, **sem x/y**; motor `tools/layout.py`).
-  A `.spec.json` antiga (coordenadas manuais) segue válida mas usa fonte 3004 x3 + PE no neutro (**defeituosa**, ver abaixo).
+  A `.spec.json` antiga (coordenadas manuais, fonte 3004 x3 + PE no neutro) foi **removida** por ter curto real (ver abaixo).
 - Saída: `out/intercalada.cad` (gitignored).
 - **Regenerar SEMPRE com o gate:**
   ```bash
