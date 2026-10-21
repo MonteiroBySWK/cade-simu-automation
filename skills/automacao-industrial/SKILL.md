@@ -101,6 +101,8 @@ Pare e pergunte (em vez de chutar) quando:
 - **O enunciado pede algo fora da DSL v1**: temporizador/estrela-triângulo, CLP/ladder, inversor, soft-starter,
   ramos aninhados, comando em 2 pontos de liga. Diga o limite e ofereça a alternativa (`cad_build` com `conexoes`,
   ou simplificar) — não entregue um circuito "parecido" como se fosse o pedido.
+  **CLP/ladder**: a semântica e o contrato da DSL `ladder/1` estão especificados (`docs/ladder.md`, exemplos
+  `tools/examples/*.ladder.json`), mas o gerador ainda **não** os compila (port em Rust). Até lá, diga isso.
 - **Número de motores/fases/tensão** não estão claros, ou há **sinalização/emergência** só insinuada.
 - **O gate falhou 3 vezes seguidas com o mesmo erro**: pare, leia `cad_pins`/`docs/dsl-layout.md`, e relate o
   bloqueio ao usuário com o erro literal em vez de contornar o gate.
