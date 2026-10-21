@@ -450,7 +450,7 @@ def cad_build(titulo: str, simbolos_json: str, fios_json: str = "[]", out_path: 
     for f in fios:
         n = list(wire["nums"])
         n[8], n[9], n[10], n[11] = str(int(f["x1"])), str(int(f["y1"])), str(int(f["x2"])), str(int(f["y2"]))
-        ents.append({"id": "4000", "labels": wire["labels"], "nums": n})
+        ents.append({"id": str(f.get("classe", "4000")), "labels": wire["labels"], "nums": n})
     for s in simbolos:
         p = protos[s["classe"]]
         n = list(p["nums"])
@@ -459,6 +459,9 @@ def cad_build(titulo: str, simbolos_json: str, fios_json: str = "[]", out_path: 
         labs = list(p["labels"])
         if s.get("rotulo") and labs:
             labs[0] = s["rotulo"]
+        for i, v in enumerate(s.get("rotulos") or []):   # sobrescreve labels[i] (ex.: unidade/tempo do 10066)
+            if v is not None:
+                labs[i] = str(v)
         ents.append({"id": s["classe"], "labels": labs, "nums": n})
     if not ents:
         ents = [{"id": "8000", "labels": protos["8000"]["labels"], "nums": list(protos["8000"]["nums"])}]
