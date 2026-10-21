@@ -188,7 +188,8 @@ def cad_test(path: str, casos_json: str = "[]") -> str:
 # --- autoria do zero (símbolos + fios) --------------------------------------
 
 _LIB = None
-ACERVO = Path(os.environ.get("CADE_ACERVO", "/home/monteiro/Downloads/CADe_SIMU 4.0 [BR]/CADe_SIMU 4.0 [BR]/Atividades para Simular/115 arquivos CADe_SIMU/Arquivos .cad"))
+import cade_config  # noqa: E402
+ACERVO = cade_config.acervo()   # OPCIONAL: o catalogo vem de tools/symbol_lib.json
 
 
 def _lib():
@@ -197,6 +198,11 @@ def _lib():
     if _LIB is None:
         import mk_dataset as M
         header, protos, footer, wire = M.load_donor()
+        lib_json = Path(__file__).resolve().parent / "symbol_lib.json"      # catalogo versionado
+        if lib_json.is_file():
+            for cid, v in json.loads(lib_json.read_text()).items():
+                if cid not in protos:
+                    protos[cid] = {"seq": "0", "id": cid, "labels": v["labels"], "nums": v["nums"], "raw": ""}
         fontes = sorted((ROOT / "corpus").glob("*.cad"))
         if ACERVO.is_dir():
             fontes += sorted(ACERVO.glob("*.cad"))

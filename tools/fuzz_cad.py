@@ -9,7 +9,11 @@ import re, shutil, subprocess, time, os
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-EXE = Path(os.environ.get("CADE_EXE", "/home/monteiro/Downloads/CADe_SIMU 4.0 [BR]/CADe_SIMU 4.0 [BR]/CADe_SIMU 4.0 [BR].exe"))
+import sys as _s
+from pathlib import Path as _P
+_s.path.insert(0, str(_P(__file__).resolve().parent))
+import cade_config  # noqa: E402
+EXE = cade_config.exe()
 APPDIR = EXE.parent
 FZ = ROOT / "out" / "fuzz"
 

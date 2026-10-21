@@ -1,0 +1,23 @@
+name: ci
+on:
+  push: { branches: [main] }
+  pull_request:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Dependencias
+        run: |
+          pip install -r requirements.txt
+          cargo build --manifest-path src/cade_cli/Cargo.toml
+      - name: Testes (sem Wine/CADe_SIMU; os de app sao pulados)
+        run: python -m pytest tools -q
+      - name: Gate dos exemplos + eval golden
+        run: |
+          mkdir -p out
+          for f in tools/examples/*.layout.json; do python tools/build_spec.py "$f" "out/$(basename "$f" .layout.json).cad" | tail -1; done
+          python tools/eval/run_eval.py --golden | tail -2

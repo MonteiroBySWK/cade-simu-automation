@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
 import os
+import sys
+from pathlib import Path as _P
+sys.path.insert(0, str(_P(__file__).resolve().parent))
+import cade_config  # noqa: E402
 """Abre um .cad no CADe_SIMU (Wine) e digita a senha 4962 sozinho — rápido.
 
 Localiza a janela do teclado de senha (CADE SIMU 4.0, ~176x189) e clica os
@@ -13,7 +17,7 @@ import sys
 import time
 from pathlib import Path
 
-EXE_DIR = Path(os.environ.get("CADE_DIR", "/home/monteiro/Downloads/CADe_SIMU 4.0 [BR]/CADe_SIMU 4.0 [BR]"))
+EXE_DIR = cade_config.cade_dir()
 EXE = "CADe_SIMU 4.0 [BR].exe"
 # frações (x,y) do teclado dentro da janela do diálogo — calibradas em 176x189
 TECLA = {

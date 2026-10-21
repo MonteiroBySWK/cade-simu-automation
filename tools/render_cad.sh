@@ -4,7 +4,7 @@
 # Uso: render_cad.sh <arquivo.cad> <saida.png>
 set -u
 CAD="$1"; SHOT="$2"
-EXE_DIR="${CADE_DIR:-/home/monteiro/Downloads/CADe_SIMU 4.0 [BR]/CADe_SIMU 4.0 [BR]}"
+EXE_DIR="${CADE_DIR:?defina CADE_DIR com a pasta do CADe_SIMU (veja docs/DEPENDENCIAS.md)}"
 cp "$CAD" "$EXE_DIR/rv_tmp.cad"
 timeout 150 xvfb-run -a -s "-screen 0 1280x1024x24" sh -c '
 cd "'"$EXE_DIR"'" && wine "CADe_SIMU 4.0 [BR].exe" "rv_tmp.cad" &

@@ -22,7 +22,11 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from dissect import parse_ent, split_entities  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
-ACERVO = Path(os.environ.get("CADE_ACERVO", "/home/monteiro/Downloads/CADe_SIMU 4.0 [BR]/CADe_SIMU 4.0 [BR]/Atividades para Simular/115 arquivos CADe_SIMU/Arquivos .cad"))
+import sys as _s
+from pathlib import Path as _P
+_s.path.insert(0, str(_P(__file__).resolve().parent))
+import cade_config  # noqa: E402
+ACERVO = cade_config.acervo()
 WIRE = {"4000", "4018", "4009"}
 PINS = json.loads((ROOT / "tools" / "symbol_pins.json").read_text())
 

@@ -90,12 +90,14 @@ def test_cli_sem_display_nao_quebra_importacao():
 
 
 def _tem_ambiente():
+    if os.environ.get("CADE_E2E") != "1":      # opt-in: este teste ABRE o Wine (~1 min)
+        return False
     if not os.environ.get("DISPLAY") or not shutil.which("wine") or not shutil.which("xdotool"):
         return False
     return (A.W.EXE_DIR / A.W.EXE).is_file() and not A.W.pids_cade()
 
 
-@pytest.mark.skipif(not _tem_ambiente(), reason="sem DISPLAY/wine/CADe_SIMU (ou Wine ocupado por outro agente)")
+@pytest.mark.skipif(not _tem_ambiente(), reason="opt-in: defina CADE_E2E=1 (e tenha DISPLAY/wine/CADe_SIMU livres) — abre o Wine")
 def test_e2e_partida_direta_no_app(tmp_path):
     cad_path, testes = _cad(tmp_path)
     casos = [c for c in testes if c["nome"] in ("repouso desligado", "S1 liga KM1", "selo mantem KM1", "S0 desliga")]
