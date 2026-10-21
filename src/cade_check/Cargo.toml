@@ -1,0 +1,11 @@
+[package]
+name = "cade_check"
+description = "Gate estatico: geo_check (curtos/pinos soltos), wires_check, vinculos por rotulo"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+cade_model.workspace = true
+serde_json.workspace = true

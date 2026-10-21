@@ -1,0 +1,5 @@
+# Comparacao byte-a-byte (paridade Rust x Python): nada de conversao de fim de linha.
+tests/golden/** -text
+tools/examples/*.json -text
+corpus/*.cad -text
+*.cad -text

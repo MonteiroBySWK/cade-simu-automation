@@ -1,0 +1,45 @@
+[workspace]
+resolver = "2"
+members = [
+    "src/cade_core",
+    "src/cade_model",
+    "src/cade_build",
+    "src/cade_layout",
+    "src/cade_check",
+    "src/cade_sim",
+    "src/cade_render",
+    "src/cade_mcp",
+    "src/cade_app",
+    "src/cade_vision",
+    "src/cade_maint",
+    "src/cade_cli",
+    "tests/paridade",
+]
+
+[workspace.package]
+version = "0.2.0"
+edition = "2021"
+license = "GPL-3.0-or-later"
+publish = false
+
+[workspace.dependencies]
+cade_core = { path = "src/cade_core" }
+cade_model = { path = "src/cade_model" }
+cade_build = { path = "src/cade_build" }
+cade_layout = { path = "src/cade_layout" }
+cade_check = { path = "src/cade_check" }
+cade_sim = { path = "src/cade_sim" }
+cade_render = { path = "src/cade_render" }
+cade_mcp = { path = "src/cade_mcp" }
+cade_app = { path = "src/cade_app" }
+cade_vision = { path = "src/cade_vision" }
+cade_maint = { path = "src/cade_maint" }
+serde = { version = "1", features = ["derive"] }
+# preserve_order: a ordem das chaves do JSON importa (ordem de conexoes/fios = ordem dos fios no .cad)
+serde_json = { version = "1", features = ["preserve_order"] }
+clap = { version = "4", features = ["derive"] }
+
+[profile.release]
+lto = true
+codegen-units = 1
+strip = true
