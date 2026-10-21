@@ -1,0 +1,1 @@
+expressao invalida {'serie': [['K', '9000', '-K']], 'paralelo': []}: use exatamente uma chave 'serie' ou 'paralelo'

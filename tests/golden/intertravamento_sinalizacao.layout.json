@@ -1,0 +1,394 @@
+{
+  "titulo": "INTERTRAVAMENTO COM SINALIZACAO",
+  "descricao": "Dois motores intertravados (NF de um na bobina do outro) com RT1 e S0 comuns (paralelo de series). Dois degraus de sinalizacao usam contatos auxiliares de KM1/KM2: NA (KA3 = KM1 ligado) e NF em serie (KA4 = nenhum ligado).",
+  "layout": {
+    "trilhos": {
+      "L1": 14,
+      "L2": 20,
+      "L3": 26,
+      "N": 282,
+      "x0": 25,
+      "x1": 395,
+      "PE": 291
+    },
+    "fontes": [
+      {
+        "id": "X1",
+        "classe": "3007",
+        "rotulo": "-X",
+        "pinos": {
+          "L1": "L1",
+          "L2": "L2",
+          "L3": "L3",
+          "N": "N",
+          "PE": "PE"
+        }
+      }
+    ],
+    "comando": [
+      {
+        "id": "c1",
+        "de": "L1",
+        "para": "N",
+        "rungs": [
+          {
+            "serie": [
+              [
+                "RT1",
+                "8017",
+                "-RT1"
+              ],
+              [
+                "S0",
+                "8001",
+                "-S0"
+              ],
+              {
+                "paralelo": [
+                  {
+                    "serie": [
+                      {
+                        "paralelo": [
+                          [
+                            "S1",
+                            "8000",
+                            "-S1"
+                          ],
+                          [
+                            "selo1",
+                            "7000",
+                            "-KM1"
+                          ]
+                        ]
+                      },
+                      [
+                        "nkm2",
+                        "7001",
+                        "-KM2"
+                      ],
+                      {
+                        "paralelo": [
+                          [
+                            "KM1",
+                            "9000",
+                            "-KM1"
+                          ],
+                          [
+                            "H1",
+                            "9008",
+                            "-H1"
+                          ]
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "serie": [
+                      {
+                        "paralelo": [
+                          [
+                            "S2",
+                            "8000",
+                            "-S2"
+                          ],
+                          [
+                            "selo2",
+                            "7000",
+                            "-KM2"
+                          ]
+                        ]
+                      },
+                      [
+                        "nkm1",
+                        "7001",
+                        "-KM1"
+                      ],
+                      {
+                        "paralelo": [
+                          [
+                            "KM2",
+                            "9000",
+                            "-KM2"
+                          ],
+                          [
+                            "H2",
+                            "9008",
+                            "-H2"
+                          ]
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "serie": [
+              [
+                "k1on",
+                "7000",
+                "-KM1"
+              ],
+              {
+                "paralelo": [
+                  [
+                    "KA3",
+                    "9000",
+                    "-KA3"
+                  ],
+                  [
+                    "H3",
+                    "9008",
+                    "-H3"
+                  ]
+                ]
+              }
+            ]
+          },
+          {
+            "serie": [
+              [
+                "nk1",
+                "7001",
+                "-KM1"
+              ],
+              [
+                "nk2",
+                "7001",
+                "-KM2"
+              ],
+              {
+                "paralelo": [
+                  [
+                    "KA4",
+                    "9000",
+                    "-KA4"
+                  ],
+                  [
+                    "H4",
+                    "9008",
+                    "-H4"
+                  ]
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "potencia": [
+      {
+        "id": "m1",
+        "fases": [
+          "L1",
+          "L2",
+          "L3"
+        ],
+        "neutro": "N",
+        "pe": "PE",
+        "colunas": [
+          [
+            "Q1",
+            "6009",
+            "-Q1"
+          ],
+          [
+            "F1",
+            "6007",
+            "-RT1"
+          ],
+          [
+            "KM1p",
+            "2001",
+            "-KM1"
+          ],
+          [
+            "M1",
+            "1000",
+            "-M1"
+          ]
+        ]
+      },
+      {
+        "id": "m2",
+        "fases": [
+          "L1",
+          "L2",
+          "L3"
+        ],
+        "neutro": "N",
+        "pe": "PE",
+        "colunas": [
+          [
+            "Q2",
+            "6009",
+            "-Q2"
+          ],
+          [
+            "F2",
+            "6007",
+            "-RT2"
+          ],
+          [
+            "KM2p",
+            "2001",
+            "-KM2"
+          ],
+          [
+            "M2",
+            "1000",
+            "-M2"
+          ]
+        ]
+      }
+    ]
+  },
+  "testes": [
+    {
+      "nome": "repouso: NF de KM1 e KM2 fechados -> KA4",
+      "entradas": {},
+      "esperado": [
+        "KA4"
+      ],
+      "esperado_lampadas": [
+        "H4"
+      ],
+      "status": "OK"
+    },
+    {
+      "nome": "S1 liga KM1 (KA3 acende, KA4 apaga)",
+      "entradas": {
+        "S1": true
+      },
+      "esperado": [
+        "KM1",
+        "KA3"
+      ],
+      "esperado_lampadas": [
+        "H1",
+        "H3"
+      ],
+      "status": "OK"
+    },
+    {
+      "nome": "S2 liga KM2 (KA4 apaga)",
+      "entradas": {
+        "S2": true
+      },
+      "esperado": [
+        "KM2"
+      ],
+      "esperado_lampadas": [
+        "H2"
+      ],
+      "status": "OK"
+    },
+    {
+      "nome": "selo KM1",
+      "entradas": {},
+      "inicial": [
+        "KM1"
+      ],
+      "esperado": [
+        "KM1",
+        "KA3"
+      ],
+      "status": "OK"
+    },
+    {
+      "nome": "selo KM2",
+      "entradas": {},
+      "inicial": [
+        "KM2"
+      ],
+      "esperado": [
+        "KM2"
+      ],
+      "status": "OK"
+    },
+    {
+      "nome": "KM2 bloqueado com KM1 ligado",
+      "entradas": {
+        "S2": true
+      },
+      "inicial": [
+        "KM1"
+      ],
+      "esperado": [
+        "KM1",
+        "KA3"
+      ],
+      "status": "OK"
+    },
+    {
+      "nome": "KM1 bloqueado com KM2 ligado",
+      "entradas": {
+        "S1": true
+      },
+      "inicial": [
+        "KM2"
+      ],
+      "esperado": [
+        "KM2"
+      ],
+      "status": "OK"
+    },
+    {
+      "nome": "S0 desliga KM1 e volta KA4",
+      "entradas": {
+        "S0": true
+      },
+      "inicial": [
+        "KM1"
+      ],
+      "esperado": [
+        "KA4"
+      ],
+      "status": "OK"
+    },
+    {
+      "nome": "S0 desliga KM2 e volta KA4",
+      "entradas": {
+        "S0": true
+      },
+      "inicial": [
+        "KM2"
+      ],
+      "esperado": [
+        "KA4"
+      ],
+      "status": "OK"
+    },
+    {
+      "nome": "RT1 aberto bloqueia S1",
+      "entradas": {
+        "RT1": true,
+        "S1": true
+      },
+      "esperado": [
+        "KA4"
+      ],
+      "status": "OK"
+    },
+    {
+      "nome": "RT1 aberto bloqueia S2 (RT comum)",
+      "entradas": {
+        "RT1": true,
+        "S2": true
+      },
+      "esperado": [
+        "KA4"
+      ],
+      "status": "OK"
+    },
+    {
+      "nome": "S1+S2 simultaneo = corrida",
+      "entradas": {
+        "S1": true,
+        "S2": true
+      },
+      "status": "RACE"
+    }
+  ]
+}

@@ -1,0 +1,1 @@
+comando 'c1': 'para'='X' nao e um trilho (trilhos: ['L1', 'N'])
