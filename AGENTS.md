@@ -3,7 +3,7 @@
 Gera/valida circuitos do **CADe_SIMU 4.0** (`.cad`) por IA. **Nunca escreva `*`/`#` à mão**: use o MCP `cade-simu`.
 
 ## Setup (sem Wine)
-`make setup && make doctor` · testes: `make test` · todos os exemplos + eval: `make gate`.
+`python scripts/dev.py setup && python scripts/dev.py doctor` · testes: `python scripts/dev.py test` · todos os exemplos + eval: `python scripts/dev.py gate`.
 Dependências e o que é opcional: `docs/DEPENDENCIAS.md`. Integração: `docs/integracao.md`.
 
 ## Como criar um circuito
@@ -17,5 +17,5 @@ Dependências e o que é opcional: `docs/DEPENDENCIAS.md`. Integração: `docs/i
 - Térmico `6007` e contato `8016/8017` com o **mesmo rótulo**; auxiliares/polos com o rótulo da bobina.
 - Conectividade é **geometria** (extremo a extremo); nets gravados no arquivo não valem.
 - Folha segura: x ≤ 455, y ≤ 305 (`tools/sheet.json`). Ligue **todos** os pinos.
-- Mexeu em pinos/roteador/layout? Rode `make test` e `make gate` antes e depois.
+- Mexeu em pinos/roteador/layout? Rode `python scripts/dev.py test` e `python scripts/dev.py gate` antes e depois.
 - Um Ghidra e um Wine por vez; não derrube processo alheio.

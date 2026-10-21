@@ -3,7 +3,10 @@
   "mcp": {
     "cade-simu": {
       "type": "local",
-      "command": ["bash", "scripts/mcp-server.sh"],
+      "command": [
+        "python",
+        "scripts/mcp_server.py"
+      ],
       "enabled": true
     }
   }

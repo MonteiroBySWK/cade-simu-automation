@@ -1,8 +1,10 @@
 {
   "mcpServers": {
     "cade-simu": {
-      "command": "bash",
-      "args": ["scripts/mcp-server.sh"]
+      "command": "python",
+      "args": [
+        "scripts/mcp_server.py"
+      ]
     }
   }
 }

@@ -64,7 +64,7 @@ def main():
                     if na_borda:
                         acc.setdefault(cid, Counter())[(dx, dy)] += 1
     p = ROOT / "tools" / "symbol_pins.json"
-    atual = json.loads(p.read_text())
+    atual = json.loads(p.read_text(encoding="utf-8"))
     novos = 0
     for cid, cnt in sorted(acc.items()):
         if atual.get(cid, {}).get("nota"):

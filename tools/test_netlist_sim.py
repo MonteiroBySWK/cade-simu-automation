@@ -21,7 +21,7 @@ NOMES = sorted(f.name[: -len(".layout.json")] for f in EX.glob("*.layout.json"))
 
 
 def _spec(nome):
-    return json.loads((EX / f"{nome}.layout.json").read_text())
+    return json.loads((EX / f"{nome}.layout.json").read_text(encoding="utf-8"))
 
 
 def _build(spec, out):
@@ -313,12 +313,12 @@ def test_papeis_json_sobrepoe_e_ignora_lixo(tmp_path):
     f = tmp_path / "classes-papeis.json"
     f.write_text(json.dumps({"classes": {"7004": {"papel": "contato", "modo": "NF"},
                                          "9004": {"papel": "bobina"}, "9999": {"papel": "inventado"},
-                                         "8000": {"papel": "contato", "modo": "NC"}}}))
+                                         "8000": {"papel": "contato", "modo": "NC"}}}), encoding="utf-8")
     t = ns.carregar_papeis(f)
     assert t["7004"] == {"papel": "contato", "modo": "NC"}
     assert t["9004"]["papel"] == "bobina" and "9999" not in t
     assert t["8000"]["modo"] == "NC"                     # JSON do RE tem precedencia
-    f.write_text("{nao e json")
+    f.write_text("{nao e json", encoding="utf-8")
     assert ns.carregar_papeis(f)["8000"]["modo"] == "NA"  # arquivo corrompido -> embutida
 
 

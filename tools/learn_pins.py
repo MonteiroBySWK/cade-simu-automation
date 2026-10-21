@@ -108,7 +108,7 @@ def main(argv):
         e["n"] = max(e.get("A_n", 0), e.get("B_n", 0), e.get("A_g", 0), e.get("B_g", 0))
         out[sid] = e
     (ROOT / "out").mkdir(exist_ok=True)
-    (ROOT / "out" / "pin_map.json").write_text(json.dumps(out, indent=1, sort_keys=True))
+    (ROOT / "out" / "pin_map.json").write_text(json.dumps(out, indent=1, sort_keys=True), encoding="utf-8")
     for sid in sorted(out, key=lambda s: -out[s]["n"])[:25]:
         print(sid, out[sid])
     print("arquivos:", len(files), "| classes com pino:", len(out), "-> out/pin_map.json")

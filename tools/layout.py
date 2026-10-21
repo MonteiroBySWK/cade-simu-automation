@@ -36,12 +36,12 @@ import sys
 from pathlib import Path
 
 TOOLS = Path(__file__).resolve().parent
-PINS = json.loads((TOOLS / "symbol_pins.json").read_text())
+PINS = json.loads((TOOLS / "symbol_pins.json").read_text(encoding="utf-8"))
 def _sheet():
     """Limite superior util da folha (tools/sheet.json, medido no app: docs/folha.md).
     So o MAXIMO e usado; os layouts partem do canto sup-esq ja validado visualmente."""
     try:
-        d = json.loads((TOOLS / "sheet.json").read_text())
+        d = json.loads((TOOLS / "sheet.json").read_text(encoding="utf-8"))
         return int(d["x_seguro_max"]), int(d["y_seguro_max"])
     except Exception:
         return 455, 295       # fallback conservador
@@ -57,7 +57,7 @@ FALLBACK_DIM = (18, 15)
 def _dims():
     p = TOOLS / "symbol_dims.json"
     try:
-        return json.loads(p.read_text())
+        return json.loads(p.read_text(encoding="utf-8"))
     except Exception:
         return {}
 
@@ -1146,7 +1146,7 @@ def gen_dims():
             out[k] = [int(p["nums"][14]), int(p["nums"][15])]
         except (ValueError, IndexError):
             pass
-    (TOOLS / "symbol_dims.json").write_text(json.dumps(out, sort_keys=True))
+    (TOOLS / "symbol_dims.json").write_text(json.dumps(out, sort_keys=True), encoding="utf-8")
     print(f"{len(out)} classes -> tools/symbol_dims.json")
 
 
@@ -1157,12 +1157,12 @@ def main(argv):
     if not argv:
         print(__doc__)
         return 2
-    spec = json.loads(Path(argv[0]).read_text())
+    spec = json.loads(Path(argv[0]).read_text(encoding="utf-8"))
     low = compilar(spec.get("layout", spec))
     low.setdefault("titulo", spec.get("titulo", "NOVO"))
     txt = json.dumps(low, indent=1, ensure_ascii=False)
     if len(argv) > 1:
-        Path(argv[1]).write_text(txt)
+        Path(argv[1]).write_text(txt, encoding="utf-8")
     else:
         print(txt)
     return 0

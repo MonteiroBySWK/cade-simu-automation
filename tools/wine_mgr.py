@@ -47,7 +47,7 @@ def log(msg):
 
 def xdo(*args, disp=None):
     env = dict(os.environ, DISPLAY=disp or DISP)
-    r = subprocess.run(["xdotool", *args], env=env, capture_output=True, text=True)
+    r = subprocess.run(["xdotool", *args], env=env, capture_output=True, text=True, encoding="utf-8", errors="replace")
     return r.stdout
 
 
