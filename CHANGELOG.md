@@ -4,6 +4,11 @@ Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/). 
 
 ## [Unreleased]
 
+### Instalação
+- `python scripts/dev.py install-mcp|uninstall-mcp`: registra MCP + skill via `claude mcp add -s user` e
+  `opencode mcp add --global` (caminhos absolutos, idempotente). Removidos `.mcp.json`/`opencode.json` do repo
+  (geravam servidor duplicado em dois escopos).
+
 ### Adicionado
 - Setup amigável e independente da máquina: `make setup|doctor|test|gate`, `scripts/setup.sh` (uv ou venv),
   `tools/doctor.py`, `requirements.txt`, `scripts/mcp-server.sh`, `.mcp.json` (Claude Code), `opencode.json`,
