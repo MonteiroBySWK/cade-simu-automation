@@ -1,0 +1,26 @@
+name: ci
+on:
+  push: { branches: [main] }
+  pull_request:
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    env:
+      PYTHONUTF8: "0"   # garante que o codigo nao depende do modo UTF-8 do Python
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Setup (cargo + venv + deps + doctor) — sem Wine, sem CADe_SIMU, sem acervo
+        run: python scripts/dev.py setup
+      - name: Testes
+        run: python scripts/dev.py test
+      - name: Gate de todos os exemplos + eval golden
+        run: python scripts/dev.py gate
+      - name: MCP responde (handshake + tools/list)
+        run: python tools/mcp_call.py cad_examples

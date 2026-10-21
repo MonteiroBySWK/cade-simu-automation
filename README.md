@@ -8,6 +8,20 @@ um `.cad` que abre e simula. O formato `.cad` é proprietário mas legível
 > files. The format is proprietary but parseable, so code (and AI) can edit it
 > reliably.
 
+## Início rápido (5 minutos, sem Wine e sem o CADe_SIMU)
+
+```bash
+git clone https://github.com/MonteiroBySWK/cade-simu-automation && cd cade-simu-automation
+python scripts/dev.py setup     # cargo build + venv + deps (precisa de Python>=3.10 e Rust)
+python scripts/dev.py doctor    # o que funciona / o que falta / como instalar
+python scripts/dev.py test      # 143+ testes (o E2E que abre o Wine é opt-in: `CADE_E2E=1`)
+python scripts/dev.py gate      # gera e valida todos os exemplos
+```
+
+- **Dependências** (núcleo × opcionais, variáveis `CADE_*`): [`docs/DEPENDENCIAS.md`](docs/DEPENDENCIAS.md)
+- **Usar com Claude Code / opencode** (MCP + skill): [`docs/integracao.md`](docs/integracao.md)
+- **Para agentes e contribuidores**: [`AGENTS.md`](AGENTS.md), [`CONTRIBUTING.md`](CONTRIBUTING.md), [`CHANGELOG.md`](CHANGELOG.md)
+
 ## Como funciona
 
 ```

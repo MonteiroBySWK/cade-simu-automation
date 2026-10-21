@@ -30,7 +30,7 @@ VERMELHO = (220, 0, 0)
 def _folha():
     """Area segura da folha (tools/sheet.json, medida no app); fallback conservador."""
     try:
-        d = json.loads((TOOLS / "sheet.json").read_text())
+        d = json.loads((TOOLS / "sheet.json").read_text(encoding="utf-8"))
         return int(d["x_seguro_max"]), int(d["y_seguro_max"])
     except Exception:
         return 455, 295

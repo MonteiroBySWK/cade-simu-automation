@@ -23,8 +23,8 @@ WIRE = {"4000", "4009", "4010", "4018", "4019"}
 SKIP = WIRE | {"4001", "4002", "4003", "4004", "4012", "8", "20000"}
 FONTE = {"3000", "3001", "3002", "3003", "3004", "3005", "3006", "3007", "3011"}
 CHAR = {"L1": "1", "L2": "2", "L3": "3", "L": "1", "N": "N", "PE": "P"}
-BIN = json.loads((T.parent / "docs" / "pinos-binario.json").read_text())["classes"]
-PINS = json.loads((T / "symbol_pins.json").read_text())
+BIN = json.loads((T.parent / "docs" / "pinos-binario.json").read_text(encoding="utf-8"))["classes"]
+PINS = json.loads((T / "symbol_pins.json").read_text(encoding="utf-8"))
 
 
 def _rot(dx, dy, o):

@@ -9,3 +9,6 @@ pratica5/
 *.pdf
 tools/.venv-mcp/
 logs/
+
+# worktrees locais do Claude Code
+.claude/worktrees/

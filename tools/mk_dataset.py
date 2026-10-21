@@ -69,7 +69,7 @@ def main(argv):
         pl = [("1000", 50, 40), ("1000", 260, 150)]
         (DS / "probe.cad").write_bytes(build(pl, header, protos, footer, wire).encode("latin1"))
         (DS / "probe.json").write_text(json.dumps({"casos": [{"arq": "probe.cad",
-            "simbolos": [{"classe": c, "x": x, "y": y} for c, x, y in pl]}]}, indent=1))
+            "simbolos": [{"classe": c, "x": x, "y": y} for c, x, y in pl]}]}, indent=1), encoding="utf-8")
         print("probe.cad OK", pl)
         return
     n = int(argv[1]) if len(argv) > 1 else 8
@@ -85,7 +85,7 @@ def main(argv):
         arq = f"case-{k:02d}.cad"
         (DS / arq).write_bytes(build(pl, header, protos, footer, wire).encode("latin1"))
         casos.append({"arq": arq, "simbolos": [{"classe": c, "x": x, "y": y} for c, x, y in pl]})
-    (DS / "manifest.json").write_text(json.dumps({"casos": casos}, indent=1))
+    (DS / "manifest.json").write_text(json.dumps({"casos": casos}, indent=1), encoding="utf-8")
     tot = sum(len(c["simbolos"]) for c in casos)
     print(f"{n} arquivos, {tot} símbolos rotulados em out/ds/")
 

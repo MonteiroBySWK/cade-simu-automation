@@ -57,7 +57,7 @@ def lint_layout(layout_d, low=None):
     av = []
     if not layout_d:
         return av
-    pins = json.loads((TOOLS / "symbol_pins.json").read_text())
+    pins = json.loads((TOOLS / "symbol_pins.json").read_text(encoding="utf-8"))
     trilhos = layout_d.get("trilhos", {})
     for f in layout_d.get("fontes", []):
         if not f.get("pinos") and len(f.get("fases") or []) > 1:
@@ -264,7 +264,7 @@ def main(argv):
     if len(argv) < 2:
         print(__doc__)
         return 2
-    spec = json.loads(Path(argv[0]).read_text())
+    spec = json.loads(Path(argv[0]).read_text(encoding="utf-8"))
     if argv[0].endswith(".layout.json") and "layout" not in spec and "simbolos" not in spec:
         spec = {"layout": spec}
     r = construir(spec, argv[1])

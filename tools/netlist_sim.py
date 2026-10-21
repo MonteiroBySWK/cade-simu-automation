@@ -99,7 +99,7 @@ def carregar_papeis(path=None):
     p = Path(path) if path else PAPEIS_JSON
     if p.is_file():
         try:
-            raw = json.loads(p.read_text())
+            raw = json.loads(p.read_text(encoding="utf-8"))
         except (OSError, ValueError):
             return tab
         classes = raw.get("classes", raw) if isinstance(raw, dict) else {}
