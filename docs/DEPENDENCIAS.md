@@ -1,15 +1,19 @@
 # Dependências
 
 O repo foi escrito numa máquina específica; tudo que dependia dela agora é **opcional e configurável**.
-`make doctor` mostra o que está presente, o que falta e como instalar.
+`python scripts/dev.py doctor` mostra o que está presente, o que falta e como instalar.
 
-## Núcleo — o que basta para usar e contribuir
+## Núcleo — o que basta para usar e contribuir (Linux, macOS e Windows)
+
+Tudo do núcleo roda via `python scripts/dev.py <setup|doctor|test|gate|mcp-config>` (só stdlib; `make` é atalho
+opcional em Unix). No Windows: Python do python.org (marque "Add to PATH") e Rust via `rustup-init.exe`
+(toolchain MSVC + Build Tools do Visual Studio). Wine/`app_sim` não se aplicam ao Windows.
 
 | Item | Versão | Para quê |
 |---|---|---|
 | Python | ≥ 3.10 | layout, gate, MCP, testes |
 | Rust (`cargo`) | stable recente | compila o `cade_cli` (parse/emit/validate do `.cad`) |
-| Pacotes Python | `requirements.txt` (`mcp<2`, `pillow`, `numpy`, `pytest`) | instalados por `make setup` em `tools/.venv-mcp` |
+| Pacotes Python | `requirements.txt` (`mcp<2`, `pillow`, `numpy`, `pytest`) | instalados por `python scripts/dev.py setup` em `tools/.venv-mcp` |
 | `uv` | opcional | acelera o setup (sem ele usa `python -m venv`) |
 
 **Não precisa** do CADe_SIMU, do Wine nem do Ghidra para: gerar `.cad` (`cad_design`), rodar o gate,

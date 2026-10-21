@@ -12,8 +12,9 @@ import sys
 from pathlib import Path
 
 TOOLS = Path(__file__).resolve().parent
-VENV = TOOLS / ".venv-mcp" / "bin" / "python"
-PY = str(VENV) if VENV.exists() else sys.executable
+sys.path.insert(0, str(TOOLS))
+import cade_config  # noqa: E402
+PY = str(cade_config.venv_python() or sys.executable)
 SERVER = [PY, str(TOOLS / "cade_mcp.py")]
 
 
@@ -25,7 +26,7 @@ def call(tool, args):
         {"jsonrpc": "2.0", "id": 2, "method": "tools/call", "params": {"name": tool, "arguments": args}},
     ]
     inp = "\n".join(json.dumps(m) for m in msgs) + "\n"
-    r = subprocess.run(SERVER, input=inp, capture_output=True, text=True, timeout=300)
+    r = subprocess.run(SERVER, input=inp, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=300)
     for line in r.stdout.splitlines():
         try:
             m = json.loads(line)

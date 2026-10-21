@@ -13,8 +13,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import cade_config  # noqa: E402
 
-VENV_PY = ROOT / "tools" / ".venv-mcp" / "bin" / "python"
-PY = str(VENV_PY) if VENV_PY.exists() else sys.executable
+PY = str(cade_config.venv_python() or sys.executable)
 falta_nucleo = []
 
 
@@ -37,11 +36,11 @@ v = sys.version_info
 linha(v >= (3, 10), f"Python >= 3.10", f"{v.major}.{v.minor}.{v.micro}", dica="instale Python 3.10+")
 linha(bool(shutil.which("cargo")), "Rust/cargo (compila o cade_cli)", shutil.which("cargo") or "",
       dica="https://rustup.rs")
-cli = ROOT / "src" / "cade_cli" / "target" / "debug" / "cade_cli"
+cli = cade_config.cli_path()
 linha(cli.is_file(), "cade_cli compilado", str(cli.relative_to(ROOT)),
-      dica="cargo build --manifest-path src/cade_cli/Cargo.toml  (ou: make setup)")
+      dica="python scripts/dev.py setup")
 for m, pkg in (("mcp", "mcp<2"), ("PIL", "pillow"), ("numpy", "numpy"), ("pytest", "pytest")):
-    linha(pymod(m), f"python: {pkg}", dica="make setup  (cria tools/.venv-mcp com requirements.txt)")
+    linha(pymod(m), f"python: {pkg}", dica="python scripts/dev.py setup  (cria tools/.venv-mcp com requirements.txt)")
 print("  interpretador usado:", PY)
 
 print("OPCIONAL — so para engenharia reversa, aprendizado e verificacao no app real")
@@ -60,6 +59,6 @@ linha(gh.exists() or bool(shutil.which("analyzeHeadless")), "Ghidra (analyzeHead
 
 print()
 if falta_nucleo:
-    print("NUCLEO INCOMPLETO:", ", ".join(falta_nucleo), "\n  -> rode `make setup` e depois `make doctor`.")
+    print("NUCLEO INCOMPLETO:", ", ".join(falta_nucleo), "\n  -> rode `python scripts/dev.py setup` e depois `python scripts/dev.py doctor`.")
     sys.exit(1)
-print("Nucleo ok. Proximo passo: `make test` e `make gate`.  Integracao com agentes: docs/integracao.md")
+print("Nucleo ok. Proximo passo: `python scripts/dev.py test` e `python scripts/dev.py gate` (ou make test/gate).  Integracao com agentes: docs/integracao.md")

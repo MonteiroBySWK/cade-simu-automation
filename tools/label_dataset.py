@@ -38,7 +38,7 @@ def cad_to_screen(x, y):
 
 
 def load_manifest():
-    return json.loads((DS / "manifest.json").read_text())["casos"]
+    return json.loads((DS / "manifest.json").read_text(encoding="utf-8"))["casos"]
 
 
 def harvest_negatives():

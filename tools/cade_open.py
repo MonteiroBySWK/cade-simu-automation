@@ -29,7 +29,7 @@ SENHA = ["4", "9", "6", "2", "OK"]
 
 def xdo(disp, *args):
     return subprocess.run(["xdotool", *args], env={"DISPLAY": disp, **__import__("os").environ},
-                          capture_output=True, text=True).stdout
+                          capture_output=True, text=True, encoding="utf-8", errors="replace").stdout
 
 
 def achar_teclado(disp):

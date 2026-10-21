@@ -33,13 +33,14 @@ except ImportError:  # sem o pacote `mcp` (ex.: pytest no python do sistema): fe
             raise SystemExit("pacote 'mcp' ausente: use tools/.venv-mcp/bin/python tools/cade_mcp.py")
 
 ROOT = Path(__file__).resolve().parent.parent
-CLI = ROOT / "src" / "cade_cli" / "target" / "debug" / "cade_cli"
+import cade_config as _cc  # noqa: E402
+CLI = _cc.cli_path()
 
 mcp = FastMCP("cade-simu")
 
 
 def _run(*args):
-    r = subprocess.run([str(CLI), *args], capture_output=True, text=True, timeout=60)
+    r = subprocess.run([str(CLI), *args], capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=60)
     return r.returncode, (r.stdout.strip() or r.stderr.strip())
 
 
@@ -129,10 +130,11 @@ def cad_preview(path: str, scale: int = 3, png_path: str = "") -> str:
 
 
 @mcp.tool()
-def cad_from_image(path: str, out_json: str = "/tmp/cade_from_img.json") -> str:
+def cad_from_image(path: str, out_json: str = "") -> str:
     """Detecta símbolos numa imagem (kNN sobre dataset minerado) e inventaria em cade.json."""
+    out_json = out_json or _cc.tmp("cade_from_img.json")
     r = subprocess.run([sys.executable, str(ROOT / "tools" / "img2cad.py"), path, "-o", out_json],
-                       capture_output=True, text=True, timeout=180)
+                       capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=180)
     return (r.stdout or r.stderr).strip()[:4000]
 
 
@@ -200,7 +202,7 @@ def _lib():
         header, protos, footer, wire = M.load_donor()
         lib_json = Path(__file__).resolve().parent / "symbol_lib.json"      # catalogo versionado
         if lib_json.is_file():
-            for cid, v in json.loads(lib_json.read_text()).items():
+            for cid, v in json.loads(lib_json.read_text(encoding="utf-8")).items():
                 if cid not in protos:
                     protos[cid] = {"seq": "0", "id": cid, "labels": v["labels"], "nums": v["nums"], "raw": ""}
         fontes = sorted((ROOT / "corpus").glob("*.cad"))
@@ -221,7 +223,7 @@ def _lib():
 
 def _json_tools(nome, padrao=None):
     try:
-        return json.loads((ROOT / "tools" / nome).read_text())
+        return json.loads((ROOT / "tools" / nome).read_text(encoding="utf-8"))
     except Exception:
         return {} if padrao is None else padrao
 
@@ -270,7 +272,7 @@ def cad_pins(classe: str) -> str:
     cid = str(classe).strip()
     pins, dims = _json_tools("symbol_pins.json"), _json_tools("symbol_dims.json")
     try:
-        binario = json.loads((ROOT / "docs" / "pinos-binario.json").read_text()).get("classes", {})
+        binario = json.loads((ROOT / "docs" / "pinos-binario.json").read_text(encoding="utf-8")).get("classes", {})
     except Exception:
         binario = {}
     if cid not in protos and cid not in pins and cid not in binario:
@@ -304,7 +306,7 @@ def cad_examples() -> str:
     itens = []
     for f in sorted(EXEMPLOS.glob("*.layout.json")):
         try:
-            d = json.loads(f.read_text())
+            d = json.loads(f.read_text(encoding="utf-8"))
         except Exception:
             continue
         lay = d.get("layout", d)
@@ -329,7 +331,7 @@ def cad_example(nome: str) -> str:
     base = Path(str(nome)).name
     for cand in (EXEMPLOS / f"{base}.layout.json", EXEMPLOS / base):
         if cand.is_file() and cand.name.endswith(".layout.json"):
-            return cand.read_text()
+            return cand.read_text(encoding="utf-8")
     disp = [f.name[:-len(".layout.json")] for f in sorted(EXEMPLOS.glob("*.layout.json"))]
     return json.dumps({"erro": f"exemplo '{nome}' nao existe", "disponiveis": disp}, ensure_ascii=False)
 
@@ -430,7 +432,7 @@ def cad_gate(path: str, testes_json: str = "[]") -> str:
 
 
 @mcp.tool()
-def cad_build(titulo: str, simbolos_json: str, fios_json: str = "[]", out_path: str = "/tmp/novo.cad",
+def cad_build(titulo: str, simbolos_json: str, fios_json: str = "[]", out_path: str = "",
               auto_net: bool = True, conexoes_json: str = "[]", rails_json: str = "[]") -> str:
     """CRIA UM .CAD DO ZERO (sem reusar arquivo).
     simbolos_json: [{"classe","x","y","rotulo"?,"id"?}]
@@ -439,6 +441,7 @@ def cad_build(titulo: str, simbolos_json: str, fios_json: str = "[]", out_path: 
     fios_json: [{"x1","y1","x2","y2"}] — segmentos manuais (opcional).
     Com auto_net=True os NETs saem calculados por geometria (pinos×fios).
     Ex.: conexoes_json='[{"de":["B1","B"],"para":["K1","A"]}]'."""
+    out_path = out_path or _cc.tmp("novo.cad")
     header, protos, footer, wire = _lib()
     try:
         simbolos = json.loads(simbolos_json)
@@ -451,7 +454,13 @@ def cad_build(titulo: str, simbolos_json: str, fios_json: str = "[]", out_path: 
         return "ERRO: simbolos_json deve ser uma lista"
     faltando = [s.get("classe") for s in simbolos if s.get("classe") not in protos]
     if faltando:
-        return f"ERRO classe(s) inexistente(s): {faltando}. Use cad_symbols."
+        lib_ok = (Path(__file__).resolve().parent / "symbol_lib.json").is_file()
+        return (f"ERRO classe(s) sem entidade-prototipo: {sorted(set(faltando))}. "
+                + ("O catalogo versionado (tools/symbol_lib.json) nao tem essas classes: troque por uma de "
+                   "cad_symbols, OU forneca um .cad que as contenha (CADE_ACERVO=<pasta>) e rode "
+                   "`python tools/gen_symbol_lib.py`." if lib_ok else
+                   "tools/symbol_lib.json ausente: atualize o repo (git pull) — sem ele o gerador depende do "
+                   "acervo local (CADE_ACERVO)."))
     ents = []   # (id, labels, nums)
     for f in fios:
         n = list(wire["nums"])
@@ -662,7 +671,7 @@ PINS_FILE = ROOT / "tools" / "symbol_pins.json"
 
 def _pins():
     try:
-        return json.loads(PINS_FILE.read_text())
+        return json.loads(PINS_FILE.read_text(encoding="utf-8"))
     except Exception:
         return {}
 

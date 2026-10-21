@@ -14,7 +14,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from dissect import parse_ent, split_all as split_entities  # noqa: E402
 
 WIRE = {"4000", "4018", "4009", "4001", "4010"}
-PINS = json.loads((Path(__file__).resolve().parent / "symbol_pins.json").read_text())
+PINS = json.loads((Path(__file__).resolve().parent / "symbol_pins.json").read_text(encoding="utf-8"))
 PAD = 2      # insets do corpo
 TOL = 4      # raio em volta do pino que é permitido (o fio encosta/sai dele)
 

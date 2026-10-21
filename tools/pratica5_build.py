@@ -201,7 +201,7 @@ def main():
     print(f"novas ents={len(new)} bytes={len(out)}")
 
     # validacao: cade_core parse+emit round-trip + CLI validate
-    r = subprocess.run([str(CLI), 'validate', str(FINAL)], capture_output=True, text=True)
+    r = subprocess.run([str(CLI), 'validate', str(FINAL)], capture_output=True, text=True, encoding="utf-8", errors="replace")
     print(r.stdout.strip() or r.stderr.strip())
     assert r.returncode == 0, "validate falhou"
     from tempfile import mkdtemp

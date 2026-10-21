@@ -12,10 +12,10 @@ um `.cad` que abre e simula. O formato `.cad` é proprietário mas legível
 
 ```bash
 git clone https://github.com/MonteiroBySWK/cade-simu-automation && cd cade-simu-automation
-make setup     # cargo build + venv + deps (precisa de Python>=3.10 e Rust)
-make doctor    # o que funciona / o que falta / como instalar
-make test      # 143+ testes (o E2E que abre o Wine é opt-in: `CADE_E2E=1`)
-make gate      # gera e valida todos os exemplos
+python scripts/dev.py setup     # cargo build + venv + deps (precisa de Python>=3.10 e Rust)
+python scripts/dev.py doctor    # o que funciona / o que falta / como instalar
+python scripts/dev.py test      # 143+ testes (o E2E que abre o Wine é opt-in: `CADE_E2E=1`)
+python scripts/dev.py gate      # gera e valida todos os exemplos
 ```
 
 - **Dependências** (núcleo × opcionais, variáveis `CADE_*`): [`docs/DEPENDENCIAS.md`](docs/DEPENDENCIAS.md)

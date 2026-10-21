@@ -30,5 +30,5 @@ for f in fontes:
         p = parse_ent(e)
         if p and p["id"] not in lib and len(p["nums"]) >= 23:
             lib[p["id"]] = {"labels": p["labels"], "nums": p["nums"]}
-(T / "symbol_lib.json").write_text(json.dumps(lib, sort_keys=True, ensure_ascii=False, separators=(",", ":")))
+(T / "symbol_lib.json").write_text(json.dumps(lib, sort_keys=True, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
 print(f"{len(lib)} classes -> tools/symbol_lib.json")

@@ -240,7 +240,7 @@ def test_exemplos_da_skill_passam_o_gate(tmp_path):
     assert len(pares) >= 2
     for f in pares:
         assert f.with_name(f.name.replace(".layout.json", ".enunciado.txt")).is_file(), f
-        r = json.loads(C.cad_design(f.read_text(), str(tmp_path / (f.stem + ".cad"))))
+        r = json.loads(C.cad_design(f.read_text(encoding="utf-8"), str(tmp_path / (f.stem + ".cad"))))
         assert r["ok"], (f.name, r["erros"])
 
 
@@ -257,7 +257,7 @@ def test_preview_propaga_fase_pelo_contator_e_mostra_inversao(tmp_path):
 
 def test_build_spec_cli_continua_funcionando(tmp_path):
     r = subprocess.run([sys.executable, str(TOOLS / "build_spec.py"), str(EX / "partida_direta.layout.json"),
-                        str(tmp_path / "c.cad")], capture_output=True, text=True, timeout=600)
+                        str(tmp_path / "c.cad")], capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=600)
     assert r.returncode == 0 and "GATE: OK" in r.stdout and "RESULTADO: 6/6 OK" in r.stdout
 
 
@@ -302,7 +302,7 @@ def test_eval_penaliza_circuito_errado(tmp_path):
 
 def test_eval_cli_golden(tmp_path):
     r = subprocess.run([sys.executable, str(TOOLS / "eval" / "run_eval.py"), "--golden"],
-                       capture_output=True, text=True, timeout=900)
+                       capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=900)
     assert r.returncode == 0, r.stdout[-800:]
     assert "MEDIA" in r.stdout and "partida_direta" in r.stdout
 

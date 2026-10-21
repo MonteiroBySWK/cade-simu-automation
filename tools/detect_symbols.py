@@ -401,7 +401,7 @@ def main(argv):
     for d in dets:
         print(f"  {d['classe']} {d['nome']} @{d['x']},{d['y']} escore={d['escore']}")
     if "-o" in argv:
-        Path(argv[argv.index("-o") + 1]).write_text(json.dumps({"fonte": str(src), "deteccoes": dets}, indent=1))
+        Path(argv[argv.index("-o") + 1]).write_text(json.dumps({"fonte": str(src), "deteccoes": dets}, indent=1), encoding="utf-8")
 
 import sys as _s
 from pathlib import Path as _P

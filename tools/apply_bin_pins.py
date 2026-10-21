@@ -12,8 +12,8 @@ import sys
 from pathlib import Path
 
 T = Path(__file__).resolve().parent
-BIN = json.loads((T.parent / "docs" / "pinos-binario.json").read_text())["classes"]
-PINS = json.loads((T / "symbol_pins.json").read_text())
+BIN = json.loads((T.parent / "docs" / "pinos-binario.json").read_text(encoding="utf-8"))["classes"]
+PINS = json.loads((T / "symbol_pins.json").read_text(encoding="utf-8"))
 
 
 def main(dry):
@@ -47,7 +47,7 @@ def main(dry):
     for c, a, b in diverg[:40]:
         print(f"  {c}: estatistico A={a} binario p1={b}")
     if not dry:
-        (T / "symbol_pins.json").write_text(json.dumps(PINS, indent=1, sort_keys=True))
+        (T / "symbol_pins.json").write_text(json.dumps(PINS, indent=1, sort_keys=True), encoding="utf-8")
 
 
 if __name__ == "__main__":

@@ -54,3 +54,28 @@ def exigir(path, o_que, var):
         raise SystemExit(f"[cade] {o_que} nao encontrado. Defina {var} (veja docs/DEPENDENCIAS.md). "
                          f"Procurado em: {path}")
     return Path(path)
+
+
+# --- caminhos do proprio repo, portaveis (Linux/macOS/Windows) ---------------------------------
+import sys as _sys  # noqa: E402
+import tempfile as _tempfile  # noqa: E402
+
+ROOT = Path(__file__).resolve().parent.parent
+WINDOWS = _sys.platform.startswith("win")
+
+
+def cli_path():
+    """Binario do cade_cli (cargo build) — com .exe no Windows."""
+    return ROOT / "src" / "cade_cli" / "target" / "debug" / ("cade_cli.exe" if WINDOWS else "cade_cli")
+
+
+def venv_python():
+    """Python do venv do projeto (tools/.venv-mcp), ou None se ainda nao criado."""
+    v = ROOT / "tools" / ".venv-mcp"
+    p = v / ("Scripts/python.exe" if WINDOWS else "bin/python")
+    return p if p.exists() else None
+
+
+def tmp(nome):
+    """Arquivo temporario portavel (no Windows nao existe /tmp)."""
+    return str(Path(_tempfile.gettempdir()) / nome)

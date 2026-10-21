@@ -23,7 +23,7 @@ EX = TOOLS / "examples"
 
 def _cad(tmp_path, nome="partida_direta"):
     import build_spec
-    spec = json.loads((EX / f"{nome}.layout.json").read_text())
+    spec = json.loads((EX / f"{nome}.layout.json").read_text(encoding="utf-8"))
     out = tmp_path / f"{nome}.cad"
     build_spec.construir(spec, str(out))   # o .cad e gravado mesmo se o gate acusar (nao testamos o gate aqui)
     assert out.is_file()

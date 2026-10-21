@@ -28,7 +28,7 @@ _s.path.insert(0, str(_P(__file__).resolve().parent))
 import cade_config  # noqa: E402
 ACERVO = cade_config.acervo()
 WIRE = {"4000", "4018", "4009"}
-PINS = json.loads((ROOT / "tools" / "symbol_pins.json").read_text())
+PINS = json.loads((ROOT / "tools" / "symbol_pins.json").read_text(encoding="utf-8"))
 
 
 def processa(path):
