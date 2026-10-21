@@ -90,6 +90,20 @@ falha se um exemplo novo/alterado não tiver golden — rode `python3 tests/gold
 - Limitações vs Python: classes que só existem no acervo externo (`CADE_ACERVO`: 5009, 1055) não
   estão no catálogo embutido; `IndexError` de listas curtas vira `ValueError` com a mesma mensagem.
 
+## Ladder / CLP (contrato no PR #5, branch `feat/ladder`)
+
+O contrato (`docs/ladder.md`, `docs/ladder.schema.json`, `tools/examples/*.ladder.json`,
+`tools/eval/casos/ladder/`) fica fora da fase 1. Preparação feita aqui:
+
+- As chaves de topo `ladder` e `clp` são **reservadas** em `cade_layout::SECOES_RESERVADAS`; `normalizar`
+  falha com mensagem explícita em vez de ignorá-las em silêncio. A fase `cade_sim`/`cade_layout` implementa
+  a compilação ladder → spec baixa (mesmo funil `normalizar` → `cade_build::construir`) e a simulação.
+- Correções de pinos medidas pelo RE, **ainda não aplicadas** nos JSON (aplicar em `tools/symbol_pins.json` /
+  `docs/pinos-binario.json` e regenerar os goldens com `tests/golden/gerar.py`): saída `10205` com pino em
+  `(0,24)` (não `(0,27)`); PE da CPU `10206` em `(12,0)`; pino direito da bobina ladder `10060` em `(12,0)`;
+  entradas/saídas `10204`/`10205` precisam de `n16=1` (hoje o catálogo gera `n16=0`: ajustar o protótipo
+  em `symbol_lib.json` ou sobrescrever no `cade_build`).
+
 ## Próximas fases (podem rodar em paralelo — cada uma toca só o seu crate)
 
 Regras comuns:
