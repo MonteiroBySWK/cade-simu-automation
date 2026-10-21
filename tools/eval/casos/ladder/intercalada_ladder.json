@@ -1,0 +1,277 @@
+{
+  "id": "intercalada_ladder",
+  "dsl": "ladder/1",
+  "titulo": "Partida intercalada de 2 motores por CLP com memoria SET/RESET",
+  "dificuldade": 4,
+  "enunciado": "Dois motores trifasicos se alternam a cada partida, comandados por CLP (ladder). Entradas: -S0 (NF) I0.0 desliga, -S1 (NA) I0.1 liga, NF dos termicos -RT1 em I0.2 e -RT2 em I0.3. Saidas: Q0.0 -> -KM1, Q0.1 -> -KM2. A memoria M0.0 indica de quem e a proxima partida: Q0.0 faz SET M0.0 e Q0.1 faz RESET M0.0. Q0.0 = I0.2 . I0.3 . I0.0 . (I0.1 . /M0.0 + Q0.0) . /Q0.1; Q0.1 = I0.2 . I0.3 . I0.0 . (I0.1 . M0.0 + Q0.1) . /Q0.0. Qualquer termico desarma os dois.",
+  "restricoes": [
+    "Use o CLP modular: CPU 10206 alimentada por fonte 3011 propria, entradas 10204 e saidas 10205 (n16=1, 24 Vcc).",
+    "Botoes e contatos do termico ligam o +24V da CPU as entradas; as saidas ligam as bobinas, que voltam ao 0V da CPU.",
+    "Ladder com fonte 3008 no trilho esquerdo; bobinas ladder com pino direito sem fio (trilho_direito aberto).",
+    "Operandos I0.x/Q0.x/M0.x exatamente como no enunciado; nenhum operando igual a rotulo fisico (ex.: -KM1).",
+    "Use UMA fonte trifasica multi-terminal (3007) na potencia e trilho PE separado; termico 6007 com o mesmo rotulo do 8017.",
+    "Sem coordenadas no layout; tudo cabe na folha (455x305)."
+  ],
+  "obrigatorios": {
+    "classes": {
+      "10206": 1,
+      "10204": 4,
+      "10205": 2,
+      "3008": 1,
+      "3011": 1,
+      "10050": 13,
+      "10051": 3,
+      "10060": 2,
+      "10061": 1,
+      "10062": 1,
+      "9000": 2,
+      "8000": 1,
+      "8001": 1,
+      "8017": 2,
+      "2001": 2,
+      "6007": 2,
+      "1000": 2
+    },
+    "uma_de": [
+      [
+        "6009",
+        "6010"
+      ]
+    ],
+    "rotulos": [
+      "-S0",
+      "-S1",
+      "-RT1",
+      "-RT2",
+      "-KM1",
+      "-KM2"
+    ],
+    "operandos": [
+      "I0.0",
+      "I0.1",
+      "I0.2",
+      "I0.3",
+      "Q0.0",
+      "Q0.1",
+      "M0.0"
+    ]
+  },
+  "testes": [
+    {
+      "nome": "repouso desligado",
+      "entradas": {},
+      "status": "OK",
+      "esperado": [],
+      "esperado_bits": {
+        "M0.0": 0
+      }
+    },
+    {
+      "nome": "1a partida (M0.0=0) liga M1 e arma M0.0",
+      "entradas": {
+        "S1": true
+      },
+      "status": "OK",
+      "esperado": [
+        "KM1"
+      ],
+      "esperado_bits": {
+        "Q0.0": 1,
+        "Q0.1": 0,
+        "M0.0": 1
+      }
+    },
+    {
+      "nome": "partida com M0.0=1 liga M2 e desarma M0.0",
+      "entradas": {
+        "S1": true
+      },
+      "inicial": [
+        "M0.0"
+      ],
+      "status": "OK",
+      "esperado": [
+        "KM2"
+      ],
+      "esperado_bits": {
+        "Q0.0": 0,
+        "Q0.1": 1,
+        "M0.0": 0
+      }
+    },
+    {
+      "nome": "selo mantem KM1",
+      "entradas": {},
+      "inicial": [
+        "Q0.0",
+        "M0.0"
+      ],
+      "status": "OK",
+      "esperado": [
+        "KM1"
+      ]
+    },
+    {
+      "nome": "selo mantem KM2",
+      "entradas": {},
+      "inicial": [
+        "Q0.1"
+      ],
+      "status": "OK",
+      "esperado": [
+        "KM2"
+      ]
+    },
+    {
+      "nome": "S0 desliga e M0.0 fica memorizado",
+      "entradas": {
+        "S0": true
+      },
+      "inicial": [
+        "Q0.0",
+        "M0.0"
+      ],
+      "status": "OK",
+      "esperado": [],
+      "esperado_bits": {
+        "M0.0": 1
+      }
+    },
+    {
+      "nome": "RT1 derruba KM1",
+      "entradas": {
+        "RT1": true
+      },
+      "inicial": [
+        "Q0.0",
+        "M0.0"
+      ],
+      "status": "OK",
+      "esperado": []
+    },
+    {
+      "nome": "RT2 derruba KM2",
+      "entradas": {
+        "RT2": true
+      },
+      "inicial": [
+        "Q0.1"
+      ],
+      "status": "OK",
+      "esperado": []
+    },
+    {
+      "nome": "RT2 aberto bloqueia a partida do M1",
+      "entradas": {
+        "RT2": true,
+        "S1": true
+      },
+      "status": "OK",
+      "esperado": []
+    },
+    {
+      "nome": "sequencia alternada M1, M2, M1 com termico",
+      "status": "OK",
+      "sequencia": [
+        {
+          "nome": "repouso",
+          "entradas": {},
+          "esperado": [],
+          "esperado_bits": {
+            "M0.0": 0
+          }
+        },
+        {
+          "nome": "liga: M1",
+          "entradas": {
+            "S1": true
+          },
+          "esperado": [
+            "KM1"
+          ],
+          "esperado_bits": {
+            "M0.0": 1
+          }
+        },
+        {
+          "nome": "solta: selo",
+          "entradas": {},
+          "esperado": [
+            "KM1"
+          ]
+        },
+        {
+          "nome": "desliga",
+          "entradas": {
+            "S0": true
+          },
+          "esperado": [],
+          "esperado_bits": {
+            "M0.0": 1
+          }
+        },
+        {
+          "nome": "solta",
+          "entradas": {},
+          "esperado": []
+        },
+        {
+          "nome": "liga: M2",
+          "entradas": {
+            "S1": true
+          },
+          "esperado": [
+            "KM2"
+          ],
+          "esperado_bits": {
+            "M0.0": 0
+          }
+        },
+        {
+          "nome": "solta: selo",
+          "entradas": {},
+          "esperado": [
+            "KM2"
+          ]
+        },
+        {
+          "nome": "desliga",
+          "entradas": {
+            "S0": true
+          },
+          "esperado": []
+        },
+        {
+          "nome": "liga: M1 de novo",
+          "entradas": {
+            "S1": true
+          },
+          "esperado": [
+            "KM1"
+          ]
+        },
+        {
+          "nome": "termico do M1",
+          "entradas": {
+            "RT1": true
+          },
+          "esperado": []
+        },
+        {
+          "nome": "termico + liga: bloqueado",
+          "entradas": {
+            "RT1": true,
+            "S1": true
+          },
+          "esperado": []
+        },
+        {
+          "nome": "rearmado sem liga: nao religa",
+          "entradas": {},
+          "esperado": []
+        }
+      ]
+    }
+  ],
+  "golden": "intercalada.ladder"
+}

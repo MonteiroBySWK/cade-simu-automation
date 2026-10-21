@@ -1,0 +1,87 @@
+{
+  "titulo": "PARTIDA COM REVERSAO EM LADDER (CLP)",
+  "dsl": "ladder/1",
+  "layout": {
+    "trilhos": {"L1": 14, "L2": 20, "L3": 26, "N": 282, "PE": 291, "x0": 25, "x1": 160},
+    "fontes": [
+      {"id": "X1", "classe": "3007", "rotulo": "-X",
+       "pinos": {"L1": "L1", "L2": "L2", "L3": "L3", "N": "N", "PE": "PE"}}
+    ],
+    "potencia": [
+      {"id": "m1", "fases": ["L1", "L2", "L3"], "neutro": "N", "pe": "PE",
+       "colunas": [
+         ["Q1", "6009", "-Q1"],
+         ["F1", "6007", "-RT1"],
+         {"paralelo": [
+           ["KM1p", "2001", "-KM1"],
+           ["KM2p", "2001", "-KM2", {"ordem": ["L3", "L2", "L1"]}]
+         ]},
+         ["M1", "1000", "-M1"]
+       ]}
+    ],
+    "clp": {
+      "id": "CLP1", "classe": "10206", "rotulo": "-CLP",
+      "alimentacao": {"fonte": {"id": "X2", "classe": "3011", "rotulo": "-X2"}},
+      "entradas": [
+        {"operando": "I0.0", "dispositivo": ["S0", "8001", "-S0"]},
+        {"operando": "I0.1", "dispositivo": ["S1", "8000", "-S1"]},
+        {"operando": "I0.2", "dispositivo": ["S2", "8000", "-S2"]},
+        {"operando": "I0.3", "dispositivo": ["RT1", "8017", "-RT1"]}
+      ],
+      "saidas": [
+        {"operando": "Q0.0", "serie": [["nkm2", "7001", "-KM2"]], "carga": ["KM1", "9000", "-KM1"]},
+        {"operando": "Q0.1", "serie": [["nkm1", "7001", "-KM1"]], "carga": ["KM2", "9000", "-KM2"]}
+      ]
+    },
+    "ladder": {
+      "fonte": {"id": "XL", "classe": "3008", "rotulo": "+L"},
+      "trilho_direito": "aberto",
+      "rungs": [
+        {"id": "r1", "comentario": "sentido horario: S1 liga, selo Q0.0, intertravado por Q0.1",
+         "logica": {"serie": [
+           ["NA", "I0.3"],
+           ["NA", "I0.0"],
+           {"paralelo": [["NA", "I0.1"], ["NA", "Q0.0"]]},
+           ["NF", "Q0.1"]
+         ]},
+         "saida": ["OUT", "Q0.0"]},
+        {"id": "r2", "comentario": "sentido anti-horario: S2 liga, selo Q0.1, intertravado por Q0.0",
+         "logica": {"serie": [
+           ["NA", "I0.3"],
+           ["NA", "I0.0"],
+           {"paralelo": [["NA", "I0.2"], ["NA", "Q0.1"]]},
+           ["NF", "Q0.0"]
+         ]},
+         "saida": ["OUT", "Q0.1"]}
+      ]
+    }
+  },
+  "testes": [
+    {"nome": "repouso desligado", "entradas": {}, "status": "OK", "esperado": []},
+    {"nome": "S1 liga KM1", "entradas": {"S1": true}, "status": "OK", "esperado": ["KM1"],
+     "esperado_bits": {"Q0.0": 1, "Q0.1": 0}},
+    {"nome": "S2 liga KM2", "entradas": {"S2": true}, "status": "OK", "esperado": ["KM2"],
+     "esperado_bits": {"Q0.0": 0, "Q0.1": 1}},
+    {"nome": "selo mantem KM1", "entradas": {}, "inicial": ["Q0.0"], "status": "OK", "esperado": ["KM1"]},
+    {"nome": "selo mantem KM2", "entradas": {}, "inicial": ["Q0.1"], "status": "OK", "esperado": ["KM2"]},
+    {"nome": "intertravamento: S2 nao liga KM2 com KM1 ligado", "entradas": {"S2": true},
+     "inicial": ["Q0.0"], "status": "OK", "esperado": ["KM1"]},
+    {"nome": "intertravamento: S1 nao liga KM1 com KM2 ligado", "entradas": {"S1": true},
+     "inicial": ["Q0.1"], "status": "OK", "esperado": ["KM2"]},
+    {"nome": "S0 desliga KM1", "entradas": {"S0": true}, "inicial": ["Q0.0"], "status": "OK", "esperado": []},
+    {"nome": "S0 desliga KM2", "entradas": {"S0": true}, "inicial": ["Q0.1"], "status": "OK", "esperado": []},
+    {"nome": "RT1 aberto bloqueia S1", "entradas": {"RT1": true, "S1": true}, "status": "OK", "esperado": []},
+    {"nome": "RT1 aberto desliga KM2", "entradas": {"RT1": true}, "inicial": ["Q0.1"], "status": "OK", "esperado": []},
+    {"nome": "S1 e S2 juntos a partir do repouso: oscila no modelo sincrono (inalcancavel no app com o mouse)",
+     "entradas": {"S1": true, "S2": true}, "status": "OSCILA"},
+    {"nome": "sequencia horario, para, anti-horario", "status": "OK",
+     "sequencia": [
+       {"entradas": {"S1": true}, "esperado": ["KM1"]},
+       {"entradas": {}, "esperado": ["KM1"]},
+       {"entradas": {"S2": true}, "esperado": ["KM1"]},
+       {"entradas": {"S0": true}, "esperado": []},
+       {"entradas": {"S2": true}, "esperado": ["KM2"]},
+       {"entradas": {}, "esperado": ["KM2"]}
+     ]}
+  ]
+}

@@ -1,0 +1,146 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "cade-simu-automation/ladder-1",
+  "title": "DSL ladder/1 (CLP do CADe_SIMU) — ver docs/ladder.md",
+  "type": "object",
+  "required": ["titulo", "dsl", "layout"],
+  "properties": {
+    "titulo": {"type": "string"},
+    "dsl": {"const": "ladder/1"},
+    "layout": {
+      "type": "object",
+      "required": ["clp", "ladder"],
+      "properties": {
+        "trilhos": {"type": "object", "additionalProperties": {"type": "number"}},
+        "fontes": {"type": "array", "items": {"type": "object"}},
+        "potencia": {"type": "array", "items": {"type": "object"}, "description": "igual ao DSL de layout atual (docs/dsl-layout.md)"},
+        "clp": {"$ref": "#/$defs/clp"},
+        "ladder": {"$ref": "#/$defs/ladder"}
+      }
+    },
+    "testes": {"type": "array", "items": {"$ref": "#/$defs/teste"}}
+  },
+  "$defs": {
+    "id": {"type": "string", "pattern": "^[A-Za-z][A-Za-z0-9_]*$"},
+    "operando": {"type": "string", "pattern": "^[A-Za-z][A-Za-z0-9._:/]{0,14}$"},
+    "folha": {
+      "description": "[id, classe, rotulo] de um simbolo fisico de 2 terminais",
+      "type": "array", "minItems": 3, "maxItems": 3,
+      "prefixItems": [{"$ref": "#/$defs/id"}, {"type": "string", "pattern": "^[0-9]+$"}, {"type": "string"}]
+    },
+    "fonte": {
+      "type": "object", "required": ["id", "classe", "rotulo"],
+      "properties": {"id": {"$ref": "#/$defs/id"}, "classe": {"type": "string"}, "rotulo": {"type": "string"}}
+    },
+    "clp": {
+      "type": "object",
+      "required": ["id", "classe", "rotulo", "alimentacao", "entradas", "saidas"],
+      "properties": {
+        "id": {"$ref": "#/$defs/id"},
+        "classe": {"const": "10206"},
+        "rotulo": {"type": "string"},
+        "ip": {"type": "string", "default": "192.128.0.1"},
+        "alimentacao": {
+          "oneOf": [
+            {"type": "object", "required": ["fonte"], "properties": {"fonte": {"allOf": [{"$ref": "#/$defs/fonte"}, {"properties": {"classe": {"const": "3011"}}}]}}},
+            {"type": "object", "required": ["trilhos"], "properties": {"trilhos": {"type": "object", "required": ["L", "N"], "properties": {"L": {"type": "string"}, "N": {"type": "string"}, "PE": {"type": "string"}}}}}
+          ]
+        },
+        "protecao": {"allOf": [{"$ref": "#/$defs/folha"}, {"prefixItems": [true, {"const": "6002"}, true]}]},
+        "entradas": {
+          "type": "array", "minItems": 1,
+          "items": {
+            "type": "object", "required": ["operando", "dispositivo"],
+            "properties": {
+              "operando": {"$ref": "#/$defs/operando"},
+              "dispositivo": {"$ref": "#/$defs/folha"},
+              "serie": {"type": "array", "items": {"$ref": "#/$defs/folha"}}
+            }
+          }
+        },
+        "saidas": {
+          "type": "array", "minItems": 1,
+          "items": {
+            "type": "object", "required": ["operando", "carga"],
+            "properties": {
+              "operando": {"$ref": "#/$defs/operando"},
+              "carga": {"allOf": [{"$ref": "#/$defs/folha"}, {"prefixItems": [true, {"enum": ["9000", "9008"]}, true]}]},
+              "serie": {"type": "array", "items": {"$ref": "#/$defs/folha"}}
+            }
+          }
+        }
+      }
+    },
+    "ladder": {
+      "type": "object", "required": ["fonte", "rungs"],
+      "properties": {
+        "fonte": {"allOf": [{"$ref": "#/$defs/fonte"}, {"properties": {"classe": {"const": "3008"}}}]},
+        "trilho_direito": {"enum": ["aberto", "fonte_menos"], "default": "aberto"},
+        "rungs": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/rung"}}
+      }
+    },
+    "rung": {
+      "type": "object", "required": ["id", "logica", "saida"],
+      "properties": {
+        "id": {"$ref": "#/$defs/id"},
+        "comentario": {"type": "string"},
+        "logica": {"$ref": "#/$defs/expr"},
+        "saida": {
+          "oneOf": [
+            {"$ref": "#/$defs/saida"},
+            {"type": "object", "required": ["paralelo"], "properties": {"paralelo": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/saida"}}}}
+          ]
+        }
+      }
+    },
+    "contato": {
+      "type": "array", "minItems": 2, "maxItems": 2,
+      "prefixItems": [{"enum": ["NA", "NF", "P", "N"]}, {"$ref": "#/$defs/operando"}]
+    },
+    "expr": {
+      "oneOf": [
+        {"$ref": "#/$defs/contato"},
+        {"type": "object", "required": ["serie"], "properties": {"serie": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/expr"}}}, "additionalProperties": false},
+        {"type": "object", "required": ["paralelo"], "properties": {"paralelo": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/expr"}}}, "additionalProperties": false},
+        {"type": "array", "minItems": 1, "items": {"anyOf": [{"type": "array", "prefixItems": [{"type": "array"}]}, {"type": "object"}, {"$ref": "#/$defs/contato"}]}}
+      ]
+    },
+    "saida": {
+      "oneOf": [
+        {"type": "array", "minItems": 2, "maxItems": 2, "prefixItems": [{"enum": ["OUT", "SET", "RST"]}, {"$ref": "#/$defs/operando"}]},
+        {"type": "array", "minItems": 3, "maxItems": 3,
+         "prefixItems": [{"enum": ["TON", "TOF", "TP"]}, {"$ref": "#/$defs/operando"},
+           {"type": "object", "required": ["tempo"], "properties": {
+             "tempo": {"type": "integer", "minimum": 0},
+             "base": {"enum": ["0.1s", "1s", "10s", "100s"], "default": "0.1s"},
+             "q": {"$ref": "#/$defs/operando"}}}]},
+        {"type": "array", "minItems": 3, "maxItems": 3,
+         "prefixItems": [{"const": "CTU"}, {"$ref": "#/$defs/operando"},
+           {"type": "object", "required": ["preset", "reset"], "properties": {
+             "preset": {"type": "integer", "minimum": 0, "maximum": 99999},
+             "reset": {"$ref": "#/$defs/expr"},
+             "desce": {"$ref": "#/$defs/expr"},
+             "q": {"$ref": "#/$defs/operando"}}}]}
+      ]
+    },
+    "passo": {
+      "type": "object",
+      "properties": {
+        "nome": {"type": "string"},
+        "entradas": {"type": "object", "additionalProperties": {"type": "boolean"}},
+        "esperado": {"type": "array", "items": {"type": "string"}},
+        "esperado_lampadas": {"type": "array", "items": {"type": "string"}},
+        "esperado_bits": {"type": "object", "additionalProperties": {"enum": [0, 1]}}
+      }
+    },
+    "teste": {
+      "allOf": [
+        {"$ref": "#/$defs/passo"},
+        {"type": "object", "required": ["nome", "status"], "properties": {
+          "status": {"enum": ["OK", "OSCILA", "INDEFINIDO", "CURTO"]},
+          "inicial": {"type": "array", "items": {"$ref": "#/$defs/operando"}},
+          "sequencia": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/passo"}}}}
+      ]
+    }
+  }
+}

@@ -346,7 +346,8 @@ despacho `FUN_0040d2b0` + as nomeadas nos diálogos). Gerado por
 | 6007 polos sempre fechados; clique propaga a 8016-8019 | alta | `FUN_005727b0`, `FUN_0043ee20` |
 | disjuntores/seccionadores iniciam abertos | média | CMP `==1` + zeragem no Play; falta prova no app |
 | motores 1000.. (gira com fases distintas) | média | campo 0x7a9dc, não lido linha a linha |
-| sensores 7500.., pneumática 10500.., PLC/GRAFCET/lógica 10000.. | baixa | só nome + pinos + família |
+| sensores 7500.., pneumática 10500.., GRAFCET/portas lógicas 10000..10041 | baixa | só nome + pinos + família |
+| ladder 10050/10051/10060..10063/10066 e CLP 10204/10205/10206 | alta/média | §13 (decompilados) |
 
 ### 11.6 Catálogo por aba (cobertura)
 `classes-papeis.json` cobre **366 classes** em 16 abas (`aba`): Desenho, Motores e cargas,
@@ -370,3 +371,102 @@ elétrico usado pelo gerador).
   `+0x8c31c` (memória). O desenho troca o símbolo por um **bitmap embutido** (274 RT_BITMAP,
   ~32 MB) via `FUN_008c04e0(nome)` → `LoadBitmap` → `StretchBlt`.
 - Para o gerador: nada a preencher; manter `n16 = 0`. A simulação não depende do modo.
+
+## 13. Ladder / CLP (Ghidra + acervo, 21/10/2026)
+
+Contrato completo para o port (DSL, simulação, testes, geometria): **`docs/ladder.md`**.
+Aqui fica só a evidência. Método: `srv.java` (um processo, `GHIDRA_HEADLESS_MAXMEM=3G`,
+projeto `~/cade-ghidra` `CADE`, programa `CADe_SIMU 4.0 [BR].exe.0`, `-noanalysis -readOnly`)
++ estatística dos 6 `.cad` do acervo com classes 10xxx (`Acionamento de motor de forma
+intercalada CLP`, `Semaforo ladder`, `Atividade Contador e Cilindro`, `Exemplo CLP s71200`,
+`Partida e reversão com CLP siemens`, `exemplo CLP`). Funções decompiladas linha a linha:
+10050 `FUN_00693a70`, 10060 `FUN_006a10e0`, 10061 `FUN_006a2770`, 10062 `FUN_006a3e90`,
+10063 `FUN_006a55c0`, 10066 `FUN_006cae00`, 10204 `FUN_007693a0`, 10205 `FUN_0076a950`,
+10206 `FUN_0076bab0`, Play `FUN_0043d540`.
+
+### 13.1 O ladder é um circuito CC de um fio só, com fluxo da esquerda p/ a direita — ALTA
+- O trilho esquerdo é um **fio** (4018 no acervo) alimentado por uma fonte **3008**
+  ("Alimentación +", pino (0,0)), que estampa `'+'`. Não há trilho direito no acervo: o pino B
+  das bobinas fica **sem fio**.
+- **Contato ladder 10050 (NA) / 10051 (NF)**, pinos A (0,0) e B (12,0), horizontais: na etapa de
+  propagação, se `estado==1` (NA) / `estado==0` (NF) **e** char(A)==`'+'` **e** char(B)==`'0'`,
+  estampa `'+'` em todo fio da net de B. **Direcional** (B→A nunca conduz), ao contrário dos
+  contatos elétricos (§11.3), que copiam o char nos dois sentidos.
+- **Encadeamento sem fio**: se o pino B (x+12,y) de um elemento ladder coincide com o pino A de
+  outro, o fluxo passa por uma flag (`+0x271e4 = -1` "saída energizada"; lida no A do vizinho via
+  `n21 = -1`). Vale para 10050..10053, 10076 (B em +12,0), 10064..10069 (Q em +15,+6),
+  10063 (Q em +15,+12), 10075 (Q em +15,+24). O acervo sempre usa fio entre elementos.
+- Fios aceitos nas rotinas ladder: 4000, 4009, 4010, 4018, 4019 (+ junta 4001) — cor é só visual.
+
+### 13.2 Bobinas, operandos e ligação por rótulo — ALTA (10060) / MÉDIA (10061/10062)
+- **10060 "Asignar"** (bobina): char A = fio no pino (0,0) (ou flag -1); char B = fio em (12,0)
+  ou **`'-'` se não houver fio**. Energizada se (A,B) ∈ {(`+`,`-`), (`-`,`+`)} ou (flag-1, `-`).
+  Comita só na **passada 7** com detecção de borda (`novo && ant∈{0,-1}` liga; `!novo && ant≠0`
+  desliga), como 9000. ⇒ trilho direito ligado a um fio sem fonte `'-'` **impede** a bobina.
+- **Operando = label0** (string exata, `Ordinal_812`). A bobina copia seu estado, em toda passada,
+  a: contatos ladder 10050/10051 de mesmo label0 **e polos 2000/2001/2002/2006/2008 de mesmo
+  label0** (não a auxiliares 7000..7003). ⇒ operando igual ao rótulo de um contator (`-KM1`)
+  comanda os polos de potência direto — o gerador deve proibir essa colisão.
+- **10061 Set / 10062 Reset**: energizada ⇒ `estado=1` / `estado=0`; desenergizada ⇒ **mantém**
+  (memória). Em toda passada cada uma copia estado+anterior das 10060..10062 de mesmo label0
+  (salvo `n7==1`, que inverte o papel: difunde o próprio estado) e repassa o estado aos contatos
+  de mesmo label0. ⇒ latch por operando; **Set e Reset energizados juntos: resultado depende da
+  ordem das entidades** (não especificar; o validador deve impedir). Confiança média (n7 não
+  aparece no acervo; papel exato do n7 não confirmado).
+- Acervo: operandos `I0.1`, `Q0.2`, `B3:L`, `B3:1`, `T4:0`, `DN/1` — qualquer string serve;
+  convenção do gerador em `docs/ladder.md` (I/Q/M/T/C).
+
+### 13.3 Temporizador e contador do CLP — MÉDIA-ALTA
+- **10066 TON** ("Temporizador a la conexión"): pinos IN (0,0), Q (15,6); labels
+  `[T, '', 'IN', 'Q', unidade, tempo]` (acervo `T1##IN#Q#3#15` = 15 × 0,1 s). IN ativo se char(IN)
+  ==`'+'` (ou flag -1). Passada 7: na borda carrega `contador = atoi(label5) × {'3':1,'0':10,
+  '1':100,'2':1000}[label4]` ticks; enquanto IN: `contador--`; `<1` ⇒ saída=1. IN caiu ⇒ zera
+  tudo. Saída=1 ⇒ estampa `'+'` no fio de Q **e** põe `estado=1` nos contatos 10050/10051 de mesmo
+  label0 (o contato pode ler o temporizador direto pelo nome). Saída=0 ⇒ estampa `'0'` em Q.
+  Se Q não tiver fio, o índice de fio é 0 (estampa na entidade 0) — por isso o contrato exige fio
+  em Q (confiança média). 10067/10068/10069/10081: mesma família, **não decompilados** (baixa).
+- **10063 contador** (pinos R (0,0), C (0,6), D (0,12), Q (15,12); labels
+  `[C,'','R','C','D','Q',preset_on,preset_off]`, acervo `-C##R#C#D#Q#5#5`): R=`'+'` zera; borda
+  de C (passada 7) conta +1 (ou −1 se D=`'+'`), saturado 0..99999; com presets iguais,
+  Q = `contagem ≥ preset` (presets diferentes = janela). Q estampa `'+'` e copia a contatos de mesmo
+  label0. Confiança média (lógica de janela não exercitada).
+
+### 13.4 Hardware do CLP modular (10206/10204/10205) — ALTA (código) / MÉDIA (app)
+- **10206 CPU**: pinos p1 L (0,0), p2 N (6,0), p5 PE (12,0), p3 `+` (18,0), p4 `-` (24,0)
+  (`NUME` +005/+035/+060/+095/+125 ⇒ 0/6/12/18/24; o `pinos-binario.json` diz p5=(11,0)
+  — arredondamento, o acervo mostra 12). Se (char p1, char p2) ∈ {(1,2),(2,3),(1,3),(1,N),(2,N),
+  (3,N)} estampa `'+'` no fio de p3 e `'-'` no de p4 (fonte 24 Vcc interna) e `estado=1`.
+  Serializa uma **string final** (`#192.128.0.1` no acervo: IP do enlace externo; ver abaixo).
+- **10204 entrada digital** (pino (0,0), em cima): ativa se o char do seu fio é `'+'` (com
+  `n16≠0`; acervo `n16=1`) ou fase `'1'/'2'/'3'` (com `n16=0`, entrada CA). Passada 7, na borda,
+  põe `estado` nos contatos 10050/10051/10052/10053 e 10070 de **mesmo label0** (`I0.1`...).
+- **10205 saída digital** (pino (0,24), em baixo — o `pinos-binario.json`/`symbol_pins.json`
+  dizem (0,27); os 5 `.cad` com 10205 mostram 24): `estado` = estado da 10060/10061/10062/10071
+  de mesmo label0; ligada ⇒ estampa `'+'` (`n16≠0`) ou `'1'` (`n16=0`, relé CA) na net do pino;
+  desligada ⇒ `'0'`. A carga (bobina 9000/lâmpada 9008) volta ao `-` da CPU (p4) e energiza com
+  (`+`,`-`) (§11.3).
+- Habilitação: com `n20=0` (acervo) entradas/saídas estão sempre habilitadas; com `n20=1`
+  dependem de uma 10207/10208 (1M/1L) de mesmo **label1** com `estado==1` (baixa; não usado).
+- `n16` de 10204/10205 é **semântico** (CA × CC) — corrige o §12 ("manter n16 = 0") para estas
+  duas classes: o gerador grava `n16=1`.
+- Enlace externo (`DAT_00bd9680`, ligado no Play quando uma classe 10202/10203/10206.. tem
+  `n18==1`): a CPU troca I/Q com matrizes `I[%d][%d]`/`Q[%d][%d]` (CLP real/externo). Fora do
+  escopo; gerador grava `n18=0`.
+- 10202 LOGO / 10203 S7-1200 / 10209.. (CLPs "com imagem") não têm pinos no binário extraído;
+  o gerador usa só o CLP modular 10206+10204+10205 (o do exemplo intercalado do acervo).
+
+### 13.5 Varredura — ALTA (mecanismo) / MÉDIA (consequências)
+Não há varredura sequencial "de cima para baixo": o ladder é avaliado pela mesma relaxação de
+8 passadas por tick (§11.3). Contatos recebem o estado das bobinas em toda passada, mas as
+bobinas só comitam na passada 7 ⇒ **atualização síncrona** (todas as bobinas do tick usam a
+imagem de bits do tick anterior). Consequências: (a) latência de 1–2 ticks (100–200 ms) por
+"nível" lógico; (b) dois degraus que se intertravam pelo NF da saída do outro, se energizados no
+mesmo tick, **oscilam** (no app isso exige dois cliques simultâneos, inalcançável com o mouse).
+
+### 13.6 Pendências para confirmar no app (Wine; não feito nesta etapa)
+1. Bobina 10060 com pino B aberto energiza (lido no código; acervo funciona assim).
+2. 3011 → 10206 sem disjuntor: CPU liga ao dar Play (estampa `+`/`-`).
+3. Entrada 10204 com `n16=1` acende com 24 V da CPU; saída 10205 energiza 9000 ligada ao p4.
+4. Set/Reset 10061/10062 com `n7=0` (intercalada do acervo) mantêm o bit entre partidas.
+5. Contato 10050 com operando de temporizador (`T1`) segue a saída do 10066.
+6. Disjuntor 6002 inicia aberto? (afeta só quem usar `protecao` no CLP).

@@ -1,0 +1,240 @@
+{
+  "id": "reversao_ladder",
+  "dsl": "ladder/1",
+  "titulo": "Reversao de 1 motor por CLP com intertravamento logico e eletrico",
+  "dificuldade": 3,
+  "enunciado": "Partida com reversao de um motor trifasico comandada por CLP (ladder). Entradas: -S0 (NF) I0.0 desliga, -S1 (NA) I0.1 sentido horario, -S2 (NA) I0.2 anti-horario, NF do termico -RT1 em I0.3. Saidas: Q0.0 -> -KM1 (com NF de -KM2 em serie na saida), Q0.1 -> -KM2 (com NF de -KM1 em serie). Ladder com selo em cada degrau e intertravamento pelo NF da saida oposta: Q0.0 = I0.3 . I0.0 . (I0.1 + Q0.0) . /Q0.1 e simetrico para Q0.1. Potencia: -KM2 inverte duas fases.",
+  "restricoes": [
+    "Use o CLP modular: CPU 10206 alimentada por fonte 3011 propria, entradas 10204 e saidas 10205 (n16=1, 24 Vcc).",
+    "Botoes e contatos do termico ligam o +24V da CPU as entradas; as saidas ligam as bobinas, que voltam ao 0V da CPU.",
+    "Ladder com fonte 3008 no trilho esquerdo; bobinas ladder com pino direito sem fio (trilho_direito aberto).",
+    "Operandos I0.x/Q0.x/M0.x exatamente como no enunciado; nenhum operando igual a rotulo fisico (ex.: -KM1).",
+    "Use UMA fonte trifasica multi-terminal (3007) na potencia e trilho PE separado; termico 6007 com o mesmo rotulo do 8017.",
+    "Sem coordenadas no layout; tudo cabe na folha (455x305)."
+  ],
+  "obrigatorios": {
+    "classes": {
+      "10206": 1,
+      "10204": 4,
+      "10205": 2,
+      "3008": 1,
+      "3011": 1,
+      "10050": 8,
+      "10051": 2,
+      "10060": 2,
+      "9000": 2,
+      "7001": 2,
+      "8000": 2,
+      "8001": 1,
+      "8017": 1,
+      "2001": 2,
+      "6007": 1,
+      "1000": 1
+    },
+    "uma_de": [
+      [
+        "6009",
+        "6010"
+      ]
+    ],
+    "rotulos": [
+      "-S0",
+      "-S1",
+      "-S2",
+      "-RT1",
+      "-KM1",
+      "-KM2"
+    ],
+    "operandos": [
+      "I0.0",
+      "I0.1",
+      "I0.2",
+      "I0.3",
+      "Q0.0",
+      "Q0.1"
+    ]
+  },
+  "testes": [
+    {
+      "nome": "repouso desligado",
+      "entradas": {},
+      "status": "OK",
+      "esperado": []
+    },
+    {
+      "nome": "S1 liga KM1",
+      "entradas": {
+        "S1": true
+      },
+      "status": "OK",
+      "esperado": [
+        "KM1"
+      ],
+      "esperado_bits": {
+        "Q0.0": 1,
+        "Q0.1": 0
+      }
+    },
+    {
+      "nome": "S2 liga KM2",
+      "entradas": {
+        "S2": true
+      },
+      "status": "OK",
+      "esperado": [
+        "KM2"
+      ],
+      "esperado_bits": {
+        "Q0.0": 0,
+        "Q0.1": 1
+      }
+    },
+    {
+      "nome": "selo mantem KM1",
+      "entradas": {},
+      "inicial": [
+        "Q0.0"
+      ],
+      "status": "OK",
+      "esperado": [
+        "KM1"
+      ]
+    },
+    {
+      "nome": "selo mantem KM2",
+      "entradas": {},
+      "inicial": [
+        "Q0.1"
+      ],
+      "status": "OK",
+      "esperado": [
+        "KM2"
+      ]
+    },
+    {
+      "nome": "intertravamento: S2 nao liga KM2 com KM1 ligado",
+      "entradas": {
+        "S2": true
+      },
+      "inicial": [
+        "Q0.0"
+      ],
+      "status": "OK",
+      "esperado": [
+        "KM1"
+      ]
+    },
+    {
+      "nome": "intertravamento: S1 nao liga KM1 com KM2 ligado",
+      "entradas": {
+        "S1": true
+      },
+      "inicial": [
+        "Q0.1"
+      ],
+      "status": "OK",
+      "esperado": [
+        "KM2"
+      ]
+    },
+    {
+      "nome": "S0 desliga KM1",
+      "entradas": {
+        "S0": true
+      },
+      "inicial": [
+        "Q0.0"
+      ],
+      "status": "OK",
+      "esperado": []
+    },
+    {
+      "nome": "S0 desliga KM2",
+      "entradas": {
+        "S0": true
+      },
+      "inicial": [
+        "Q0.1"
+      ],
+      "status": "OK",
+      "esperado": []
+    },
+    {
+      "nome": "RT1 aberto bloqueia S1",
+      "entradas": {
+        "RT1": true,
+        "S1": true
+      },
+      "status": "OK",
+      "esperado": []
+    },
+    {
+      "nome": "RT1 aberto desliga KM2",
+      "entradas": {
+        "RT1": true
+      },
+      "inicial": [
+        "Q0.1"
+      ],
+      "status": "OK",
+      "esperado": []
+    },
+    {
+      "nome": "S1 e S2 juntos a partir do repouso: oscila no modelo sincrono (inalcancavel no app com o mouse)",
+      "entradas": {
+        "S1": true,
+        "S2": true
+      },
+      "status": "OSCILA"
+    },
+    {
+      "nome": "sequencia horario, para, anti-horario",
+      "status": "OK",
+      "sequencia": [
+        {
+          "entradas": {
+            "S1": true
+          },
+          "esperado": [
+            "KM1"
+          ]
+        },
+        {
+          "entradas": {},
+          "esperado": [
+            "KM1"
+          ]
+        },
+        {
+          "entradas": {
+            "S2": true
+          },
+          "esperado": [
+            "KM1"
+          ]
+        },
+        {
+          "entradas": {
+            "S0": true
+          },
+          "esperado": []
+        },
+        {
+          "entradas": {
+            "S2": true
+          },
+          "esperado": [
+            "KM2"
+          ]
+        },
+        {
+          "entradas": {},
+          "esperado": [
+            "KM2"
+          ]
+        }
+      ]
+    }
+  ],
+  "golden": "reversao.ladder"
+}
