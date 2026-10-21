@@ -1,0 +1,77 @@
+{
+  "titulo": "PARTIDA DIRETA EM LADDER (CLP)",
+  "dsl": "ladder/1",
+  "layout": {
+    "trilhos": {"L1": 14, "L2": 20, "L3": 26, "N": 282, "PE": 291, "x0": 25, "x1": 160},
+    "fontes": [
+      {"id": "X1", "classe": "3007", "rotulo": "-X",
+       "pinos": {"L1": "L1", "L2": "L2", "L3": "L3", "N": "N", "PE": "PE"}}
+    ],
+    "potencia": [
+      {"id": "m1", "fases": ["L1", "L2", "L3"], "neutro": "N", "pe": "PE",
+       "colunas": [
+         ["Q1", "6009", "-Q1"],
+         ["F1", "6007", "-RT1"],
+         ["KM1p", "2001", "-KM1"],
+         ["M1", "1000", "-M1"]
+       ]}
+    ],
+    "clp": {
+      "id": "CLP1", "classe": "10206", "rotulo": "-CLP",
+      "alimentacao": {"fonte": {"id": "X2", "classe": "3011", "rotulo": "-X2"}},
+      "entradas": [
+        {"operando": "I0.0", "dispositivo": ["S0", "8001", "-S0"]},
+        {"operando": "I0.1", "dispositivo": ["S1", "8000", "-S1"]},
+        {"operando": "I0.2", "dispositivo": ["RT1", "8017", "-RT1"]}
+      ],
+      "saidas": [
+        {"operando": "Q0.0", "carga": ["KM1", "9000", "-KM1"]},
+        {"operando": "Q0.1", "carga": ["H1", "9008", "-H1"]},
+        {"operando": "Q0.2", "carga": ["H2", "9008", "-H2"]}
+      ]
+    },
+    "ladder": {
+      "fonte": {"id": "XL", "classe": "3008", "rotulo": "+L"},
+      "trilho_direito": "aberto",
+      "rungs": [
+        {"id": "r1", "comentario": "termico sadio, S0 nao pressionado, S1 liga, Q0.0 sela",
+         "logica": {"serie": [
+           ["NA", "I0.2"],
+           ["NA", "I0.0"],
+           {"paralelo": [["NA", "I0.1"], ["NA", "Q0.0"]]}
+         ]},
+         "saida": ["OUT", "Q0.0"]},
+        {"id": "r2", "comentario": "sinaliza motor ligado",
+         "logica": ["NA", "Q0.0"],
+         "saida": ["OUT", "Q0.1"]},
+        {"id": "r3", "comentario": "sinaliza termico disparado",
+         "logica": ["NF", "I0.2"],
+         "saida": ["OUT", "Q0.2"]}
+      ]
+    }
+  },
+  "testes": [
+    {"nome": "repouso desligado", "entradas": {}, "status": "OK",
+     "esperado": [], "esperado_lampadas": [],
+     "esperado_bits": {"I0.0": 1, "I0.1": 0, "I0.2": 1, "Q0.0": 0, "Q0.1": 0, "Q0.2": 0}},
+    {"nome": "S1 liga KM1", "entradas": {"S1": true}, "status": "OK",
+     "esperado": ["KM1"], "esperado_lampadas": ["H1"], "esperado_bits": {"Q0.0": 1}},
+    {"nome": "selo mantem KM1", "entradas": {}, "inicial": ["Q0.0"], "status": "OK",
+     "esperado": ["KM1"], "esperado_lampadas": ["H1"]},
+    {"nome": "S0 desliga", "entradas": {"S0": true}, "inicial": ["Q0.0"], "status": "OK",
+     "esperado": [], "esperado_lampadas": [], "esperado_bits": {"I0.0": 0, "Q0.0": 0}},
+    {"nome": "S0 e S1 juntos: desliga prevalece", "entradas": {"S0": true, "S1": true}, "status": "OK",
+     "esperado": [], "esperado_lampadas": []},
+    {"nome": "RT1 aberto bloqueia a partida", "entradas": {"RT1": true, "S1": true}, "status": "OK",
+     "esperado": [], "esperado_lampadas": ["H2"], "esperado_bits": {"I0.2": 0, "Q0.2": 1}},
+    {"nome": "RT1 aberto derruba KM1", "entradas": {"RT1": true}, "inicial": ["Q0.0"], "status": "OK",
+     "esperado": [], "esperado_lampadas": ["H2"]},
+    {"nome": "sequencia liga, solta, desliga, sem auto-religamento", "status": "OK",
+     "sequencia": [
+       {"entradas": {"S1": true}, "esperado": ["KM1"], "esperado_lampadas": ["H1"]},
+       {"entradas": {}, "esperado": ["KM1"], "esperado_lampadas": ["H1"]},
+       {"entradas": {"S0": true}, "esperado": [], "esperado_lampadas": []},
+       {"entradas": {}, "esperado": [], "esperado_lampadas": []}
+     ]}
+  ]
+}
