@@ -195,6 +195,14 @@ Testes: `python3 -m pytest tools/test_layout_v2.py` (geometria, conectividade po
 gate dos 5 exemplos, faixas, serpentina, fallback legado, erros de entrada). Casos de
 avaliação em `tools/eval/casos/` (golden = exemplo de mesmo nome).
 
+### Ladder / CLP (`ladder/1`, especificado — não implementado)
+Seções `clp` (CPU 10206 + entradas 10204 ligadas a botões/térmicos + saídas 10205 ligadas a
+bobinas/lâmpadas) e `ladder` (fonte 3008, `rungs` série-paralelo de contatos `NA`/`NF` com
+operandos I/Q/M/T/C e saídas `OUT`/`SET`/`RST`/`TON`), junto da `potencia` atual. Contrato
+completo (semântica do RE, validação, simulação síncrona, geometria, testes com `sequencia`):
+`docs/ladder.md` + `docs/ladder.schema.json`. Exemplos: `tools/examples/*.ladder.json`
+(fora do `*.layout.json`, portanto fora do gate atual); casos: `tools/eval/casos/ladder/`.
+
 ### Limitações / pendências
 - `potencia`: `paralelo` só em um nível (`ordem` vale para qualquer estágio); não quebra em
   faixas (se a potência não couber depois do comando, erro explícito de folha). O comando v2
