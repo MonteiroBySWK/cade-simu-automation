@@ -19,7 +19,7 @@ python scripts/dev.py gate      # gera e valida todos os exemplos
 ```
 
 - **Dependências** (núcleo × opcionais, variáveis `CADE_*`): [`docs/DEPENDENCIAS.md`](docs/DEPENDENCIAS.md)
-- **Usar com Claude Code / opencode** (MCP + skill): [`docs/integracao.md`](docs/integracao.md)
+- **Usar com Claude Code / opencode**: `python scripts/dev.py install-mcp` (MCP + skill via os próprios CLIs) — [`docs/integracao.md`](docs/integracao.md)
 - **Para agentes e contribuidores**: [`AGENTS.md`](AGENTS.md), [`CONTRIBUTING.md`](CONTRIBUTING.md), [`CHANGELOG.md`](CHANGELOG.md)
 
 ## Como funciona
@@ -45,10 +45,8 @@ Este repo é um **servidor MCP** (`tools/cade_mcp.py`, stdio): qualquer agente
 conecta e passa a validar, gerar, inspecionar e **ver** circuitos:
 
 ```bash
-uv venv tools/.venv-mcp
-uv pip install --python tools/.venv-mcp/bin/python "mcp<2" pillow numpy
-cargo build --manifest-path src/cade_cli/Cargo.toml
-# claude mcp add cade-simu -- tools/.venv-mcp/bin/python tools/cade_mcp.py
+python scripts/dev.py setup         # cargo build + venv + deps
+python scripts/dev.py install-mcp   # registra no Claude Code e no opencode (CLIs oficiais)
 ```
 
 Ferramentas (caminho de menor resistência primeiro):
@@ -109,7 +107,7 @@ python3 tools/mcp_call.py cad_validate '{"path":"out/novo.cad"}'
 
 Baixo nível: `cad_symbols`, `cad_build`, `cad_validate`, `cad_inspect`,
 `cad_preview`, `cad_from_image`, `cad_parse`, `cad_emit`, `cad_new` (o caminho recomendado é
-`cad_design`, acima). Registrado em `~/.config/opencode/opencode.json` como servidor MCP `cade-simu`.
+`cad_design`, acima). Instale em Claude Code/opencode com `python scripts/dev.py install-mcp`.
 
 Certificação: um agente (subagente com contexto zerado) montou um circuito de
 **partida intercalar de motores** do zero, só via `cad_symbols`+`cad_build` —

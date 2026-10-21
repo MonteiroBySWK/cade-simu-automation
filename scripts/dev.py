@@ -6,6 +6,8 @@
   python scripts/dev.py test         pytest (o E2E que abre o Wine so roda com CADE_E2E=1)
   python scripts/dev.py gate         gera e valida todos os exemplos + eval golden
   python scripts/dev.py mcp-config   imprime a config do MCP p/ Claude Code e opencode (caminhos absolutos)
+  python scripts/dev.py install-mcp  registra o MCP + skill no Claude Code e no opencode pelos PROPRIOS CLIs
+  python scripts/dev.py uninstall-mcp  remove o registro (MCP + link da skill) dos dois
 """
 import glob
 import json
@@ -81,7 +83,79 @@ def mcp_config():
     print(json.dumps({"cade-simu": {"type": "local", "command": [exe, str(server)], "enabled": True}}, indent=2))
 
 
-TAREFAS = {"setup": setup, "doctor": doctor, "test": test, "gate": gate, "mcp-config": mcp_config}
+NOME = "cade-simu"
+SKILL = ROOT / "skills" / "automacao-industrial"
+OPENCODE_CFG = Path.home() / ".config" / "opencode" / "opencode.json"
+SKILL_DIRS = {"claude": Path.home() / ".claude" / "skills", "opencode": Path.home() / ".config" / "opencode" / "skills"}
+
+
+def _cmd_servidor():
+    # Python absoluto (o mesmo que roda este script) + launcher absoluto: nao depende de PATH nem de cwd
+    return [sys.executable, str(ROOT / "scripts" / "mcp_server.py")]
+
+
+def _quieto(cmd):
+    return subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", errors="replace")
+
+
+def _opencode_remover():
+    """`opencode mcp` nao tem 'remove': tira a chave do JSON global (backup .bak ao lado)."""
+    if not OPENCODE_CFG.is_file():
+        return
+    d = json.loads(OPENCODE_CFG.read_text(encoding="utf-8"))
+    if NOME in d.get("mcp", {}):
+        shutil.copy(OPENCODE_CFG, OPENCODE_CFG.with_suffix(".json.bak"))
+        del d["mcp"][NOME]
+        OPENCODE_CFG.write_text(json.dumps(d, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+        print(f"opencode: '{NOME}' removido de {OPENCODE_CFG} (backup .bak)")
+
+
+def _skill(link):
+    for alvo, base in SKILL_DIRS.items():
+        dst = base / SKILL.name
+        if dst.is_symlink() or dst.exists():
+            if dst.is_symlink():
+                dst.unlink()
+            elif not link:
+                print(f"{alvo}: {dst} nao e link — deixei como esta")
+                continue
+        if link and base.is_dir():
+            try:
+                dst.symlink_to(SKILL, target_is_directory=True)
+                print(f"{alvo}: skill -> {dst}")
+            except OSError:   # Windows sem permissao de symlink
+                shutil.copytree(SKILL, dst)
+                print(f"{alvo}: skill copiada -> {dst} (sem symlink; rode de novo apos atualizar o repo)")
+
+
+def uninstall_mcp():
+    if shutil.which("claude"):
+        for esc in ("user", "local", "project"):
+            r = _quieto(["claude", "mcp", "remove", NOME, "-s", esc])
+            if r.returncode == 0:
+                print(f"claude: '{NOME}' removido (escopo {esc})")
+    _opencode_remover()
+    _skill(link=False)
+
+
+def install_mcp():
+    if not C.venv_python():
+        sys.exit("rode `python scripts/dev.py setup` antes")
+    uninstall_mcp()                              # idempotente: sempre parte do zero
+    cmd = _cmd_servidor()
+    if shutil.which("claude"):
+        run(["claude", "mcp", "add", "-s", "user", NOME, "--", *cmd])
+    else:
+        print("claude CLI ausente; quando instalar: claude mcp add -s user", NOME, "--", *cmd)
+    if shutil.which("opencode"):
+        run(["opencode", "mcp", "add", "--global", NOME, "--", *cmd])
+    else:
+        print("opencode CLI ausente; quando instalar: opencode mcp add --global", NOME, "--", *cmd)
+    _skill(link=True)
+    print("\nConfira: `claude mcp get cade-simu` e `opencode mcp list` (devem mostrar connected).")
+
+
+TAREFAS = {"install-mcp": install_mcp, "uninstall-mcp": uninstall_mcp, "setup": setup, "doctor": doctor, "test": test, "gate": gate, "mcp-config": mcp_config}
 
 if __name__ == "__main__":
     if len(sys.argv) < 2 or sys.argv[1] not in TAREFAS:
