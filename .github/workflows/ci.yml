@@ -3,6 +3,26 @@ on:
   push: { branches: [main] }
   pull_request:
 jobs:
+  # Rust: o binario unico `cade` + paridade byte-a-byte com o oraculo Python (tests/golden)
+  rust:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with: { components: clippy }
+      - uses: Swatinem/rust-cache@v2
+      - name: cargo test --workspace (inclui tests/paridade)
+        run: cargo test --workspace
+      - name: cargo clippy
+        run: cargo clippy --workspace --all-targets
+      - name: cargo build --release (target/release/cade)
+        run: cargo build --release -p cade_cli
+
+  # Python: ORACULO de paridade (sai quando o binario Rust tiver paridade total)
   test:
     strategy:
       fail-fast: false
