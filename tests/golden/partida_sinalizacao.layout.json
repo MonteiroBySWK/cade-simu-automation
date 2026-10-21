@@ -1,0 +1,194 @@
+{
+  "titulo": "PARTIDA DIRETA COM SINALIZACAO",
+  "layout": {
+    "trilhos": {
+      "L1": 14,
+      "L2": 20,
+      "L3": 26,
+      "N": 282,
+      "x0": 25,
+      "x1": 395,
+      "PE": 291
+    },
+    "fontes": [
+      {
+        "id": "X1",
+        "classe": "3007",
+        "rotulo": "-X",
+        "pinos": {
+          "L1": "L1",
+          "L2": "L2",
+          "L3": "L3",
+          "N": "N",
+          "PE": "PE"
+        }
+      }
+    ],
+    "comando": [
+      {
+        "id": "m1",
+        "de": "L1",
+        "para": "N",
+        "serie": [
+          [
+            "RT1",
+            "8017",
+            "-RT1"
+          ],
+          [
+            "S0",
+            "8001",
+            "-S0"
+          ]
+        ],
+        "ramos": [
+          {
+            "via": [
+              "S1",
+              "8000",
+              "-S1"
+            ],
+            "selo": [
+              "selo1",
+              "7000",
+              "-KM1"
+            ],
+            "carga": [
+              "KM1",
+              "9000",
+              "-KM1"
+            ],
+            "indica": [
+              "H1",
+              "9008",
+              "-H1"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "m2",
+        "de": "L1",
+        "para": "N",
+        "serie": [
+          [
+            "RT1f",
+            "8016",
+            "-RT1"
+          ]
+        ],
+        "ramos": [
+          {
+            "carga": [
+              "H2",
+              "9008",
+              "-H2"
+            ]
+          }
+        ]
+      }
+    ],
+    "potencia": [
+      {
+        "id": "m1",
+        "fases": [
+          "L1",
+          "L2",
+          "L3"
+        ],
+        "neutro": "N",
+        "colunas": [
+          [
+            "Q1",
+            "6009",
+            "-Q1"
+          ],
+          [
+            "F1",
+            "6007",
+            "-RT1"
+          ],
+          [
+            "KM1p",
+            "2001",
+            "-KM1"
+          ],
+          [
+            "M1",
+            "1000",
+            "-M1"
+          ]
+        ],
+        "pe": "PE"
+      }
+    ]
+  },
+  "testes": [
+    {
+      "nome": "repouso desligado",
+      "entradas": {},
+      "esperado": [],
+      "esperado_lampadas": [],
+      "status": "OK"
+    },
+    {
+      "nome": "S1 liga KM1",
+      "entradas": {
+        "S1": true
+      },
+      "esperado": [
+        "KM1"
+      ],
+      "esperado_lampadas": [
+        "H1"
+      ],
+      "status": "OK"
+    },
+    {
+      "nome": "selo mantem KM1",
+      "entradas": {},
+      "inicial": [
+        "KM1"
+      ],
+      "esperado": [
+        "KM1"
+      ],
+      "esperado_lampadas": [
+        "H1"
+      ],
+      "status": "OK"
+    },
+    {
+      "nome": "S0 desliga",
+      "entradas": {
+        "S0": true
+      },
+      "inicial": [
+        "KM1"
+      ],
+      "esperado": [],
+      "esperado_lampadas": [],
+      "status": "OK"
+    },
+    {
+      "nome": "sem auto-religamento",
+      "entradas": {},
+      "esperado": [],
+      "esperado_lampadas": [],
+      "status": "OK"
+    },
+    {
+      "nome": "RT1 aberto bloqueia",
+      "entradas": {
+        "RT1": true,
+        "S1": true
+      },
+      "esperado": [],
+      "esperado_lampadas": [
+        "H2"
+      ],
+      "status": "OK"
+    }
+  ],
+  "descricao": "Partida direta com H1 (funcionamento, paralelo a bobina) e H2 (falha termica: NA 97-98 do rele em serie com o piloto)."
+}

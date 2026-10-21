@@ -1,0 +1,1 @@
+Q (classe 2001) tem 6 terminais (['1', '2', '3', '4', '5', '6']); a rede de comando aceita so simbolos de 2 terminais (A/B)

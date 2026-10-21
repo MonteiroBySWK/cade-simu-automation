@@ -1,0 +1,1 @@
+'paralelo' precisa de uma lista nao vazia

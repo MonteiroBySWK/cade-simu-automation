@@ -1,0 +1,352 @@
+{
+  "titulo": "PARTIDA INTERCALAR",
+  "layout": {
+    "trilhos": {
+      "L1": 14,
+      "L2": 20,
+      "L3": 26,
+      "N": 282,
+      "x0": 25,
+      "x1": 395,
+      "PE": 291
+    },
+    "fontes": [
+      {
+        "id": "X1",
+        "classe": "3007",
+        "rotulo": "-X",
+        "pinos": {
+          "L1": "L1",
+          "L2": "L2",
+          "L3": "L3",
+          "N": "N",
+          "PE": "PE"
+        }
+      }
+    ],
+    "comando": [
+      {
+        "id": "m1",
+        "de": "L1",
+        "para": "N",
+        "serie": [
+          [
+            "RT1",
+            "8017",
+            "-RT1"
+          ],
+          [
+            "RT2",
+            "8017",
+            "-RT2"
+          ],
+          [
+            "S0",
+            "8001",
+            "-S0"
+          ]
+        ],
+        "ramos": [
+          {
+            "via": [
+              "S1",
+              "8000",
+              "-S1"
+            ],
+            "selo": [
+              "selo1",
+              "7000",
+              "-KM1"
+            ],
+            "serie": [
+              [
+                "nkm2",
+                "7001",
+                "-KM2"
+              ]
+            ],
+            "carga": [
+              "KM1",
+              "9000",
+              "-KM1"
+            ],
+            "indica": [
+              "H1",
+              "9008",
+              "-H1"
+            ]
+          },
+          {
+            "via": [
+              "S2",
+              "8000",
+              "-S2"
+            ],
+            "selo": [
+              "selo2",
+              "7000",
+              "-KM2"
+            ],
+            "serie": [
+              [
+                "nkm1",
+                "7001",
+                "-KM1"
+              ]
+            ],
+            "carga": [
+              "KM2",
+              "9000",
+              "-KM2"
+            ],
+            "indica": [
+              "H2",
+              "9008",
+              "-H2"
+            ]
+          }
+        ]
+      }
+    ],
+    "potencia": [
+      {
+        "id": "m1",
+        "fases": [
+          "L1",
+          "L2",
+          "L3"
+        ],
+        "neutro": "N",
+        "colunas": [
+          [
+            "Q1",
+            "6009",
+            "-Q1"
+          ],
+          [
+            "F1",
+            "6007",
+            "-RT1"
+          ],
+          [
+            "KM1p",
+            "2001",
+            "-KM1"
+          ],
+          [
+            "M1",
+            "1000",
+            "-M1"
+          ]
+        ],
+        "pe": "PE"
+      },
+      {
+        "id": "m2",
+        "fases": [
+          "L1",
+          "L2",
+          "L3"
+        ],
+        "neutro": "N",
+        "colunas": [
+          [
+            "Q2",
+            "6009",
+            "-Q2"
+          ],
+          [
+            "F2",
+            "6007",
+            "-RT2"
+          ],
+          [
+            "KM2p",
+            "2001",
+            "-KM2"
+          ],
+          [
+            "M2",
+            "1000",
+            "-M2"
+          ]
+        ],
+        "pe": "PE"
+      }
+    ]
+  },
+  "testes": [
+    {
+      "nome": "repouso = tudo desligado",
+      "entradas": {},
+      "esperado": [],
+      "esperado_lampadas": [],
+      "status": "OK"
+    },
+    {
+      "nome": "S1 liga KM1",
+      "entradas": {
+        "S1": true
+      },
+      "esperado": [
+        "KM1"
+      ],
+      "esperado_lampadas": [
+        "H1"
+      ],
+      "status": "OK"
+    },
+    {
+      "nome": "S2 liga KM2",
+      "entradas": {
+        "S2": true
+      },
+      "esperado": [
+        "KM2"
+      ],
+      "esperado_lampadas": [
+        "H2"
+      ],
+      "status": "OK"
+    },
+    {
+      "nome": "selo mantem KM1",
+      "entradas": {},
+      "esperado": [
+        "KM1"
+      ],
+      "esperado_lampadas": [
+        "H1"
+      ],
+      "status": "OK",
+      "inicial": [
+        "KM1"
+      ]
+    },
+    {
+      "nome": "selo mantem KM2",
+      "entradas": {},
+      "esperado": [
+        "KM2"
+      ],
+      "esperado_lampadas": [
+        "H2"
+      ],
+      "status": "OK",
+      "inicial": [
+        "KM2"
+      ]
+    },
+    {
+      "nome": "KM2 bloqueado com KM1 ligado",
+      "entradas": {
+        "S2": true
+      },
+      "esperado": [
+        "KM1"
+      ],
+      "esperado_lampadas": [
+        "H1"
+      ],
+      "status": "OK",
+      "inicial": [
+        "KM1"
+      ]
+    },
+    {
+      "nome": "KM1 bloqueado com KM2 ligado",
+      "entradas": {
+        "S1": true
+      },
+      "esperado": [
+        "KM2"
+      ],
+      "esperado_lampadas": [
+        "H2"
+      ],
+      "status": "OK",
+      "inicial": [
+        "KM2"
+      ]
+    },
+    {
+      "nome": "S0 desliga tudo",
+      "entradas": {
+        "S0": true
+      },
+      "esperado": [],
+      "esperado_lampadas": [],
+      "status": "OK",
+      "inicial": [
+        "KM1"
+      ]
+    },
+    {
+      "nome": "S0 desliga (de KM2)",
+      "entradas": {
+        "S0": true
+      },
+      "esperado": [],
+      "esperado_lampadas": [],
+      "status": "OK",
+      "inicial": [
+        "KM2"
+      ]
+    },
+    {
+      "nome": "sem auto-religamento",
+      "entradas": {},
+      "esperado": [],
+      "esperado_lampadas": [],
+      "status": "OK"
+    },
+    {
+      "nome": "RT1 aberto bloqueia",
+      "entradas": {
+        "RT1": true,
+        "S1": true
+      },
+      "esperado": [],
+      "esperado_lampadas": [],
+      "status": "OK"
+    },
+    {
+      "nome": "RT2 aberto bloqueia",
+      "entradas": {
+        "RT2": true,
+        "S1": true
+      },
+      "esperado": [],
+      "esperado_lampadas": [],
+      "status": "OK"
+    },
+    {
+      "nome": "RT1 aberto bloqueia S2",
+      "entradas": {
+        "RT1": true,
+        "S2": true
+      },
+      "esperado": [],
+      "esperado_lampadas": [],
+      "status": "OK"
+    },
+    {
+      "nome": "RT2 aberto bloqueia S2",
+      "entradas": {
+        "RT2": true,
+        "S2": true
+      },
+      "esperado": [],
+      "esperado_lampadas": [],
+      "status": "OK"
+    },
+    {
+      "nome": "S1+S2 simultaneo = corrida",
+      "entradas": {
+        "S1": true,
+        "S2": true
+      },
+      "status": "RACE"
+    }
+  ]
+}
