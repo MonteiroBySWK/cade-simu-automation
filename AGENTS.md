@@ -4,7 +4,7 @@ Gera/valida circuitos do **CADe_SIMU 4.0** (`.cad`) por IA. **Nunca escreva `*`/
 
 ## Setup (sem Wine)
 `python scripts/dev.py setup && python scripts/dev.py doctor` · testes: `python scripts/dev.py test` · todos os exemplos + eval: `python scripts/dev.py gate`.
-Dependências e o que é opcional: `docs/DEPENDENCIAS.md`. Integração: `docs/integracao.md`.
+Dependências e o que é opcional: `docs/DEPENDENCIAS.md`. Instalar o MCP+skill: `python scripts/dev.py install-mcp` (`docs/integracao.md`).
 
 ## Como criar um circuito
 1. Leia `skills/automacao-industrial/SKILL.md`.

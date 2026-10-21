@@ -1,44 +1,38 @@
 # Integração com Claude Code e opencode
 
-Este repo é um **servidor MCP** (`cade-simu`, stdio) + uma **skill** (`skills/automacao-industrial`).
+O repo expõe um **servidor MCP** (`cade-simu`, stdio, launcher `scripts/mcp_server.py`) e uma **skill**
+(`skills/automacao-industrial`). A instalação usa os **próprios CLIs** de cada ferramenta — nada de editar
+config à mão, nada de `.mcp.json` no repo (evita servidor duplicado em dois escopos).
 
-## 0. Pré-requisito (uma vez) — Linux, macOS ou Windows
-> O `.mcp.json`/`opencode.json` chamam `python`. Em Linux sem o comando `python` (só `python3`), use
-> `python scripts/dev.py mcp-config` para gerar a config com o caminho absoluto do seu Python.
+## Instalar (Linux, macOS, Windows)
 ```bash
-python scripts/dev.py setup     # cargo build + venv + deps (sem Wine)
-python scripts/dev.py doctor    # confere o ambiente
+python scripts/dev.py setup          # cargo build + venv + deps (uma vez)
+python scripts/dev.py install-mcp    # registra MCP + skill no Claude Code e no opencode
+```
+O `install-mcp` é idempotente (remove o registro antigo e recria). Por baixo ele roda:
+
+```bash
+claude   mcp add -s user  cade-simu -- <python-absoluto> <repo>/scripts/mcp_server.py
+opencode mcp add --global cade-simu -- <python-absoluto> <repo>/scripts/mcp_server.py
+```
+e linka a skill em `~/.claude/skills/` e `~/.config/opencode/skills/` (no Windows sem permissão de symlink, copia).
+O caminho é absoluto: funciona de qualquer projeto. Mover o repo de lugar = rodar `install-mcp` de novo.
+`git pull` no repo atualiza servidor e skill sem reinstalar.
+
+## Conferir
+```bash
+claude mcp get cade-simu      # Status: Connected
+opencode mcp list             # cade-simu connected
+python tools/mcp_call.py cad_examples   # o servidor responde sem cliente nenhum
 ```
 
-## 1. Claude Code
-- **Dentro do repo**: o `.mcp.json` da raiz já registra o servidor — abra o Claude Code na pasta e aprove o servidor
-  `cade-simu` (`/mcp` lista as ferramentas).
-- **Em qualquer projeto** (escopo de usuário):
-  ```bash
-  python scripts/dev.py mcp-config   # imprime o comando/JSON certo p/ o seu SO, com caminhos absolutos
-  ```
-- **Skill**: copie ou linke a pasta da skill:
-  ```bash
-  ln -s /CAMINHO/ABSOLUTO/cade-simu-automation/skills/automacao-industrial ~/.claude/skills/automacao-industrial
-  ```
-- `CLAUDE.md`/`AGENTS.md` da raiz já orientam o agente quando ele trabalha neste repo.
-
-## 2. opencode
-- **Dentro do repo**: o `opencode.json` da raiz registra o MCP local (`python scripts/mcp_server.py`).
-- **Global** (`~/.config/opencode/opencode.json`), com caminho absoluto:
-  ```json
-  { "mcp": { "cade-simu": { "type": "local",
-      "command": ["python", "/CAMINHO/ABSOLUTO/cade-simu-automation/scripts/mcp_server.py"], "enabled": true } } }
-  ```
-  > Formato conforme a documentação do opencode na data da escrita — confira o `$schema` da sua versão.
-- O `AGENTS.md` da raiz é lido automaticamente; ele aponta para a skill.
-
-## 3. Fluxo que o agente deve seguir
-`cad_examples` → escrever o **layout topológico** (sem x/y, ver `docs/dsl-layout.md`) → `cad_design` →
-corrigir pelo relatório do gate → `cad_preview` → entregar o `.cad`.
-Confirmação opcional no app real: `cad_simular_no_app` (exige Wine; ver `docs/DEPENDENCIAS.md`).
-
-## 4. Teste rápido de que o MCP responde
+## Desinstalar
 ```bash
-python3 tools/mcp_call.py cad_examples
+python scripts/dev.py uninstall-mcp
 ```
+`claude mcp remove` nos escopos user/local/project; no opencode (o CLI não tem `remove`) a chave `cade-simu`
+sai de `~/.config/opencode/opencode.json` com backup `.bak`; os links da skill são removidos.
+
+## Fluxo que o agente deve seguir
+`cad_examples` → layout **topológico** (sem x/y, `docs/dsl-layout.md`) → `cad_design` → corrigir pelo gate →
+`cad_preview` → entregar o `.cad`. Confirmação no app real (`cad_simular_no_app`) só com Wine (`docs/DEPENDENCIAS.md`).

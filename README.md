@@ -19,7 +19,7 @@ python scripts/dev.py gate      # gera e valida todos os exemplos
 ```
 
 - **Dependências** (núcleo × opcionais, variáveis `CADE_*`): [`docs/DEPENDENCIAS.md`](docs/DEPENDENCIAS.md)
-- **Usar com Claude Code / opencode** (MCP + skill): [`docs/integracao.md`](docs/integracao.md)
+- **Usar com Claude Code / opencode**: `python scripts/dev.py install-mcp` (MCP + skill via os próprios CLIs) — [`docs/integracao.md`](docs/integracao.md)
 - **Para agentes e contribuidores**: [`AGENTS.md`](AGENTS.md), [`CONTRIBUTING.md`](CONTRIBUTING.md), [`CHANGELOG.md`](CHANGELOG.md)
 
 ## Como funciona
@@ -109,7 +109,7 @@ python3 tools/mcp_call.py cad_validate '{"path":"out/novo.cad"}'
 
 Baixo nível: `cad_symbols`, `cad_build`, `cad_validate`, `cad_inspect`,
 `cad_preview`, `cad_from_image`, `cad_parse`, `cad_emit`, `cad_new` (o caminho recomendado é
-`cad_design`, acima). Registrado em `~/.config/opencode/opencode.json` como servidor MCP `cade-simu`.
+`cad_design`, acima). Instale em Claude Code/opencode com `python scripts/dev.py install-mcp`.
 
 Certificação: um agente (subagente com contexto zerado) montou um circuito de
 **partida intercalar de motores** do zero, só via `cad_symbols`+`cad_build` —
