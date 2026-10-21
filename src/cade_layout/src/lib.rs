@@ -576,10 +576,26 @@ pub struct Normalizado {
     pub layout: Option<Value>,
 }
 
+/// Chaves de topo reservadas para o modelo ladder/CLP (ver docs/ladder.md na branch feat/ladder).
+pub const SECOES_RESERVADAS: [&str; 2] = ["ladder", "clp"];
+
 /// `build_spec.normalizar`: layout topologico OU spec baixa (com/sem a chave `layout`).
 pub fn normalizar(spec: &Value) -> R<Normalizado> {
     if !spec.is_object() {
         return Err(val("a spec deve ser um objeto JSON".into()));
+    }
+    // Secoes reservadas (contrato em docs/ladder.md, PR #5): nao implementadas nesta fase.
+    // Falhar alto evita que um `ladder`/`clp` seja ignorado em silencio.
+    for alvo in [Some(spec), spec.get("layout")].into_iter().flatten() {
+        for chave in SECOES_RESERVADAS {
+            if alvo.get(chave).is_some() {
+                return Err(val(format!(
+                    "secao '{}' reservada (ladder/CLP): contrato em docs/ladder.md (PR #5), ainda nao implementada \
+                     no motor Rust (fase cade_sim/cade_layout)",
+                    chave
+                )));
+            }
+        }
     }
     let mut layout_d = get(spec, "layout").cloned();
     let ou = |a: Option<&Value>, b: Option<&Value>| -> Value {
@@ -632,6 +648,16 @@ mod tests {
     fn width_e_dim() {
         assert!(width("2001") >= dim("2001").0);
         assert_eq!(dim("classe_inexistente"), FALLBACK_DIM);
+    }
+
+    #[test]
+    fn secoes_ladder_clp_sao_reservadas() {
+        for chave in SECOES_RESERVADAS {
+            let e = normalizar(&json!({ chave: {} })).unwrap_err();
+            assert!(e.to_string().contains("reservada"), "{e}");
+            let e = normalizar(&json!({"layout": { chave: [] }})).unwrap_err();
+            assert!(e.to_string().contains(chave), "{e}");
+        }
     }
 
     #[test]
