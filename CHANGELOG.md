@@ -2,6 +2,18 @@
 
 Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/). Datas em AAAA-MM-DD.
 
+## [Unreleased]
+
+### Adicionado
+- Setup amigável e independente da máquina: `make setup|doctor|test|gate`, `scripts/setup.sh` (uv ou venv),
+  `tools/doctor.py`, `requirements.txt`, `scripts/mcp-server.sh`, `.mcp.json` (Claude Code), `opencode.json`,
+  `AGENTS.md`/`CLAUDE.md`, `CONTRIBUTING.md`, CI (GitHub Actions), `docs/DEPENDENCIAS.md`, `docs/integracao.md`.
+- `tools/symbol_lib.json`: catálogo de classes versionado — **o repo não precisa mais do acervo/app** para gerar `.cad`.
+- `tools/cade_config.py`: localização opcional do app/acervo (`CADE_DIR`, `CADE_EXE`, `CADE_ACERVO`).
+
+### Alterado
+- Removidos todos os caminhos pessoais do código; scripts de Wine exigem `CADE_DIR`/`CADE_EXE` com mensagem clara.
+
 ## [0.2.0] — 2026-10-16
 
 Geração de `.cad` do CADe_SIMU por IA, com conectividade e simulação **fiéis ao app real**

@@ -1,0 +1,5 @@
+# Nucleo (suficiente p/ layout, gate, MCP e testes — sem o app CADe_SIMU, sem Wine)
+mcp>=1.2,<2
+pillow
+numpy
+pytest

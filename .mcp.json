@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "cade-simu": {
+      "command": "bash",
+      "args": ["scripts/mcp-server.sh"]
+    }
+  }
+}
