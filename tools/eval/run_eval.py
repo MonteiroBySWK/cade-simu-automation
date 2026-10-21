@@ -28,7 +28,9 @@ ROOT = TOOLS.parent
 sys.path.insert(0, str(TOOLS))
 CASOS = HERE / "casos"
 EXEMPLOS = TOOLS / "examples"
-CLI = ROOT / "src" / "cade_cli" / "target" / "debug" / "cade_cli"
+sys.path.insert(0, str(ROOT / "tools"))
+import cade_config  # noqa: E402
+CLI = cade_config.cli_path()
 PESOS = {"abre": 10, "geometria": 25, "testes": 35, "fios": 10, "obrigatorios": 20}
 
 
@@ -38,11 +40,11 @@ def carregar_caso(ref):
         p = CASOS / (Path(ref).stem + ".json")
     if not p.is_file():
         raise FileNotFoundError(f"caso nao encontrado: {ref} (casos: {[c.stem for c in sorted(CASOS.glob('*.json'))]})")
-    return json.loads(p.read_text())
+    return json.loads(p.read_text(encoding="utf-8"))
 
 
 def todos_os_casos():
-    return [json.loads(p.read_text()) for p in sorted(CASOS.glob("*.json"))]
+    return [json.loads(p.read_text(encoding="utf-8")) for p in sorted(CASOS.glob("*.json"))]
 
 
 def _norm(rot):
@@ -50,7 +52,7 @@ def _norm(rot):
 
 
 def _validar(path):
-    r = subprocess.run([str(CLI), "validate", str(path)], capture_output=True, text=True, timeout=60)
+    r = subprocess.run([str(CLI), "validate", str(path)], capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=60)
     return r.returncode == 0, (r.stdout.strip() or r.stderr.strip())
 
 
@@ -155,7 +157,7 @@ def construir_golden(caso, destino):
     if not f.is_file():
         return None
     import build_spec
-    spec = json.loads(f.read_text())
+    spec = json.loads(f.read_text(encoding="utf-8"))
     out = Path(destino) / f"{caso['id']}.cad"
     r = build_spec.construir(spec, str(out))
     return str(out) if r["build"]["ok"] else None

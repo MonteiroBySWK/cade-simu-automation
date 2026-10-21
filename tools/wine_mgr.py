@@ -16,6 +16,10 @@ Uso:
 Logs em logs/ (NÃO versionado).
 """
 import os
+import sys
+from pathlib import Path as _P
+sys.path.insert(0, str(_P(__file__).resolve().parent))
+import cade_config  # noqa: E402
 import subprocess
 import sys
 import time
@@ -24,7 +28,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 LOGDIR = ROOT / "logs"
-EXE_DIR = Path(os.environ.get("CADE_DIR", "/home/monteiro/Downloads/CADe_SIMU 4.0 [BR]/CADe_SIMU 4.0 [BR]"))
+EXE_DIR = cade_config.cade_dir()
 EXE = "CADe_SIMU 4.0 [BR].exe"
 # frações (x,y) do teclado 4962+OK dentro da janela do diálogo (176x189)
 TECLAS = {"4": (0.375, 0.598), "9": (0.665, 0.720), "6": (0.665, 0.598),
@@ -43,7 +47,7 @@ def log(msg):
 
 def xdo(*args, disp=None):
     env = dict(os.environ, DISPLAY=disp or DISP)
-    r = subprocess.run(["xdotool", *args], env=env, capture_output=True, text=True)
+    r = subprocess.run(["xdotool", *args], env=env, capture_output=True, text=True, encoding="utf-8", errors="replace")
     return r.stdout
 
 

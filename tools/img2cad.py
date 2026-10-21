@@ -40,7 +40,7 @@ def main(argv):
         inv.append({"classe": d["classe"], "nome": d["nome"], "x_img": d["x"], "y_img": d["y"],
                     "x": cx, "y": cy, "escore": d["escore"]})
     out_json.parent.mkdir(parents=True, exist_ok=True)
-    out_json.write_text(json.dumps({"fonte": str(src), "n": len(inv), "simbolos": inv}, indent=1, ensure_ascii=False))
+    out_json.write_text(json.dumps({"fonte": str(src), "n": len(inv), "simbolos": inv}, indent=1, ensure_ascii=False), encoding="utf-8")
     print(f"{len(inv)} símbolos -> {out_json}")
     for s in inv:
         print(f"  {s['classe']} {s['nome']} @ cad({s['x']},{s['y']}) conf={s['escore']}")

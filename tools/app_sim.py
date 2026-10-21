@@ -390,7 +390,7 @@ def em_simulacao(img):
 # --------------------------------------------------------------------------- app (Wine)
 
 def _xdo(*args):
-    r = subprocess.run(["xdotool", *args], env=dict(os.environ, DISPLAY=DISP), capture_output=True, text=True)
+    r = subprocess.run(["xdotool", *args], env=dict(os.environ, DISPLAY=DISP), capture_output=True, text=True, encoding="utf-8", errors="replace")
     return r.stdout
 
 
@@ -549,7 +549,7 @@ class AppSim:
             self.cal = cal
             try:
                 CALIB_ARQ.parent.mkdir(parents=True, exist_ok=True)
-                CALIB_ARQ.write_text(json.dumps({"cad": self.cad_path.name, **cal.como_dict()}, indent=1))
+                CALIB_ARQ.write_text(json.dumps({"cad": self.cad_path.name, **cal.como_dict()}, indent=1), encoding="utf-8")
             except OSError:
                 pass
         return img, p, cal
@@ -815,7 +815,7 @@ def _slug(s):
 # --------------------------------------------------------------------------- CLI
 
 def _casos_de(path):
-    d = json.loads(Path(path).read_text())
+    d = json.loads(Path(path).read_text(encoding="utf-8"))
     if isinstance(d, list):
         return d
     return d.get("testes") or (d.get("layout") or {}).get("testes") or []

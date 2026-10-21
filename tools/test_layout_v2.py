@@ -40,7 +40,7 @@ def rung(i):
 
 
 def _low(nome):
-    return layout.compilar(json.loads((EX / f"{nome}.layout.json").read_text())["layout"])
+    return layout.compilar(json.loads((EX / f"{nome}.layout.json").read_text(encoding="utf-8"))["layout"])
 
 
 def _pos(low):
@@ -69,7 +69,7 @@ def _pino(redes, rot, cid, pino):
 # ---------------------------------------------------------------- exemplos novos (gate completo)
 @pytest.mark.parametrize("nome", NOVOS)
 def test_exemplo_novo_sem_coordenadas(nome):
-    d = json.loads((EX / f"{nome}.layout.json").read_text())["layout"]
+    d = json.loads((EX / f"{nome}.layout.json").read_text(encoding="utf-8"))["layout"]
 
     def varre(o):
         if isinstance(o, dict):
@@ -87,11 +87,11 @@ def test_exemplo_novo_gate_ok(nome):
     with tempfile.TemporaryDirectory() as t:
         out = str(Path(t) / f"{nome}.cad")
         r = subprocess.run([sys.executable, str(TOOLS / "build_spec.py"), str(EX / f"{nome}.layout.json"), out],
-                           capture_output=True, text=True, timeout=600)
+                           capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=600)
         assert "GATE: OK" in r.stdout and r.returncode == 0, r.stdout[-900:]
-        f = subprocess.run([sys.executable, str(TOOLS / "wires_check.py"), out], capture_output=True, text=True)
+        f = subprocess.run([sys.executable, str(TOOLS / "wires_check.py"), out], capture_output=True, text=True, encoding="utf-8", errors="replace")
         assert f.returncode == 0 and "FIOS: ok" in f.stdout, f.stdout
-        g = subprocess.run([sys.executable, str(TOOLS / "geo_check.py"), out], capture_output=True, text=True)
+        g = subprocess.run([sys.executable, str(TOOLS / "geo_check.py"), out], capture_output=True, text=True, encoding="utf-8", errors="replace")
         assert g.returncode == 0 and "GEO: ok" in g.stdout, g.stdout
 
 
@@ -113,7 +113,7 @@ def test_exemplo_novo_caixa_e_sobreposicao(nome):
 
 @pytest.mark.parametrize("nome", NOVOS)
 def test_determinismo(nome):
-    d = json.loads((EX / f"{nome}.layout.json").read_text())["layout"]
+    d = json.loads((EX / f"{nome}.layout.json").read_text(encoding="utf-8"))["layout"]
     assert layout.compilar(copy.deepcopy(d)) == layout.compilar(copy.deepcopy(d))
 
 
@@ -185,7 +185,7 @@ def _rotulos_unicos(o):
 
 def test_rede_conecta_como_a_expressao():
     with tempfile.TemporaryDirectory() as t:
-        d = json.loads((EX / "partida_sequencial.layout.json").read_text())["layout"]
+        d = json.loads((EX / "partida_sequencial.layout.json").read_text(encoding="utf-8"))["layout"]
         _rotulos_unicos(d["comando"])
         out, r = _build(d, t, "ps")
         redes, curtos, soltos = _redes(out)
@@ -212,7 +212,7 @@ def test_rede_conecta_como_a_expressao():
 
 def test_trilhos_de_comando_transformador_e_fonte():
     with tempfile.TemporaryDirectory() as t:
-        d = json.loads((EX / "partida_trafo_comando.layout.json").read_text())["layout"]
+        d = json.loads((EX / "partida_trafo_comando.layout.json").read_text(encoding="utf-8"))["layout"]
         out, r = _build(d, t, "tc")
         redes, curtos, soltos = _redes(out)
         assert not curtos and not soltos           # p1..p4 do 3012 todos ligados

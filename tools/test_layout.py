@@ -15,12 +15,12 @@ CASOS = ["intercalada.layout.json", "partida_direta.layout.json", "reversao.layo
 
 
 def _low(nome):
-    return layout.compilar(json.loads((EX / nome).read_text())["layout"])
+    return layout.compilar(json.loads((EX / nome).read_text(encoding="utf-8"))["layout"])
 
 
 def test_sem_coordenadas_na_entrada():
     for nome in CASOS:
-        d = json.loads((EX / nome).read_text())["layout"]
+        d = json.loads((EX / nome).read_text(encoding="utf-8"))["layout"]
         def varre(o):
             if isinstance(o, dict):
                 assert not ({"x", "y"} & set(o)), o
@@ -57,9 +57,9 @@ def test_potencia_alinhada_3_colunas_por_fase():
 def _gate(nome, tmp):
     out = str(Path(tmp) / (nome + ".cad"))
     r = subprocess.run([sys.executable, str(TOOLS / "build_spec.py"), str(EX / nome), out],
-                       capture_output=True, text=True, timeout=600)
+                       capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=600)
     f = subprocess.run([sys.executable, str(TOOLS / "wires_check.py"), out],
-                       capture_output=True, text=True)
+                       capture_output=True, text=True, encoding="utf-8", errors="replace")
     return r.stdout, f.stdout, r.returncode, f.returncode
 
 
@@ -116,7 +116,7 @@ def test_reversao_fases_na_geometria():
         out = Path(t) / "r.cad"
         r = subprocess.run([sys.executable, str(TOOLS / "build_spec.py"),
                             str(EX / "reversao.layout.json"), str(out)],
-                           capture_output=True, text=True, timeout=600)
+                           capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=600)
         assert r.returncode == 0, r.stdout[-400:]
         redes = {}
         geo_check.analisar(str(out), redes)
@@ -141,13 +141,13 @@ def test_reversao_fases_na_geometria():
 def test_geo_check_pega_curto_de_fase():
     import geo_check
     # PE da fonte ligado ao trilho N => estampas 'N' e 'P' na mesma net = CURTO
-    base = json.loads((TOOLS / "examples" / "partida_direta.layout.json").read_text())
+    base = json.loads((TOOLS / "examples" / "partida_direta.layout.json").read_text(encoding="utf-8"))
     base["layout"]["fontes"][0]["pinos"]["PE"] = "N"
     with tempfile.TemporaryDirectory() as t:
-        f = Path(t) / "x.layout.json"; f.write_text(json.dumps(base))
+        f = Path(t) / "x.layout.json"; f.write_text(json.dumps(base), encoding="utf-8")
         out = Path(t) / "o.cad"
         r = subprocess.run([sys.executable, str(TOOLS / "build_spec.py"), str(f), str(out)],
-                           capture_output=True, text=True, timeout=600)
+                           capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=600)
         curtos, _ = geo_check.analisar(str(out))
         assert curtos and "N" in curtos[0] and "P" in curtos[0], curtos
         assert r.returncode == 1 and "REPROVADO" in r.stdout
@@ -155,14 +155,14 @@ def test_geo_check_pega_curto_de_fase():
 
 def test_gate_reprova_sem_testes_e_com_teste_errado():
     import json
-    base = json.loads((TOOLS / "examples" / "partida_direta.layout.json").read_text())
+    base = json.loads((TOOLS / "examples" / "partida_direta.layout.json").read_text(encoding="utf-8"))
     for nome, mut in (("sem", lambda d: d.__setitem__("testes", [])),
                       ("errado", lambda d: d["testes"][1].__setitem__("esperado", []))):
         d = json.loads(json.dumps(base)); mut(d)
         with tempfile.TemporaryDirectory() as t:
-            f = Path(t) / f"{nome}.layout.json"; f.write_text(json.dumps(d))
+            f = Path(t) / f"{nome}.layout.json"; f.write_text(json.dumps(d), encoding="utf-8")
             r = subprocess.run([sys.executable, str(TOOLS / "build_spec.py"), str(f), str(Path(t) / "o.cad")],
-                               capture_output=True, text=True, timeout=600)
+                               capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=600)
             assert r.returncode == 1 and "REPROVADO" in r.stdout, (nome, r.stdout[-400:])
 
 
@@ -173,7 +173,7 @@ def test_sem_entidade_orfa_do_doador():
         out = Path(t) / "o.cad"
         r = subprocess.run([sys.executable, str(TOOLS / "build_spec.py"),
                             str(TOOLS / "examples" / "partida_direta.layout.json"), str(out)],
-                           capture_output=True, text=True, timeout=600)
+                           capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=600)
         assert "GATE: OK" in r.stdout, r.stdout[-400:]
         d = out.read_bytes().decode("latin1")
         assert d.startswith("CADe_SIMU*0*3007#"), d[:60]       # a 1a entidade e a nossa fonte

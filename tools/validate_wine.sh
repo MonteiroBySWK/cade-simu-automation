@@ -4,7 +4,7 @@
 # conteúdo renderizado (sem automação de GUI/screenshot-diff ainda).
 set -u
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-EXE="${CADE_EXE:-/home/monteiro/Downloads/CADe_SIMU 4.0 [BR]/CADe_SIMU 4.0 [BR]/CADe_SIMU 4.0 [BR].exe}"
+EXE="${CADE_EXE:?defina CADE_EXE com o caminho do .exe (veja docs/DEPENDENCIAS.md)}"
 CLI="$ROOT/src/cade_cli/target/debug/cade_cli"
 LOG="$ROOT/out/wine-validate.log"
 mkdir -p "$ROOT/out"

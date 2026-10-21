@@ -380,7 +380,7 @@ def verify(gray, dets, gx0, gy0):
 
 def main(argv):
     if "--eval" in argv:
-        base = Path("/home/monteiro/Downloads/CADe_SIMU 4.0 [BR]/CADe_SIMU 4.0 [BR]/Exemplos (diagramas)/Comandos Elétricos")
+        base = cade_config.exemplos_imagem() / "Comandos Elétricos"
         tc = td = tv = 0
         for ex, verdade in VERDADE.items():
             f = next(p for p in base.iterdir() if p.stem == ex)
@@ -401,7 +401,11 @@ def main(argv):
     for d in dets:
         print(f"  {d['classe']} {d['nome']} @{d['x']},{d['y']} escore={d['escore']}")
     if "-o" in argv:
-        Path(argv[argv.index("-o") + 1]).write_text(json.dumps({"fonte": str(src), "deteccoes": dets}, indent=1))
+        Path(argv[argv.index("-o") + 1]).write_text(json.dumps({"fonte": str(src), "deteccoes": dets}, indent=1), encoding="utf-8")
 
+import sys as _s
+from pathlib import Path as _P
+_s.path.insert(0, str(_P(__file__).resolve().parent))
+import cade_config  # noqa: E402
 if __name__ == "__main__":
     main(sys.argv[1:])

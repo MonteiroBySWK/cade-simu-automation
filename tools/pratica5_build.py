@@ -11,7 +11,11 @@ import re, shutil, subprocess, sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-BASE = Path("/home/monteiro/Downloads/CADe_SIMU 4.0 [BR]/CADe_SIMU 4.0 [BR]/Atividades para Simular/115 arquivos CADe_SIMU/Arquivos .cad/Acionamento de motor de forma intercalada CLP.cad")
+import sys as _s
+from pathlib import Path as _P
+_s.path.insert(0, str(_P(__file__).resolve().parent))
+import cade_config  # noqa: E402
+BASE = cade_config.acervo() / "Acionamento de motor de forma intercalada CLP.cad"
 WORK = ROOT / "pratica5"
 BASECOPY = WORK / "Pratica5_Part_Intercalada.cad"
 FINAL = WORK / "Pratica5_Complementar_ALUNO.cad"
@@ -197,7 +201,7 @@ def main():
     print(f"novas ents={len(new)} bytes={len(out)}")
 
     # validacao: cade_core parse+emit round-trip + CLI validate
-    r = subprocess.run([str(CLI), 'validate', str(FINAL)], capture_output=True, text=True)
+    r = subprocess.run([str(CLI), 'validate', str(FINAL)], capture_output=True, text=True, encoding="utf-8", errors="replace")
     print(r.stdout.strip() or r.stderr.strip())
     assert r.returncode == 0, "validate falhou"
     from tempfile import mkdtemp

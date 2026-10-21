@@ -20,7 +20,11 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from dissect import parse_ent, split_entities  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
-DEFAULT = Path(os.environ.get("CADE_ACERVO", "/home/monteiro/Downloads/CADe_SIMU 4.0 [BR]/CADe_SIMU 4.0 [BR]/Atividades para Simular/115 arquivos CADe_SIMU/Arquivos .cad"))
+import sys as _s
+from pathlib import Path as _P
+_s.path.insert(0, str(_P(__file__).resolve().parent))
+import cade_config  # noqa: E402
+DEFAULT = cade_config.acervo()
 WIRE = {"4000", "4018", "4009", "4001"}
 
 
@@ -104,7 +108,7 @@ def main(argv):
         e["n"] = max(e.get("A_n", 0), e.get("B_n", 0), e.get("A_g", 0), e.get("B_g", 0))
         out[sid] = e
     (ROOT / "out").mkdir(exist_ok=True)
-    (ROOT / "out" / "pin_map.json").write_text(json.dumps(out, indent=1, sort_keys=True))
+    (ROOT / "out" / "pin_map.json").write_text(json.dumps(out, indent=1, sort_keys=True), encoding="utf-8")
     for sid in sorted(out, key=lambda s: -out[s]["n"])[:25]:
         print(sid, out[sid])
     print("arquivos:", len(files), "| classes com pino:", len(out), "-> out/pin_map.json")

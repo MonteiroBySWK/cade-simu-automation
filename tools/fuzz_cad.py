@@ -9,7 +9,11 @@ import re, shutil, subprocess, time, os
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-EXE = Path(os.environ.get("CADE_EXE", "/home/monteiro/Downloads/CADe_SIMU 4.0 [BR]/CADe_SIMU 4.0 [BR]/CADe_SIMU 4.0 [BR].exe"))
+import sys as _s
+from pathlib import Path as _P
+_s.path.insert(0, str(_P(__file__).resolve().parent))
+import cade_config  # noqa: E402
+EXE = cade_config.exe()
 APPDIR = EXE.parent
 FZ = ROOT / "out" / "fuzz"
 
@@ -43,7 +47,7 @@ for w in $(xdotool search --name "" 2>/dev/null); do xdotool getwindowname $w 2>
 import -window root "{shot}"
 """
     r = subprocess.run(["xvfb-run", "-a", "sh", "-c", scr], cwd=str(APPDIR),
-                       capture_output=True, text=True, timeout=120)
+                       capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=120)
     return r.stdout + r.stderr
 
 def main():
@@ -58,7 +62,7 @@ def main():
         wins = [l for l in out.splitlines() if l and not l.startswith(('0', 'MESA', 'X connection')) and 'fixme' not in l and 'JANElAS' not in l]
         log.append(f"{name}: {wins}")
         print("   ", wins)
-    (FZ / "log.txt").write_text("\n".join(log))
+    (FZ / "log.txt").write_text("\n".join(log), encoding="utf-8")
     print("LOG:", FZ / "log.txt")
 
 if __name__ == '__main__':
