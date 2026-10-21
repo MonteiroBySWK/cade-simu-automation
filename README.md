@@ -29,7 +29,7 @@ texto/imagem  →  cade.json  →  cade_cli  →  .cad  →  Wine (confere)
 ```
 
 - `src/cade_core` (Rust): parse/emit byte-fiel. Round-trip 114/114 arquivos.
-- `src/cade_cli`: `validate|parse|emit|new-from-json`. É por aqui que o agente trabalha — nunca editando `*`/`#` na mão.
+- `src/cade_cli` (binario `cade`): `validate|parse|emit|new-from-json|build|layout` (workspace Rust: `docs/rust-port.md`). É por aqui que o agente trabalha — nunca editando `*`/`#` na mão.
 - `tools/img2json.py`: imagem → `cade.json` + preview (baseline; classificação de símbolos ainda é simples).
 - `tools/ladder_sim.py`: confere lógica de rungs (permissões, selos) antes de dizer que está pronto.
 - `tools/validate_wine.sh`: abre o resultado no CADe_SIMU de verdade via Wine.
@@ -80,8 +80,8 @@ entrega com o gate verde e o preview conferido — nunca escreve `*`/`#` nem x/y
 ## Uso
 
 ```bash
-cargo build --manifest-path src/cade_cli/Cargo.toml
-CLI=src/cade_cli/target/debug/cade_cli
+cargo build --release          # workspace na raiz -> target/release/cade (binario unico)
+CLI=target/release/cade
 
 $CLI validate circuito.cad
 $CLI parse circuito.cad -o out/a.json

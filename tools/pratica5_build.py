@@ -19,7 +19,7 @@ BASE = cade_config.acervo() / "Acionamento de motor de forma intercalada CLP.cad
 WORK = ROOT / "pratica5"
 BASECOPY = WORK / "Pratica5_Part_Intercalada.cad"
 FINAL = WORK / "Pratica5_Complementar_ALUNO.cad"
-CLI = ROOT / "src/cade_cli/target/debug/cade_cli"
+CLI = ROOT / "target/debug/cade"
 
 def split_file(d):
     m = re.search(r'#(?=\*\d+\*\d+#)', d)

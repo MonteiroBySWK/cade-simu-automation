@@ -36,7 +36,7 @@ def py():
 def setup():
     if not shutil.which("cargo"):
         sys.exit("Falta Rust/cargo: https://rustup.rs (no Windows: rustup-init.exe, toolchain MSVC)")
-    run(["cargo", "build", "--quiet", "--manifest-path", "src/cade_cli/Cargo.toml"])
+    run(["cargo", "build", "--quiet", "-p", "cade_cli"])
     venv = ROOT / "tools" / ".venv-mcp"
     if not C.venv_python():
         if shutil.which("uv"):

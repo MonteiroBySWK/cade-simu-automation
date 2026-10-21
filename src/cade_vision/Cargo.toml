@@ -1,0 +1,11 @@
+[package]
+name = "cade_vision"
+description = "Detector de simbolos em imagem (imagem -> inventario)"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+cade_model.workspace = true
+serde_json.workspace = true

@@ -17,7 +17,6 @@ vpy = C.venv_python()
 if not vpy:
     sys.exit(f"[cade-simu] venv ausente: rode `python scripts/dev.py setup` em {ROOT}")
 if not C.cli_path().exists():
-    subprocess.run(["cargo", "build", "--quiet", "--manifest-path", str(ROOT / "src/cade_cli/Cargo.toml")],
-                   stdout=sys.stderr, check=False)
+    subprocess.run(["cargo", "build", "--quiet", "-p", "cade_cli"], cwd=ROOT, stdout=sys.stderr, check=False)
 env = dict(os.environ, PYTHONUTF8="1", PYTHONIOENCODING="utf-8")
 sys.exit(subprocess.call([str(vpy), str(ROOT / "tools" / "cade_mcp.py")], env=env))
