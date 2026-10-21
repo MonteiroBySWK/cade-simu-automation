@@ -1,0 +1,43 @@
+{
+  "titulo": "TRES DEGRAUS COM LAMPADAS",
+  "descricao": "Tres degraus independentes entre os mesmos trilhos L1 e N (fonte monofasica 3003). Degraus 1 e 2: botao + selo -> bobina em paralelo com lampada; degrau 3: botao sem selo (so enquanto pressionado). O trilho N desce sozinho para caber o degrau mais alto.",
+  "layout": {
+    "trilhos": {"L1": 14, "N": 100, "x0": 25, "x1": 395},
+    "fontes": [
+      {"id": "X1", "classe": "3003", "rotulo": "-X", "pinos": {"L": "L1", "N": "N"}}
+    ],
+    "comando": [
+      {"id": "c1", "de": "L1", "para": "N",
+       "rungs": [
+         {"serie": [
+           ["S0", "8001", "-S0"],
+           {"paralelo": [["S1", "8000", "-S1"], ["selo1", "7000", "-KM1"]]},
+           {"paralelo": [["KM1", "9000", "-KM1"], ["H1", "9008", "-H1"]]}
+         ]},
+         {"serie": [
+           ["S3", "8001", "-S3"],
+           {"paralelo": [["S2", "8000", "-S2"], ["selo2", "7000", "-KM2"]]},
+           {"paralelo": [["KM2", "9000", "-KM2"], ["H2", "9008", "-H2"]]}
+         ]},
+         {"serie": [
+           ["S4", "8000", "-S4"],
+           {"paralelo": [["KM3", "9000", "-KM3"], ["H3", "9008", "-H3"]]}
+         ]}
+       ]}
+    ]
+  },
+  "testes": [
+    {"nome": "repouso: tudo apagado", "entradas": {}, "esperado": [], "esperado_lampadas": [], "status": "OK"},
+    {"nome": "S1 liga KM1 e H1", "entradas": {"S1": true}, "esperado": ["KM1"], "esperado_lampadas": ["H1"], "status": "OK"},
+    {"nome": "S2 liga so o degrau 2", "entradas": {"S2": true}, "esperado": ["KM2"], "esperado_lampadas": ["H2"], "status": "OK"},
+    {"nome": "S4 liga so o degrau 3", "entradas": {"S4": true}, "esperado": ["KM3"], "esperado_lampadas": ["H3"], "status": "OK"},
+    {"nome": "degraus sao independentes", "entradas": {"S1": true, "S4": true}, "esperado": ["KM1", "KM3"],
+     "esperado_lampadas": ["H1", "H3"], "status": "OK"},
+    {"nome": "selo 1 mantem KM1", "entradas": {}, "inicial": ["KM1"], "esperado": ["KM1"], "esperado_lampadas": ["H1"], "status": "OK"},
+    {"nome": "S0 desliga so o degrau 1", "entradas": {"S0": true}, "inicial": ["KM1", "KM2"], "esperado": ["KM2"],
+     "esperado_lampadas": ["H2"], "status": "OK"},
+    {"nome": "S3 desliga so o degrau 2", "entradas": {"S3": true}, "inicial": ["KM1", "KM2"], "esperado": ["KM1"],
+     "esperado_lampadas": ["H1"], "status": "OK"},
+    {"nome": "degrau 3 nao tem selo", "entradas": {}, "inicial": ["KM3"], "esperado": [], "esperado_lampadas": [], "status": "OK"}
+  ]
+}

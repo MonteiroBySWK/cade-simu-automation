@@ -1,0 +1,11 @@
+[package]
+name = "cade_render"
+description = "Preview PNG do circuito (fios por fase, pinos soltos, curtos)"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+cade_model.workspace = true
+cade_check.workspace = true

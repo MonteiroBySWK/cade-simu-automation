@@ -65,8 +65,8 @@ WINDOWS = _sys.platform.startswith("win")
 
 
 def cli_path():
-    """Binario do cade_cli (cargo build) — com .exe no Windows."""
-    return ROOT / "src" / "cade_cli" / "target" / "debug" / ("cade_cli.exe" if WINDOWS else "cade_cli")
+    """Binario `cade` (cargo build, workspace na raiz) — com .exe no Windows."""
+    return ROOT / "target" / "debug" / ("cade.exe" if WINDOWS else "cade")
 
 
 def venv_python():

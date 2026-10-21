@@ -1,0 +1,10 @@
+[package]
+name = "cade_model"
+description = "Entidades do .cad (split_all/parse_ent), catalogo de classes e dados embutidos"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+serde_json.workspace = true

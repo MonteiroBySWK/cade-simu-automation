@@ -1,0 +1,1 @@
+trilhos_comando sem 'transformador' nem 'fonte': o par de trilhos ficaria sem alimentacao

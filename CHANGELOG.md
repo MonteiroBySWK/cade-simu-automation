@@ -4,6 +4,12 @@ Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/). 
 
 ## [Unreleased]
 
+### Porte para Rust (fase 1)
+- Workspace Cargo na raiz; binário único `cade` (`validate|parse|emit|new-from-json|build|layout`).
+  Novos crates `cade_model`, `cade_build` (cad_build) e `cade_layout` (layout.py) com saída **byte-idêntica**
+  ao Python (goldens em `tests/golden`, testes em `tests/paridade`); crates-esqueleto para as próximas fases.
+  Veja `docs/rust-port.md`. O binário agora fica em `target/{debug,release}/cade` (antes `src/cade_cli/target/...`).
+
 ### Instalação
 - `python scripts/dev.py install-mcp|uninstall-mcp`: registra MCP + skill via `claude mcp add -s user` e
   `opencode mcp add --global` (caminhos absolutos, idempotente). Removidos `.mcp.json`/`opencode.json` do repo
