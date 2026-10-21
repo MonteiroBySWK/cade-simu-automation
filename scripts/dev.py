@@ -103,9 +103,13 @@ def _opencode_remover():
     if not OPENCODE_CFG.is_file():
         return
     d = json.loads(OPENCODE_CFG.read_text(encoding="utf-8"))
-    if NOME in d.get("mcp", {}):
+    mcp = d.get("mcp", {})
+    # opencode v2 grava em mcp.servers.<nome>; v1 usava mcp.<nome>
+    alvos = [m for m in (mcp.get("servers", {}), mcp) if isinstance(m, dict) and NOME in m]
+    if alvos:
         shutil.copy(OPENCODE_CFG, OPENCODE_CFG.with_suffix(".json.bak"))
-        del d["mcp"][NOME]
+        for m in alvos:
+            del m[NOME]
         OPENCODE_CFG.write_text(json.dumps(d, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
         print(f"opencode: '{NOME}' removido de {OPENCODE_CFG} (backup .bak)")
 
