@@ -144,7 +144,7 @@ def cad_simulate(path: str, entradas_json: str = "{}", inicial_json: str = "[]")
 
     entradas_json: {"S1":true,...} — chaves acionadas (True = pressionado/desligado/trip).
     inicial_json: ["KM1"] — bobinas já energizadas no estado inicial (para selo/memória).
-    status ∈ {OK, RACE (corrida), INSTAVEL}. Use para TESTAR de verdade o comando."""
+    status ∈ {OK, RACE (corrida), INSTAVEL, CURTO}; tambem devolve lampadas_acesas e curtos. Use para TESTAR de verdade o comando."""
     sys.path.insert(0, str(ROOT / "tools"))
     import netlist_sim as ns
     c = ns.Circuito(path)
@@ -153,19 +153,19 @@ def cad_simulate(path: str, entradas_json: str = "{}", inicial_json: str = "[]")
         ini = set(json.loads(inicial_json))
     except json.JSONDecodeError as e:
         return f"ERRO json: {e}"
-    status, bob = c.resolve(ent, ini)
-    return json.dumps({"status": status, "bobinas_energizadas": sorted(bob),
-                       "supply": c.supply, "retorno": c.ret,
-                       "entradas": c.entradas, "bobinas": sorted(c.bobinas)},
-                      ensure_ascii=False)
+    e = c.estado(ent, ini)
+    return json.dumps({"status": e.get("status"), "bobinas_energizadas": sorted(e.get("bobinas", [])),
+                       "lampadas_acesas": sorted(e.get("lampadas", [])), "curtos": e.get("curtos", []),
+                       "temporizadores": e.get("temporizadores", {}),
+                       "entradas": c.entradas, "bobinas": sorted(c.bobinas), "pinos_soltos": c.soltos},
+                      ensure_ascii=False, default=str)
 
 
 @mcp.tool()
 def cad_test(path: str, casos_json: str = "[]") -> str:
     """Verificação funcional (tabela-verdade) do comando via netlist.
     casos_json: [{"nome","entradas":{"S1":true},"inicial":["KM1"],"esperado":["KM1"],"status":"OK|RACE"}].
-    Sem casos: usa a suite embutida SÓ se o circuito tiver bobinas KM1 e KM2 (intercalada);
-    senão retorna SEM_TESTES (o gate reprova — declare "testes" na spec)."""
+    Sem casos: retorna SEM_TESTES (o gate reprova — declare "testes" na spec)."""
     sys.path.insert(0, str(ROOT / "tools"))
     import netlist_sim as ns
     import io
@@ -176,11 +176,9 @@ def cad_test(path: str, casos_json: str = "[]") -> str:
         return f"ERRO json: {e}"
     buf = io.StringIO()
     if not casos:
-        c = ns.Circuito(path)
-        if not {"KM1", "KM2"} <= set(c.bobinas):
-            return "SEM_TESTES: declare casos (chave \"testes\" na spec)"
-        with contextlib.redirect_stdout(buf):
-            ok = ns.teste(path)
+        # a antiga suite embutida (intercalada) era aplicada a QUALQUER circuito com KM1+KM2
+        # e reprovava circuitos corretos (ex.: reversao 13/15). Sem casos = sem prova.
+        return "SEM_TESTES: declare casos (chave \"testes\" na spec)"
     else:
         with contextlib.redirect_stdout(buf):
             ok = ns.teste_casos(path, casos)
@@ -229,8 +227,22 @@ def _json_tools(nome, padrao=None):
 
 
 def _nomes():
-    d = _json_tools("symbol_names.json")
-    return {k: v for k, v in d.items() if not k.startswith("_")}
+    """Nome/uso por classe: tools/symbol_names.json (curado) completado por docs/classes-papeis.json (RE)."""
+    d = {k: dict(v) for k, v in _json_tools("symbol_names.json").items() if not k.startswith("_")}
+    try:
+        pap = json.loads((ROOT / "docs" / "classes-papeis.json").read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        pap = {}
+    for k, v in pap.items():
+        if k.startswith("_") or not isinstance(v, dict):
+            continue
+        e = d.setdefault(k, {})
+        e.setdefault("nome", v.get("nome"))
+        e.setdefault("uso", v.get("aciona_por") or v.get("papel"))
+        e.setdefault("fonte", "binario (docs/classes-papeis.json, confianca %s)" % v.get("confianca", "?"))
+        if e.get("nome") is None:
+            e["nome"] = v.get("nome")
+    return d
 
 
 @mcp.tool()
@@ -407,7 +419,7 @@ def cad_gate(path: str, testes_json: str = "[]") -> str:
     Quando usar: depois de editar/gerar um .cad por outro caminho (cad_build manual, cad_emit,
     arquivo de terceiros), ou para reconferir. Para criar do zero prefira cad_design (ja inclui).
     testes_json: [{"nome","entradas":{"S1":true},"inicial":["KM1"],"esperado":["KM1"],"status":"OK"}].
-      Sem casos o gate so tem suite embutida p/ circuito com KM1+KM2; senao reprova (SEM_TESTES).
+      Sem casos o gate reprova (SEM_TESTES).
     Retorno: mesmo JSON de cad_design, com mensagens acionaveis, p.ex.
       'pino L3 da fonte -X (3007) solto em (42,55): ligue-o ao trilho L3'."""
     import build_spec
@@ -476,7 +488,7 @@ def cad_build(titulo: str, simbolos_json: str, fios_json: str = "[]", out_path: 
             labs[0] = s["rotulo"]
         ents.append({"id": s["classe"], "labels": labs, "nums": n})
     if not ents:
-        ents = [{"id": "8000", "labels": protos["8000"]["labels"], "nums": list(protos["8000"]["nums"])}]
+        return "ERRO: nenhum simbolo nem fio — simbolos_json/fios_json/conexoes vazios"
     if conexoes or rails:
         err = _rotear(ents, simbolos, conexoes, wire, rails)
         if err:

@@ -4,18 +4,18 @@ import re, sys
 
 def split_entities(d):
     # header até o primeiro '#*N*ID#' ; footer a partir do primeiro '$$$'
-    m = re.search(r'#(?=\*\d+\*\d{4}#)', d)
+    m = re.search(r'#(?=\*\d+\*-?\d+#)', d)
     header, rest = d[:m.start()+1], d[m.start()+1:]
     f = rest.find('$$$')
     body, footer = rest[:f], rest[f:]
-    ents = re.split(r'#(?=\*\d+\*\d+#)', body)
+    ents = re.split(r'#(?=\*\d+\*-?\d+#)', body)
     return header, ents, footer
 
 def split_all(d):
     """Como split_entities, mas a entidade 0 (serializada colada ao 'CADe_SIMU*') entra em ents.
     A entidade 0 e uma entidade comum (seq 0): no acervo e o 1o simbolo/fonte do desenho."""
     header, ents, footer = split_entities(d)
-    m = re.match(r'CADe_SIMU\*(\d+\*\d+#.*)#$', header, re.S)
+    m = re.match(r'CADe_SIMU\*(\d+\*-?\d+#.*)#$', header, re.S)
     if m:
         ents = ['*' + m.group(1)] + ents
         header = 'CADe_SIMU*'
@@ -23,7 +23,7 @@ def split_all(d):
 
 
 def parse_ent(e):
-    m = re.match(r'\*(\d+)\*(\d+)#(.*)$', e, re.S)
+    m = re.match(r'\*(\d+)\*(-?\d+)#(.*)$', e, re.S)
     if not m: return None
     seq, idc, tail = m.group(1), m.group(2), m.group(3)
     # sub e labels até o último '#' antes dos nums? heurística: campos alpha vs nums
