@@ -11,6 +11,19 @@ Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/). 
 - `tools/symbol_lib.json`: catálogo de classes versionado — **o repo não precisa mais do acervo/app** para gerar `.cad`.
 - `tools/cade_config.py`: localização opcional do app/acervo (`CADE_DIR`, `CADE_EXE`, `CADE_ACERVO`).
 
+### Corrigido
+- `cad_test`/gate aplicavam a suite fixa da intercalada a QUALQUER circuito com KM1+KM2 (reversão correta
+  reprovava 13/15). Agora, sem `"testes"`, o gate reprova com `SEM_TESTES`.
+- Removido `tools/examples/intercalada.spec.json` (legado): tinha curto real (3×`3004` + PE no N) e só passava
+  porque a suite antiga não checava curto. Use `intercalada.layout.json`.
+- `cad_build` com lista vazia criava um botão `8000` fantasma; agora retorna erro.
+- `cad_simulate` passa a expor lâmpadas acesas, curtos, temporizadores e pinos soltos.
+- `cad_pins`/`cad_symbols` usam os nomes do binário (`docs/classes-papeis.json`) quando não há nome curado.
+- Parser (`dissect`): arquivos com 1ª entidade de id curto (`Bardella 5.cad`) ou negativo (`Variador_II/III.cad`)
+  agora são lidos (108/108 do acervo).
+- Lint do layout não acusa mais "não é um trilho" para os trilhos de comando (`trilhos_comando`).
+- Núcleo roda no Windows (UTF-8 explícito, `cade_cli.exe`, venv `Scripts\`, sem `/tmp`); CI em Ubuntu + Windows.
+
 ### Alterado
 - Removidos todos os caminhos pessoais do código; scripts de Wine exigem `CADE_DIR`/`CADE_EXE` com mensagem clara.
 
