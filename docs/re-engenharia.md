@@ -339,7 +339,7 @@ despacho `FUN_0040d2b0` + as nomeadas nos diálogos). Gerado por
   `CADe_SIMU*0*3000#…`). Padrão 50 ⇒ **100 ms**. (Corrige §3: aquele "header" é o da
   configuração, não do `.cad`.)
 
-### 11.5 Confiança por item
+### 11.5 Confiança por item (atualizado 22/10/2026, 2ª sessão Ghidra)
 | item | conf. | evidência |
 |---|---|---|
 | contatos NA/NC/NA-NC/comutado (7000-7003, 8000-8003, 8016-8019) | alta | CMP na propagação, 4 decompiladas |
@@ -356,7 +356,50 @@ despacho `FUN_0040d2b0` + as nomeadas nos diálogos). Gerado por
 | sensores 7500.., pneumática 10500.., GRAFCET/portas lógicas 10000..10041 | baixa | só nome + pinos + família |
 | ladder 10050/10051/10060..10063/10066 e CLP 10204/10205/10206 | alta/média | §13 (decompilados) |
 
-### 11.6 Catálogo por aba (cobertura)
+### 11.6 Por que os demos 9004/7004/7500 não disparam no app (Ghidra, 22/10/2026) — ALTA
+Decompilados `~/cade-ghidra/f9004.c` (`FUN_0062dbe0`), `f7004.c` (`FUN_005b54d0`),
+`f7500.c` (`FUN_00655820`), `f7501.c` (`FUN_006572b0`), trechos do clique
+(`FUN_0043ee20` @0044246b, `FUN_00444030` @00445cb0/@0044ab86). Conclusão: **o `.cad`
+gerado está correto; o não-disparo é procedimento de teste** (detalhes abaixo), com
+**uma exceção real**: sensor 3 fios (7501) exige alimentação + protótipo inexistente.
+
+- **9004 lê unidade = label4 (@+0x4a464) e tempo = atoi(label5) (@+0x4c3a4)** —
+  disassembly @0062e6a4..0062e7ff: `LEA label[+0x4a464]; PUSH str; CALL Ordinal_813`
+  com str ∈ {"3"→×1, "0"→×10, "1"→×100, "2"→×1000}; `LEA label[+0x4c3a4]; CALL
+  Ordinal_8cdbd2; CALL atoi`. Contador carrega na borda só se `DAT_00bd9658==0`
+  (zerado a cada OnDraw @00423f96; setado=1 por handlers de UI) — em regime equivale
+  ao modelo (carga na borda). Cópia p/ contatos por **label0 igual** (Ordinal_812 com
+  2 PUSHes @0062e380: `LEA ent[+0x3f64]; PUSH; LEA timer[+0x3f64]; PUSH; CALL`),
+  faixas @0062e3ea: 7000..7003 recebem `estado`, **7004..7007 recebem `+0x30e24`**.
+  Contato 7004 conduz com `estado==1` (`f7004.c`, CMP +0x78a9c). **Diff p/ o `.cad`:
+  NENHUM** — `out/timer_on_9004.cad` (`-KT1##A1#A2#0#1`, pinos (0,0),(0,12) = NUME
+  +005,+000/+005,+045) está certo. Causa provável: S1 (8000) é **momentâneo** — o
+  operador precisa **segurar o clique** por todo o retardo, e sob Wine o app roda
+  **~0,41× o tempo de parede** (§A2 do TODO): 1 s de sim ≈ 2,4 s segurando. Teste
+  sem segurar / sem esperar = H1 apagado, igual ao observado.
+- **7004: nenhum campo a corrigir.** `nums` n21/n22 do arquivo são zerados no Play
+  (§9.2); o que vale é label0 igual ao do timer + geometria dos pinos 67/68.
+- **7500 (2 fios): nenhum campo a corrigir.** Pinos "1","2" em (0,0),(0,12) (NUME
+  +005,-000/+005,+045); conduz com `estado==1` como um botão (`f7500.c`); clique
+  (classe em [7500,7637]=0x1d4c..0x1db5 @0044246b) com ponto dentro da caixa
+  `X+n12+3 ≤ x ≤ X+n14−1, Y+n13+1 ≤ y ≤ Y+n15−1` põe `estado=1` (@004425b7) e propaga
+  a mesmo label0. **Momentâneo**: H1 só acende **enquanto segurado**; "apagado no
+  repouso/click/solta" é o comportamento esperado de um click rápido + leitura após
+  soltar. Procedimento: pressionar-e-segurar e capturar **durante** o pressione.
+  Caixa do nosso protótipo (−18,−3,9,15) cobre o corpo (−6..+6, 0..12): X−15..X+8 ×
+  Y−2..Y+14 ✓.
+- **7501 (3 fios): AQUI há requisito real.** `f7501.c` @0062e...: exige
+  **pin1=='+' e pin2=='-'** (chars +0x8e25c/+0x8f1fc) **e** `estado==1` (clique);
+  então estampa na net do pino 3: **'+' (0x2b) se PNP-ímpar** (7501=0x1d4d, 7507,
+  7513, 7571, 7577…) ou **'-' (0x2d) se NPN-par** (7502, 7508, 7514, 7572, 7578…).
+  Pinos: "+" (0,0), "−" (0,12), "S" (9,6) (NUME +005,-000/+005,+045/+050,+015 —
+  bate com `symbol_pins.json` p3=(9,6)). Sem fonte +/− (p.ex. 3008/3009 ou p3/p4 da
+  CPU 10206) o sensor **nunca** atua — ligar em série L1/N como contato de 2 fios
+  não funciona. E **`symbol_lib.json` não tem protótipo 7501** (null): criar com
+  labels `["-B","","+","-","S",...]` + geometria do `symbol_pins` (caixa a medir no
+  app; não inventar).
+
+### 11.7 Catálogo por aba (cobertura)
 `classes-papeis.json` cobre **366 classes** em 16 abas (`aba`): Desenho, Motores e cargas,
 Contactores/interruptores de potência, Alimentações, Cabos e conexões, Fusíveis/seccionadores,
 Proteções, Contatos auxiliares/temporizados/relés, Sensores (7500..7605: indutivo, capacitivo,
