@@ -10,6 +10,16 @@ Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/). 
   ao Python (goldens em `tests/golden`, testes em `tests/paridade`); crates-esqueleto para as próximas fases.
   Veja `docs/rust-port.md`. O binário agora fica em `target/{debug,release}/cade` (antes `src/cade_cli/target/...`).
 
+### Porte para Rust (cade_sim + conformidade)
+- Crate `cade_sim`: motor de simulação próprio (geometria de `cade_check::geom`, papéis por classe, contatos
+  NA/NC/NA-NC/comutados, bobinas, lâmpadas, motores, disjuntores/fusíveis, temporizadores 9004/9005/9006 + 7004..7015,
+  curto de fase, relaxação OK/RACE/INSTAVEL/CURTO). Estado idêntico ao `netlist_sim.py` (goldens em `tests/golden/sim`).
+- `cade simulate|test|conformidade`; `cade gate`/`cade design` agora rodam os testes funcionais de verdade
+  (`ExecutorSim` implementa `cade_check::ExecutorTestes`).
+- Teste diferencial `tests/conformidade/<caso>/{circuito.cad,cenario.json,golden_app.json}` (goldens provisórios do
+  oráculo Python; o app sobrescreve com `"fonte":"app"`), `Dockerfile` (imagem `scratch` só com o binário) e job de CI.
+  Ver `docs/conformidade.md`. Ladder/CLP: só o trait `ModeloLadder` (outro agente).
+
 ### Porte para Rust (cade_check)
 - Crate `cade_check`: `geo_check`, `wires_check`, vínculos por rótulo, `lint_layout` e mensagens acionáveis, mais
   `cade gate <cad> [--testes t.json] [--json]` e `cade design <layout.json> -o x.cad [--json]` com o mesmo relatório do
