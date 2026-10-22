@@ -10,6 +10,29 @@ Dois objetivos diferentes, com critérios diferentes:
   inventa circuito inválido nem classe sem modelo.
 
 Status: `feito` · `andamento` · `todo` · `bloqueado`. Esforço: S (horas) · M (1–2 dias) · L (3+ dias).
+Escopo: `núcleo` (obrigatório para as entregas) · `recomendado` (livro/IEC) · `opcional` (fora das refs).
+
+## Escopo adequado (decisão pelas referências da disciplina)
+
+Evidência nos 7 PDFs que você baixou (`out/bibliografia/`, texto extraído):
+
+- **Núcleo (obrigatório)** — aparece explicitamente no material:
+  - partida direta; **reversão trifásica** (o desenho do professor usa `6004`/`2002`, 4 polos);
+  - **reversão monofásica** (documento próprio de 6 páginas + desenho CADe, motor `1008`);
+  - **intercalação com CLP** + RT1/RT2 + H1–H4 + intertravamento geral + T1–T7 (atividade da UEMA);
+  - partida sequencial com TON (entrega B, 3 motores);
+  - emergência e sinalização; ladder NA/NF + OUT/SET/RST + TON.
+- **Recomendado** — está no livro (LD/IEC) ou é padrão de curso, mas **não** nas atividades dadas:
+  contato de borda, contador, TOF; sensores 3 fios (o material só cita “sensor” como realimentação).
+- **Fora do escopo da disciplina** (não exigir para o “100% funcional”):
+  - **estrela-triângulo**: **zero menções** nos 7 documentos;
+  - **GRAFCET/pneumática**: só teoria no Miyagi (apêndice SFC), nenhuma atividade;
+  - **simular inversor de frequência**: o material explica (5 páginas), mas o CADe_SIMU **não tem
+    classe de inversor** — o adequado é a explicação teórica (já na skill), não o desenho;
+  - as 70 classes com `papel:"outro"` e os CLPs “com imagem”.
+
+Consequência: A7 (estrela-triângulo) e A10 (GRAFCET/pneumática) saem do caminho crítico; A8/A9
+(monofásico/4 polos) entram no núcleo por evidência direta; A3/A4/A5 ficam como recomendados.
 
 ## Eixo A — 100% funcional
 
@@ -22,13 +45,13 @@ Status: `feito` · `andamento` · `todo` · `bloqueado`. Esforço: S (horas) · 
 - [ ] **A2. Conformidade de ladder** — casos `tests/conformidade/ladder_*` com `cenario.json` derivado
   dos T1–T7; gravar `golden_app.json` no app (saídas 10205 + bobinas ladder + lâmpadas).
   - Aceite: `cade conformidade` verde nesses casos; evidência de `Q0.1`/`Q0.2` no app. Custo M.
-- [ ] **A3. Instruções de ladder que faltam** — borda 10052/10053, TOF 10067, contador 10063/10075,
+- [ ] **A3. Instruções de ladder que faltam** (`recomendado`) — borda 10052/10053, TOF 10067, contador 10063/10075,
   RS 10064, INV/EXOR 10040/10041 (roadmap em `docs/ladder.md` §2.6).
   - Aceite: DSL + modelo lógico + modelo geométrico + caso no app por instrução; teste unitário e
     exemplo em `tools/examples`. Custo L.
-- [ ] **A4. Temporizadores elétricos 9007/9015** (intermitente/pulso) + contatos associados.
+- [ ] **A4. Temporizadores elétricos 9007/9015** (`recomendado`) (intermitente/pulso) + contatos associados.
   - Aceite: caso no app com 9007 (pisca) e 9015 (pulso), lido por imagem; exemplo no gate. Custo M.
-- [ ] **A5. Sensores 3 fios (PNP/NPN)** — 56 classes do catálogo (`7501/7502/7504/7505`…); hoje só
+- [ ] **A5. Sensores 3 fios (PNP/NPN)** (`recomendado`) — 56 classes do catálogo (`7501/7502/7504/7505`…); hoje só
   contato de 2 fios.
   - Aceite: modelo de sensor alimentado (pino de alimentação + saída), caso no app com objeto
     detectado, exemplo de partida com sensor. Custo M.
@@ -37,16 +60,16 @@ Status: `feito` · `andamento` · `todo` · `bloqueado`. Esforço: S (horas) · 
   caracteres do secundário do `3012`.
   - Aceite: cenário com curto grava golden com `curto:true` e segue; 6002/6003 documentados em
     `docs/re-engenharia.md`. Custo S.
-- [ ] **A7. Estrela-triângulo** (fora da DSL hoje) — 3 contatores (principal, estrela, triângulo),
+- [ ] **A7. Estrela-triângulo** (`opcional` — fora das refs) — 3 contatores (principal, estrela, triângulo),
   intertravamento e temporizador.
   - Aceite: layout no DSL (ou `cad_build` documentado), exemplo + app. Custo L.
-- [ ] **A8. Reversão monofásica** — motor `1008` (`U1 V1 PE U2 V2`), contatores `2002` (4 polos),
+- [ ] **A8. Reversão monofásica** (`núcleo`) — motor `1008` (`U1 V1 PE U2 V2`), contatores `2002` (4 polos),
   disjuntor `6004`, cruzamento do enrolamento auxiliar.
   - Aceite: modo de ligação no `potencia` (ou `conexoes` de alto nível), exemplo + app. Custo L.
-- [ ] **A9. Dispositivos de 4 polos** (`6004`/`2002`) nos exemplos de reversão trifásica — opção
+- [ ] **A9. Dispositivos de 4 polos** (`núcleo` — fidelidade ao desenho) (`6004`/`2002`) nos exemplos de reversão trifásica — opção
   `polos: 4` no `potencia` (o 4º polo no N), fidelidade ao desenho do professor.
   - Aceite: exemplo `reversao` gera com 6004/2002 e passa no app. Custo S.
-- [ ] **A10. GRAFCET (10100+) e pneumática (10500+)** — **bloqueado**: classes sem pinos no binário.
+- [ ] **A10. GRAFCET (10100+) e pneumática (10500+)** (`opcional`) — **bloqueado**: classes sem pinos no binário.
   - Aceite (quando desbloquear): geometria/pinos via Ghidra, modelo, exemplo. Custo L.
 - [ ] **A11. Recusa explícita de classe sem modelo** — em vez de simular silenciosamente errado
   (70 classes com `papel:"outro"`, pneumática, GRAFCET, CLPs com imagem).
@@ -106,19 +129,19 @@ Status: `feito` · `andamento` · `todo` · `bloqueado`. Esforço: S (horas) · 
 
 ## Ordem sugerida (agora)
 
-1. **A1 → A2** (fechar ladder no Rust e a conformidade de ladder) — é o que destrava as entregas.
+1. **A1 → A2** (fechar ladder no Rust e a conformidade de ladder) — destrava as entregas.
 2. **A6** (curto/6002/3012) — barato e evita golden mentiroso.
-3. **A3 → A4** (borda/TOF/contador; 9007/9015) — maior valor didático.
+3. **A8 → A9** (reversão monofásica e 4 polos) — núcleo por evidência no material.
 4. **B1 → B2 → B6** (benchmark + `run_eval` ladder + baseline) — mede o 80% desde já.
-5. **A5** (sensores 3 fios) → **A7/A8/A9** (clássicos que faltam na DSL).
+5. **A3 → A5** (borda/TOF/contador; sensores 3 fios) — recomendados.
 6. **A11** (recusa explícita) e **B3/B4/B5** (skill, erros, exemplos) em paralelo.
-7. **A13** (port restante) e **A10** (Ghidra) por último.
+7. **A13** (port restante); **A7/A10** só se o professor pedir (opcionais).
 
 ## Definição de pronto
 
-- **A (100%)**: 11/11 relé + 5/5 ladder verdes e conferidos no app; entregas A/B reproduzíveis por
-  roteiro; nenhuma classe sem modelo aceita em silêncio; alvos A1–A9 e A11–A12 fechados (A10 só se o
-  curso exigir).
+- **A (100% funcional, núcleo)**: 11/11 relé + 5/5 ladder verdes e conferidos no app; entregas A/B
+  reproduzíveis por roteiro; **A8 (monofásico)** e **A9 (4 polos)** entregues; nenhuma classe sem
+  modelo aceita em silêncio. A3/A4/A5 são “recomendados” (não bloqueiam); A7/A10 ficam fora.
 - **B (≥80%)**: média ≥ 80 nos 12 held-out, 0 falha dura, tempo ≤ 15 min/caso com o MCP; skill e
   exemplos cobrindo todos os padrões usados no benchmark.
 
