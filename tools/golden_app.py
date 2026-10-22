@@ -171,7 +171,8 @@ def gravar_caso(caso_dir, fabrica=None, forcar=False, verbose=False, campos=CAMP
     golden = montar_golden(caso_dir, cenario, passos, getattr(obs, "disjuntores", ()))
     destino.write_text(json.dumps(golden, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
     return {"caso": caso_dir.name, "ok": True, "pulado": False, "passos": len(passos),
-            "golden": str(destino), "duracao_s": round(time.time() - t0, 1),
+            "passos_curto": sum(1 for p in passos if p.get("curto")), "golden": str(destino),
+            "duracao_s": round(time.time() - t0, 1),
             "bobinas_vistas": sorted({b for p in passos for b in p.get("bobinas", [])}),
             "lampadas_vistas": sorted({b for p in passos for b in p.get("lampadas", [])}),
             "motores_vistos": sorted({b for p in passos for b in p.get("motores", [])})}
@@ -203,6 +204,8 @@ class ObservadorApp:
         self.fechar_disjuntores = bool(fechar_disjuntores)
         self.disjuntores = []
         self.segurando = None
+        self.ultimo_curto = False
+        self.pendente_curto = False
         self.app = None
         self.n = 0
 
@@ -211,6 +214,10 @@ class ObservadorApp:
         self.app.abrir()
         self.app.play()
         self.app.zoom_todo()
+        d = self.app.fechar_dialogo()                 # curto estatico: o aviso aparece ja no Play
+        if d and self.verbose:
+            print(f"[golden] {self.cad.name}: modal '{d['nome']}' no Play (curto)", flush=True)
+        self.pendente_curto = bool(d)
         est = self.app.estado("_calibra.png")          # calibra e confere que le o circuito
         if est["fora_da_janela"]:
             raise GoldenErro(f"{self.cad.name}: simbolos fora da janela (nao lidos): {est['fora_da_janela']}")
@@ -271,6 +278,14 @@ class ObservadorApp:
         self.app.alternar(alvo, espera=self.espera_acao)
 
     def observar(self):
+        # modal (aviso de CURTO) e uma JANELA separada: fecha antes de ler e marca o passo
+        self.ultimo_curto = self.pendente_curto
+        self.pendente_curto = False
+        d = self.app.fechar_dialogo()
+        if d:
+            self.ultimo_curto = True
+            if self.verbose:
+                print(f"[golden] {self.cad.name}: modal '{d['nome']}' fechado no passo {self.n} (curto)", flush=True)
         # settle extra: o app repinta em ticks de 100 ms e a captura pode pegar um quadro parcial
         # (bobina ja vermelha, contato auxiliar/lampada/motor ainda nao) — visto em 22/10/2026.
         if self.settle_leitura:

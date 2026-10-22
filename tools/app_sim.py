@@ -638,6 +638,44 @@ class AppSim:
         img, _ = self.screenshot("_probe.png")
         return em_simulacao(img)
 
+    def janela_dialogo(self):
+        """Janela pequena e visivel diferente da principal: MessageBox do app (ex.: titulo 'Erro').
+
+        Em 22/10/2026 o aviso de CURTO abria uma janela SEPARADA ('Erro', 150x82): o `import -window`
+        da principal nao a ve e o app fica bloqueado. Por isso detectamos e fechamos por aqui."""
+        for w in _xdo("search", "--onlyvisible", "--name", ".*").split():
+            if w == self.win:
+                continue
+            g = _xdo("getwindowgeometry", w)
+            pos = geo = None
+            for ln in g.splitlines():
+                s = ln.strip()
+                if s.startswith("Position:"):
+                    pos = tuple(int(v) for v in s.split()[1].split(","))
+                elif s.startswith("Geometry:"):
+                    geo = tuple(int(v) for v in s.split()[1].split("x"))
+            if pos and geo and geo[0] <= 420 and geo[1] <= 320:
+                return {"win": w, "pos": pos, "geo": geo, "nome": _xdo("getwindowname", w).strip()}
+        return None
+
+    def fechar_dialogo(self):
+        """Fecha o MessageBox (Return; se nao sumir, clica no OK). -> dict do dialogo fechado ou None."""
+        d = self.janela_dialogo()
+        if not d:
+            return None
+        for tentativa in ("Return", "clique"):
+            if tentativa == "Return":
+                _xdo("windowactivate", d["win"])
+                _xdo("key", "Return")
+            else:
+                x, y = d["pos"]
+                w, h = d["geo"]
+                _xdo("mousemove", str(x + w // 2), str(y + h - 14), "click", "1")
+            time.sleep(0.5)
+            if self.janela_dialogo() is None:
+                return d
+        return None
+
     def play(self, espera=1.0):
         self._clica_win(*BTN_PLAY)
         time.sleep(espera)
