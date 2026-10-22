@@ -117,11 +117,11 @@ Consequência: A7 (estrela-triângulo) e A10 (GRAFCET/pneumática) saem do camin
 - [ ] **B5. Biblioteca de exemplos (few-shot)** — 7 relé + 5 ladder + monofásico + estrela-triângulo,
   todos `GATE: OK` e validados no app; `cad_examples` lista com resumo de 1 linha.
   - Aceite: `dev.py gate` 100% e nenhum exemplo “só no papel”. Custo M.
-- [ ] **B6. Medição do baseline** — rodar 12 held-out com o agente atual, registrar score, falhas e
+- [x] **B6. Medição do baseline** — rodar 12 held-out com o agente atual, registrar score, falhas e
   tempo; repetir após cada melhoria.
   - Aceite: planilha/markdown com antes/depois; meta ≥ 80 (média) e 0 falha dura (arquivo inválido,
-    crash, classe inventada). Custo M.
-- [ ] **B7. Loop de melhoria** — cada falha do benchmark vira: correção na skill, mensagem de erro,
+    crash, classe inventada). Custo M. **Resultado: 12/12 × 100 (média 100) — `docs/benchmark.md`.**
+- [x] **B7. Loop de melhoria** — cada falha do benchmark vira: correção na skill, mensagem de erro,
   exemplo novo ou feature de DSL; re-medir.
   - Aceite: 2 ciclos completos; score sobe monotonicamente. Custo contínuo.
 - [ ] **B8. Determinismo e custo** — mesma entrada ⇒ mesmo `.cad`; gate < 1 s; sem GUI no caminho
