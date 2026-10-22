@@ -131,6 +131,20 @@ como `sem_golden` (nao reprova).
 Requer Wine + o CADe_SIMU 4.0 (o `.exe` **nao** e distribuido neste repositorio) e **um unico**
 Wine por vez (`AGENTS.md`).
 
+### Display dedicado (recomendado)
+
+O app abre em ~2 px/unidade e a folha tem ~610 px de altura. Se o WM do usuario ladrilhar a janela
+em menos que isso (ex.: 523 px), a folha e cortada e o gravador recusa ("simbolos fora da janela").
+Para gravar sem depender da tela do usuario:
+
+```bash
+./scripts/golden-display.sh :2 1600 1200      # Xvfb + openbox (dependencia do host)
+DISPLAY=:2 python3 tools/golden_app.py --todos
+```
+
+Arch: `sudo pacman -S --needed xorg-server-xvfb extra/openbox`. O `openbox`/`Xvfb` sao do **host**
+(nao entram no Docker); o Wine continua um por vez.
+
 ```bash
 python3 tools/golden_app.py tests/conformidade/reversao --verbose   # um caso
 python3 tools/golden_app.py --todos                                 # todos (preserva golden "app")
@@ -154,6 +168,32 @@ fase, curto.
 
 Container opcional para regravar (`docker/wine-golden/`): Wine + Xvfb + xdotool + ImageMagick. **Nao
 foi executado neste PR.**
+
+## Conformidade de ladder
+
+Os casos `tests/conformidade/ladder_<nome>/` sao gerados por `tools/ladder_conformance.py` a partir
+de `tools/examples/<nome>.ladder.json`: ele compila o `.cad` com o `ladder_dsl` e escreve um
+`cenario.json` fisicamente possivel (reiniciar -> parte 1 -> solta/selo -> espera TON -> para ->
+parte 2 -> termico -> rearma -> reiniciar). O golden e gravado no app como os demais e o
+`cade conformidade` compara **`saidas_clp` (Q0.x) + bobinas + lampadas**.
+
+O gravador fecha os disjuntores automaticamente; por isso o cenario **nao** inclui `alternar DJ1`
+(abriria o disjuntor que o modelo assume fechado).
+
+Notas de gravacao de ladder (22/10/2026):
+- as celulas **10205** (saidas do CLP) podem "piscar" na captura (o app repinta a cada 100 ms):
+  grave com `--leituras 3` (maioria por simbolo) e `--settle 0.4`;
+- o campo `motores` **nao** e comparado nos casos de ladder (`--sem-motores`): o lado eletrico
+  (contator -> motor) ja e provado pelos 11 casos de rele; aqui a prova e o CLP + bobinas + lampadas
+  + `saidas_clp` (Q0.x);
+- o `zoom_todo` NAO e chamado pelo gravador (os cliques na barra da MDI mexem na vista e o primeiro
+  clique da acao se perde). No display dedicado a folha cabe no zoom automatico (~2 px/unidade).
+
+**Limite atual (22/10/2026)**: a comparacao instantanea funciona para ladder **combinacional**
+(`ladder_partida_direta`, `ladder_reversao`). Casos com **temporizador/oscilacao** (`intercalada`,
+`partida_sequencial_3`, `pratica5_complementar`) ainda nao sao comparaveis: o app repinta em ticks e
+o relogio real nao bate tick a tick com a soma dos `esperar` (nem com o `t_parede_ms`). Precisa de
+comparacao por janela (conjunto de saidas ao longo de N ticks) — TODO A2.
 
 ## Como rodar no Docker (sem Wine)
 

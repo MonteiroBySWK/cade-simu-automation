@@ -54,6 +54,20 @@ def _ativos(d):
     return sorted(k for k, v in (d or {}).items() if v)
 
 
+def _maioria(ests):
+    """Combina varias leituras: para cada dict de simbolos, ativo se a maioria das leituras viu."""
+    if len(ests) == 1:
+        return ests[0]
+    base = dict(ests[-1])
+    n = len(ests)
+    for campo in ("bobinas", "lampadas", "motores", "saidas_clp", "bobinas_ladder"):
+        chaves = {k for e in ests for k in (e.get(campo) or {})}
+        if not chaves:
+            continue
+        base[campo] = {k: sum(1 for e in ests if (e.get(campo) or {}).get(k)) * 2 > n for k in chaves}
+    return base
+
+
 def _extrair(est, campos=CAMPOS):
     """Estado lido -> campos do golden. Campo ausente na leitura NAO entra (nao e comparado)."""
     out = {}
@@ -135,7 +149,7 @@ def casos_com_cenario(base):
 
 
 def gravar_caso(caso_dir, fabrica=None, forcar=False, verbose=False, campos=CAMPOS,
-                fechar_disjuntores=True, manter=False):
+                fechar_disjuntores=True, manter=False, settle_leitura=0.25, leituras=1):
     """Grava `golden_app.json` do caso. `fabrica(cad)` devolve o observador (testes injetam um falso)."""
     caso_dir = Path(caso_dir)
     cenario = carregar_cenario(caso_dir)
@@ -154,7 +168,9 @@ def gravar_caso(caso_dir, fabrica=None, forcar=False, verbose=False, campos=CAMP
                     "motivo": "golden do app ja existe (use --forcar para regravar)"}
 
     obs = (fabrica or (lambda cad: ObservadorApp(cad, manter=manter, verbose=verbose,
-                                                 fechar_disjuntores=fechar_disjuntores)))(cad)
+                                                 fechar_disjuntores=fechar_disjuntores,
+                                                 settle_leitura=settle_leitura,
+                                                 leituras=leituras)))(cad)
     t0 = time.time()
     def progresso(i, n, passo):
         if verbose and (i % 10 == 0 or i == n - 1):
@@ -192,7 +208,7 @@ class ObservadorApp:
     """
 
     def __init__(self, cad, manter=False, verbose=False, calibrar_a_cada=20, espera_acao=0.5,
-                 fechar_disjuntores=True, settle_leitura=0.25):
+                 fechar_disjuntores=True, settle_leitura=0.25, leituras=1):
         import app_sim
         self.app_sim = app_sim
         self.cad = Path(cad)
@@ -201,6 +217,7 @@ class ObservadorApp:
         self.calibrar_a_cada = int(calibrar_a_cada)
         self.espera_acao = float(espera_acao)
         self.settle_leitura = float(settle_leitura)
+        self.leituras = max(1, int(leituras))
         self.fechar_disjuntores = bool(fechar_disjuntores)
         self.disjuntores = []
         self.segurando = None
@@ -213,7 +230,9 @@ class ObservadorApp:
         self.app = self.app_sim.AppSim(self.cad, verbose=self.verbose)
         self.app.abrir()
         self.app.play()
-        self.app.zoom_todo()
+        # NAO chamar zoom_todo: os cliques na barra de titulo da MDI mexem na vista e o primeiro
+        # clique de acao se perde (medido 22/10/2026). No display dedicado a folha ja cabe no
+        # zoom automatico (~2 px/unidade); se nao couber, `estado` acusa "fora da janela".
         d = self.app.fechar_dialogo()                 # curto estatico: o aviso aparece ja no Play
         if d and self.verbose:
             print(f"[golden] {self.cad.name}: modal '{d['nome']}' no Play (curto)", flush=True)
@@ -253,6 +272,8 @@ class ObservadorApp:
         self.app.reiniciar()
         time.sleep(self.espera_acao)
         self.segurando = None
+        # Stop+Play pode devolver a vista ao topo: recalibra antes de clicar (senao o clique erra)
+        self.app.estado("_recal.png")
         self._fechar_disjuntores()
 
     def esperar(self, ms):
@@ -290,16 +311,21 @@ class ObservadorApp:
         # (bobina ja vermelha, contato auxiliar/lampada/motor ainda nao) — visto em 22/10/2026.
         if self.settle_leitura:
             time.sleep(self.settle_leitura)
-        nome = f"p{self.n:04d}.png"
-        self.n += 1
         app = self.app
-        if app.cal is None or self.n % self.calibrar_a_cada == 0:
-            img, _, cal = app._snap_calibra(nome)
-            if cal is None:
-                raise GoldenErro(f"{self.cad.name}: calibracao falhou no passo {self.n - 1}")
-        else:
-            img, _ = app.screenshot(nome)
-        est = self.app_sim.ler_estado(img, app.cad, app.cal)
+        ests = []
+        for k in range(self.leituras):
+            nome = f"p{self.n:04d}_{k}.png"
+            if app.cal is None or self.n % self.calibrar_a_cada == 0:
+                img, _, cal = app._snap_calibra(nome)
+                if cal is None:
+                    raise GoldenErro(f"{self.cad.name}: calibracao falhou no passo {self.n}")
+            else:
+                img, _ = app.screenshot(nome)
+            ests.append(self.app_sim.ler_estado(img, app.cad, app.cal))
+            if k + 1 < self.leituras:
+                time.sleep(0.12)
+        self.n += 1
+        est = _maioria(ests)
         faltando = sorted({s["rotulo"] for s in est["simbolos"] if not s["visivel"]})
         if faltando:
             raise GoldenErro(f"{self.cad.name}: simbolos fora da janela no passo {self.n - 1}: {faltando}")
@@ -318,6 +344,8 @@ def main(argv):
     ap.add_argument("--sem-motores", action="store_true", help="nao grava o campo motores")
     ap.add_argument("--sem-disjuntores", action="store_true",
                     help="nao fecha os disjuntores (grava o app cru: eles iniciam abertos, motores nao giram)")
+    ap.add_argument("--settle", type=float, default=0.25, help="segundos extras antes de ler (default 0.25)")
+    ap.add_argument("--leituras", type=int, default=1, help="capturas por passo; usa a maioria (default 1)")
     ap.add_argument("--json", nargs="?", const=Path("out/app_sim/goldens.json"), type=Path,
                     help="grava o resumo em JSON (padrao: out/app_sim/goldens.json)")
     ap.add_argument("--verbose", action="store_true")
@@ -335,7 +363,8 @@ def main(argv):
         print(f"[golden] === {Path(caso).name} ===", flush=True)
         try:
             r = gravar_caso(caso, forcar=args.forcar, verbose=args.verbose, campos=campos,
-                            fechar_disjuntores=not args.sem_disjuntores, manter=args.manter)
+                            fechar_disjuntores=not args.sem_disjuntores, manter=args.manter,
+                            settle_leitura=args.settle, leituras=args.leituras)
         except Exception as e:                                  # noqa: BLE001 - registra e segue
             r = {"caso": Path(caso).name, "ok": False, "erro": f"{type(e).__name__}: {e}"}
         res.append(r)

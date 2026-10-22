@@ -42,9 +42,13 @@ Consequência: A7 (estrela-triângulo) e A10 (GRAFCET/pneumática) saem do camin
     (`partida_direta`, `reversao`, `intercalada`, `pratica5_complementar`, `partida_sequencial_3`);
     gate de ladder **não** aplica `geo_check` de relé (pino direito aberto por desenho); `saidas_clp`
     preenchido no estado. Custo M.
-- [ ] **A2. Conformidade de ladder** — casos `tests/conformidade/ladder_*` com `cenario.json` derivado
-  dos T1–T7; gravar `golden_app.json` no app (saídas 10205 + bobinas ladder + lâmpadas).
-  - Aceite: `cade conformidade` verde nesses casos; evidência de `Q0.1`/`Q0.2` no app. Custo M.
+- [parcial] **A2. Conformidade de ladder** — casos `tests/conformidade/ladder_*` gerados por
+  `tools/ladder_conformance.py`; golden do app com `--leituras 5 --settle 0.8 --sem-motores`.
+  **Feito**: `ladder_partida_direta` e `ladder_reversao` (combinacionais) verdes em `cade conformidade`.
+  **Pendente**: casos com temporizador/oscilação (`intercalada`, `partida_sequencial_3`,
+  `pratica5_complementar`) — a comparação instantânea não serve (o app repinta em ticks e o relógio
+  real não bate tick a tick); precisa de comparação por **janela** (conjunto de saídas ao longo de N
+  ticks). Os goldens desses casos foram removidos para não gerar divergente falso.
 - [parcial] **A3. Instruções de ladder que faltam** (`recomendado`) — borda 10052/10053 (`SUBIDA`/`DESCIDA`),
   TOF 10067 e contador 10063: DSL (`ladder/1`) + modelo lógico + modelo geométrico + port Rust
   (`cade_sim::ladder`), 3 exemplos em `tools/examples` com testes por tick, paridade Rust×Python e

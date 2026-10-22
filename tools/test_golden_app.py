@@ -184,6 +184,9 @@ class _AppFalso:
     def reiniciar(self):
         self.cliques.append(("reiniciar",))
 
+    def estado(self, nome=None):
+        return {"bobinas": {}, "lampadas": {}, "motores": {}, "saidas_clp": {}, "simbolos": []}
+
     def pressionar(self, alvo, segurar_s=None):
         self.cliques.append(("down", alvo))
 

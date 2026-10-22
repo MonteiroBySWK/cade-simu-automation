@@ -53,6 +53,10 @@ impl Acao {
 pub struct Cenario {
     pub descricao: String,
     pub acoes: Vec<Acao>,
+    /// `"tempo": "parede"`: o motor avanca pelo `t_parede_ms` do golden (relogio real do app)
+    /// em vez da soma dos `esperar`. Necessario para temporizadores: o app conta ticks de 100 ms
+    /// durante cliques e screenshots tambem (ver `docs/conformidade.md`).
+    pub tempo_parede: bool,
 }
 
 impl Cenario {
@@ -61,6 +65,7 @@ impl Cenario {
         Ok(Cenario {
             descricao: v.get("descricao").and_then(|d| d.as_str()).unwrap_or("").to_string(),
             acoes: acoes.iter().map(Acao::de_json).collect::<Result<_, _>>()?,
+            tempo_parede: v.get("tempo").and_then(|t| t.as_str()) == Some("parede"),
         })
     }
 }
@@ -88,7 +93,9 @@ impl Observacao {
 }
 
 /// Executa o cenario no motor. Erro se uma acao cita um rotulo que o desenho nao tem (teste vacuo).
-pub fn executar(c: &Circuito, cen: &Cenario) -> Result<Vec<Observacao>, String> {
+/// `tempos` (modo `"tempo":"parede"`): tempo real acumulado no app por passo; avanca o motor por
+/// ele em vez da soma dos `esperar` (temporizadores contam durante cliques/screenshots no app).
+pub fn executar(c: &Circuito, cen: &Cenario, tempos: Option<&[u64]>) -> Result<Vec<Observacao>, String> {
     let valido = |k: &str| c.entradas.iter().any(|e| e == k) || c.bobinas.contains_key(k);
     let mut ent = Entradas::new();
     let mut st = c.novo_estado(&[], None);
@@ -111,13 +118,23 @@ pub fn executar(c: &Circuito, cen: &Cenario) -> Result<Vec<Observacao>, String> 
                 };
             }
             Acao::Esperar(ms) => {
-                avanca = *ms as f64 / 1000.0;
-                t_ms += ms;
+                if tempos.is_none() {
+                    avanca = *ms as f64 / 1000.0;
+                    t_ms += ms;
+                }
             }
             Acao::Reiniciar => {
                 ent.clear();
                 st = c.novo_estado(&[], None);
+                if tempos.is_some() {
+                    t_ms = 0;
+                }
             }
+        }
+        if let Some(ts) = tempos {
+            let alvo = ts.get(i).copied().unwrap_or(t_ms);
+            avanca = alvo.saturating_sub(t_ms) as f64 / 1000.0;
+            t_ms = alvo;
         }
         let estado = c.avancar(&mut st, &ent, avanca);
         obs.push(Observacao { i, t_ms, estado, saidas_clp: vec![] });
@@ -128,14 +145,14 @@ pub fn executar(c: &Circuito, cen: &Cenario) -> Result<Vec<Observacao>, String> 
 /// Executa o cenario no motor ladder (circuito com CLP): cada acao troca as entradas e
 /// assenta (`regime`); `esperar` avanca N ticks de 100 ms (`rodar`); `reiniciar` zera tudo.
 /// `saidas_clp` = saidas 10205 com bit 1 no estado assentado.
-pub fn executar_clp(c: &CircuitoClp, cen: &Cenario) -> Result<Vec<Observacao>, String> {
+pub fn executar_clp(c: &CircuitoClp, cen: &Cenario, tempos: Option<&[u64]>) -> Result<Vec<Observacao>, String> {
     let valido = |k: &str| c.entradas.iter().any(|e| e == k) || c.bobinas_fisicas().iter().any(|b| b == k);
     let mut ent: BTreeMap<String, bool> = BTreeMap::new();
     let mut est = c.estado_zero(&[]);
     let mut t_ms = 0u64;
     let mut obs = Vec::new();
     for (i, a) in cen.acoes.iter().enumerate() {
-        let (novo, r) = match a {
+        let (novo, mut r) = match a {
             Acao::Pressionar(k) | Acao::Soltar(k) | Acao::Alternar(k) => {
                 if !valido(k) {
                     return Err(format!("acao {i}: rotulo {k:?} nao existe no circuito (entradas: {:?})", c.entradas));
@@ -148,16 +165,30 @@ pub fn executar_clp(c: &CircuitoClp, cen: &Cenario) -> Result<Vec<Observacao>, S
                 c.regime(&ent, Some(est), ladder::MAX_TICKS)
             }
             Acao::Esperar(ms) => {
-                t_ms += ms;
-                c.rodar(&ent, (*ms as f64 / 100.0).round() as i64, Some(est))
+                let ms_eff = if tempos.is_some() { 0 } else { *ms };
+                t_ms += ms_eff;
+                c.rodar(&ent, (ms_eff as f64 / 100.0).round() as i64, Some(est))
             }
             Acao::Reiniciar => {
                 ent.clear();
                 est = c.estado_zero(&[]);
+                if tempos.is_some() {
+                    t_ms = 0;
+                }
                 c.regime(&ent, Some(est.clone()), ladder::MAX_TICKS)
             }
         };
         est = novo;
+        if let Some(ts) = tempos {
+            let alvo = ts.get(i).copied().unwrap_or(t_ms);
+            let dt = alvo.saturating_sub(t_ms);
+            if dt > 0 {
+                let (novo2, r2) = c.rodar(&ent, (dt as f64 / 100.0).round() as i64, Some(est));
+                est = novo2;
+                r = r2;
+            }
+            t_ms = alvo;
+        }
         obs.push(Observacao {
             i,
             t_ms,
@@ -343,20 +374,37 @@ pub fn rodar_caso(dir: &Path) -> RelCaso {
         let raw = fs::read(dir.join("circuito.cad")).map_err(|e| format!("{}: {e}", dir.join("circuito.cad").display()))?;
         let cen = Cenario::de_json(&le_json(&dir.join("cenario.json"))?)?;
         r.passos = cen.acoes.len();
+        // golden antes da simulacao: no modo `"tempo":"parede"` o motor avanca pelo relogio real do app
+        let gp = dir.join("golden_app.json");
+        let g = if gp.is_file() { Some(le_json(&gp)?) } else { None };
+        let tempos: Option<Vec<u64>> = if cen.tempo_parede {
+            g.as_ref()
+                .and_then(|g| g.get("passos").and_then(|p| p.as_array()))
+                .map(|ps| {
+                    ps.iter()
+                        .map(|p| {
+                            p.get("t_parede_ms")
+                                .and_then(|v| v.as_u64())
+                                .or_else(|| p.get("t_ms").and_then(|v| v.as_u64()))
+                                .unwrap_or(0)
+                        })
+                        .collect()
+                })
+        } else {
+            None
+        };
         // circuito com CLP: motor ladder por ticks (preenche `saidas_clp`); senao o eletrico
         let obs = if ladder::tem_clp(&raw) {
             let clp = CircuitoClp::de_bytes(&raw)?;
-            executar_clp(&clp, &cen)?
+            executar_clp(&clp, &cen, tempos.as_deref())?
         } else {
             let c = Circuito::de_bytes(&raw, crate::papeis::Papeis::padrao())?;
-            executar(&c, &cen)?
+            executar(&c, &cen, tempos.as_deref())?
         };
-        let gp = dir.join("golden_app.json");
-        if !gp.is_file() {
+        let Some(g) = g else {
             r.resultado = Resultado::SemGolden;
             return Ok(());
-        }
-        let g = le_json(&gp)?;
+        };
         r.fonte = g.get("fonte").and_then(|f| f.as_str()).unwrap_or("desconhecida").to_string();
         r.diffs = comparar(&obs, &g);
         r.resultado = if r.diffs.is_empty() { Resultado::Ok } else { Resultado::Divergente };
