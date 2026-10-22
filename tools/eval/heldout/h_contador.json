@@ -1,0 +1,179 @@
+{
+  "id": "h_contador",
+  "dsl": "ladder/1",
+  "titulo": "Contagem de pecas com CTU e esteira",
+  "dificuldade": 4,
+  "enunciado": "Uma esteira (-KM1) conta pecas com um contador CTU -C1 (classe 10063, preset 5) e indica lote completo na lampada -H1. Entradas: -S0 (NF) em I0.0 para/reseta, -S1 (NA) em I0.1 recebe cada pulso de peca, NF do termico -RT1 em I0.2. Saidas: Q0.0 aciona -KM1 (esteira habilitada no primeiro pulso, com selo; -S0 ou o termico param e zeram a contagem), Q0.1 acende -H1 (bit de lote completo do contador). Cada pulso valido em -S1 incrementa -C1; com 5 pulsos o lote fecha.",
+  "restricoes": [
+    "Use o CLP modular: CPU 10206 alimentada por fonte 3011 propria, entradas 10204 e saidas 10205 (n16=1, 24 Vcc).",
+    "Botoes e contatos do termico ligam o +24V da CPU as entradas; as saidas ligam as bobinas, que voltam ao 0V da CPU.",
+    "Ladder com fonte 3008 no trilho esquerdo; bobinas ladder com pino direito sem fio (trilho_direito aberto).",
+    "Operandos I0.x/Q0.x/M0.x/C1 exatamente como no enunciado; nenhum operando igual a rotulo fisico (ex.: -KM1).",
+    "Use UMA fonte trifasica multi-terminal (3007) na potencia e trilho PE separado; termico 6007 com o mesmo rotulo do 8017.",
+    "Sem coordenadas no layout; tudo cabe na folha (455x305)."
+  ],
+  "obrigatorios": {
+    "classes": {
+      "1000": 1,
+      "10050": 5,
+      "10051": 1,
+      "10204": 3,
+      "10205": 2,
+      "10206": 1,
+      "2001": 1,
+      "3008": 1,
+      "6007": 1,
+      "6009": 1,
+      "8000": 1,
+      "8001": 1,
+      "8017": 1,
+      "9000": 1,
+      "9008": 1,
+      "10063": 1
+    },
+    "uma_de": [
+      [
+        "6009",
+        "6010"
+      ]
+    ],
+    "rotulos": [
+      "-S0",
+      "-S1",
+      "-RT1",
+      "-KM1",
+      "-H1"
+    ],
+    "operandos": [
+      "I0.0",
+      "I0.1",
+      "I0.2",
+      "Q0.0",
+      "Q0.1",
+      "C1"
+    ]
+  },
+  "testes": [
+    {
+      "nome": "repouso: nada ligado",
+      "entradas": {},
+      "status": "OK",
+      "esperado": [],
+      "esperado_lampadas": [],
+      "esperado_bits": {
+        "I0.0": 1,
+        "I0.1": 0,
+        "I0.2": 1,
+        "Q0.0": 0,
+        "Q0.1": 0
+      }
+    },
+    {
+      "nome": "pulso habilita a esteira",
+      "entradas": {
+        "S1": true
+      },
+      "status": "OK",
+      "esperado": [
+        "KM1"
+      ],
+      "esperado_bits": {
+        "Q0.0": 1
+      }
+    },
+    {
+      "nome": "selo mantem habilitado",
+      "entradas": {},
+      "inicial": [
+        "Q0.0"
+      ],
+      "status": "OK",
+      "esperado": [
+        "KM1"
+      ]
+    },
+    {
+      "nome": "S0 para e zera",
+      "entradas": {
+        "S0": true
+      },
+      "inicial": [
+        "Q0.0"
+      ],
+      "status": "OK",
+      "esperado": [],
+      "esperado_bits": {
+        "I0.0": 0,
+        "Q0.0": 0
+      }
+    },
+    {
+      "nome": "RT1 bloqueia o pulso",
+      "entradas": {
+        "RT1": true,
+        "S1": true
+      },
+      "status": "OK",
+      "esperado": [],
+      "esperado_bits": {
+        "I0.2": 0,
+        "Q0.0": 0
+      }
+    },
+    {
+      "nome": "RT1 derruba",
+      "entradas": {
+        "RT1": true
+      },
+      "inicial": [
+        "Q0.0"
+      ],
+      "status": "OK",
+      "esperado": []
+    },
+    {
+      "nome": "sequencia de pulsos",
+      "status": "OK",
+      "sequencia": [
+        {
+          "nome": "pulso 1",
+          "entradas": {
+            "S1": true
+          },
+          "esperado": [
+            "KM1"
+          ]
+        },
+        {
+          "nome": "solta: mantem",
+          "entradas": {},
+          "esperado": [
+            "KM1"
+          ]
+        },
+        {
+          "nome": "pulso 2",
+          "entradas": {
+            "S1": true
+          },
+          "esperado": [
+            "KM1"
+          ]
+        },
+        {
+          "nome": "S0: para",
+          "entradas": {
+            "S0": true
+          },
+          "esperado": []
+        },
+        {
+          "nome": "repouso",
+          "entradas": {},
+          "esperado": []
+        }
+      ]
+    }
+  ],
+  "nota": "Contador CTU 10063 ainda sem modelo no simulador (item A3 do TODO): os testes cobrem o envelope simulavel (habilita, selo, para, bloqueia, sinalizacao em repouso); o bit de lote completo so e exigido em repouso (=0). Solucao real usa cad_build de baixo nivel para o 10063."
+}

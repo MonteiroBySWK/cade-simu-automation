@@ -1,0 +1,291 @@
+{
+  "id": "h_intercalada_clp",
+  "dsl": "ladder/1",
+  "titulo": "Intercalacao de 2 motores por CLP com sinalizacao completa",
+  "dificuldade": 4,
+  "enunciado": "Dois motores trifasicos -M1 e -M2 se alternam a cada partida, comandados por CLP (ladder). Entradas: -S0 (NF) em I0.0 desliga, -S1 (NA) em I0.1 liga, NF dos termicos -RT1 em I0.2 e -RT2 em I0.3. Saidas: Q0.0 aciona -KM1, Q0.1 aciona -KM2, Q0.2 acende -H1 (M1 ligado), Q0.3 acende -H2 (M2 ligado), Q0.4 acende -H3 (falha -RT1), Q0.5 acende -H4 (falha -RT2). A memoria M0.0 indica de quem e a proxima partida: Q0.0 faz SET M0.0 e Q0.1 faz RESET M0.0. Q0.0 = I0.2 . I0.3 . I0.0 . (I0.1 . /M0.0 + Q0.0) . /Q0.1; Q0.1 simetrico com M0.0. Intertravamento logico (NF da saida oposta em cada degrau) e eletrico (NF de -KM2 em serie na saida de -KM1 e vice-versa). Qualquer termico desarma os dois e acende a falha correspondente.",
+  "restricoes": [
+    "Use o CLP modular: CPU 10206 alimentada por fonte 3011 propria, entradas 10204 e saidas 10205 (n16=1, 24 Vcc).",
+    "Botoes e contatos do termico ligam o +24V da CPU as entradas; as saidas ligam as bobinas, que voltam ao 0V da CPU.",
+    "Ladder com fonte 3008 no trilho esquerdo; bobinas ladder com pino direito sem fio (trilho_direito aberto).",
+    "Operandos I0.x/Q0.x/M0.x exatamente como no enunciado; nenhum operando igual a rotulo fisico (ex.: -KM1).",
+    "Use UMA fonte trifasica multi-terminal (3007) na potencia e trilho PE separado; termico 6007 com o mesmo rotulo do 8017.",
+    "Sem coordenadas no layout; tudo cabe na folha (455x305)."
+  ],
+  "obrigatorios": {
+    "classes": {
+      "1000": 2,
+      "10050": 15,
+      "10051": 5,
+      "10060": 6,
+      "10061": 1,
+      "10062": 1,
+      "10204": 4,
+      "10205": 6,
+      "10206": 1,
+      "2001": 2,
+      "3008": 2,
+      "6007": 2,
+      "6009": 2,
+      "8000": 1,
+      "8001": 1,
+      "8017": 2,
+      "9000": 2,
+      "9008": 4
+    },
+    "uma_de": [
+      [
+        "6009",
+        "6010"
+      ]
+    ],
+    "rotulos": [
+      "-S0",
+      "-S1",
+      "-RT1",
+      "-RT2",
+      "-KM1",
+      "-KM2",
+      "-H1",
+      "-H2",
+      "-H3",
+      "-H4"
+    ],
+    "operandos": [
+      "I0.0",
+      "I0.1",
+      "I0.2",
+      "I0.3",
+      "Q0.0",
+      "Q0.1",
+      "Q0.2",
+      "Q0.3",
+      "Q0.4",
+      "Q0.5",
+      "M0.0"
+    ]
+  },
+  "testes": [
+    {
+      "nome": "repouso desligado",
+      "entradas": {},
+      "status": "OK",
+      "esperado": [],
+      "esperado_lampadas": [],
+      "esperado_bits": {
+        "M0.0": 0
+      }
+    },
+    {
+      "nome": "1a partida liga M1 e H1",
+      "entradas": {
+        "S1": true
+      },
+      "status": "OK",
+      "esperado": [
+        "KM1"
+      ],
+      "esperado_lampadas": [
+        "H1"
+      ],
+      "esperado_bits": {
+        "Q0.0": 1,
+        "Q0.1": 0,
+        "M0.0": 1
+      }
+    },
+    {
+      "nome": "partida com M0.0 liga M2 e H2",
+      "entradas": {
+        "S1": true
+      },
+      "inicial": [
+        "M0.0"
+      ],
+      "status": "OK",
+      "esperado": [
+        "KM2"
+      ],
+      "esperado_lampadas": [
+        "H2"
+      ],
+      "esperado_bits": {
+        "M0.0": 0
+      }
+    },
+    {
+      "nome": "selo mantem KM1",
+      "entradas": {},
+      "inicial": [
+        "Q0.0",
+        "M0.0"
+      ],
+      "status": "OK",
+      "esperado": [
+        "KM1"
+      ],
+      "esperado_lampadas": [
+        "H1"
+      ]
+    },
+    {
+      "nome": "selo mantem KM2",
+      "entradas": {},
+      "inicial": [
+        "Q0.1"
+      ],
+      "status": "OK",
+      "esperado": [
+        "KM2"
+      ],
+      "esperado_lampadas": [
+        "H2"
+      ]
+    },
+    {
+      "nome": "S0 desliga e M0.0 fica",
+      "entradas": {
+        "S0": true
+      },
+      "inicial": [
+        "Q0.0",
+        "M0.0"
+      ],
+      "status": "OK",
+      "esperado": [],
+      "esperado_lampadas": [],
+      "esperado_bits": {
+        "M0.0": 1
+      }
+    },
+    {
+      "nome": "RT1 derruba KM1 e acende H3",
+      "entradas": {
+        "RT1": true
+      },
+      "inicial": [
+        "Q0.0",
+        "M0.0"
+      ],
+      "status": "OK",
+      "esperado": [],
+      "esperado_lampadas": [
+        "H3"
+      ]
+    },
+    {
+      "nome": "RT2 derruba KM2 e acende H4",
+      "entradas": {
+        "RT2": true
+      },
+      "inicial": [
+        "Q0.1"
+      ],
+      "status": "OK",
+      "esperado": [],
+      "esperado_lampadas": [
+        "H4"
+      ]
+    },
+    {
+      "nome": "RT2 bloqueia a partida do M1",
+      "entradas": {
+        "RT2": true,
+        "S1": true
+      },
+      "status": "OK",
+      "esperado": [],
+      "esperado_lampadas": [
+        "H4"
+      ]
+    },
+    {
+      "nome": "sequencia alternada com termico",
+      "status": "OK",
+      "sequencia": [
+        {
+          "nome": "repouso",
+          "entradas": {},
+          "esperado": [],
+          "esperado_lampadas": [],
+          "esperado_bits": {
+            "M0.0": 0
+          }
+        },
+        {
+          "nome": "liga: M1",
+          "entradas": {
+            "S1": true
+          },
+          "esperado": [
+            "KM1"
+          ],
+          "esperado_lampadas": [
+            "H1"
+          ],
+          "esperado_bits": {
+            "M0.0": 1
+          }
+        },
+        {
+          "nome": "solta: selo",
+          "entradas": {},
+          "esperado": [
+            "KM1"
+          ],
+          "esperado_lampadas": [
+            "H1"
+          ]
+        },
+        {
+          "nome": "desliga",
+          "entradas": {
+            "S0": true
+          },
+          "esperado": [],
+          "esperado_lampadas": [],
+          "esperado_bits": {
+            "M0.0": 1
+          }
+        },
+        {
+          "nome": "solta",
+          "entradas": {},
+          "esperado": [],
+          "esperado_lampadas": []
+        },
+        {
+          "nome": "liga: M2",
+          "entradas": {
+            "S1": true
+          },
+          "esperado": [
+            "KM2"
+          ],
+          "esperado_lampadas": [
+            "H2"
+          ],
+          "esperado_bits": {
+            "M0.0": 0
+          }
+        },
+        {
+          "nome": "termico do M2",
+          "entradas": {
+            "RT2": true
+          },
+          "esperado": [],
+          "esperado_lampadas": [
+            "H4"
+          ]
+        },
+        {
+          "nome": "rearmado sem liga: nao religa",
+          "entradas": {},
+          "esperado": [],
+          "esperado_lampadas": []
+        }
+      ]
+    }
+  ]
+}

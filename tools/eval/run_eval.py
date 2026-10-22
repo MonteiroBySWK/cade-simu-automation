@@ -8,10 +8,18 @@ Criterios (peso): abre/valida (10) | geometria: sem curto de fase e sem pino sol
 testes funcionais do caso (35, proporcional) | fios nao atravessam simbolo (10) |
 itens obrigatorios: classes/rotulos (20). Caso sem testes -> pesos renormalizados.
 
+Ladder (`dsl: ladder/1`, em casos/ladder/): testes via clp_sim (ticks/sequencia/
+esperado_bits), geometria com a excecao do trilho direito aberto (pino B das
+bobinas 10060/10061/10062 sem fio, docs/ladder.md §4) + checagem da folha
+segura (455x305, tools/sheet.json) + vinculos por rotulo; obrigatorios inclui
+`operandos` (presentes nos rotulos das celulas 10050/10051/10060/10061/10062/
+10204/10205); fios conta 1.0 (o gate de ladder nao aplica wires_check).
+
 Uso:
   python3 tools/eval/run_eval.py --golden                  # baseline: roda tools/examples/<golden>.layout.json
-  python3 tools/eval/run_eval.py CASO ARQ.cad              # CASO = id ou caminho do .json
-  python3 tools/eval/run_eval.py --dir saidas/             # saidas/<id_do_caso>.cad para cada caso
+                                                           # (.ladder.json p/ casos ladder) em casos/ + casos/ladder/
+  python3 tools/eval/run_eval.py CASO ARQ.cad              # CASO = id ou caminho do .json (vale heldout/)
+  python3 tools/eval/run_eval.py --dir saidas/             # saidas/<id_do_caso>.cad para cada caso de casos/
   (qualquer modo aceita --json para saida estruturada; exit 1 se algum score < --min, default 100 no --golden)
 """
 import argparse
@@ -27,24 +35,42 @@ TOOLS = HERE.parent
 ROOT = TOOLS.parent
 sys.path.insert(0, str(TOOLS))
 CASOS = HERE / "casos"
+LADDER_DIR = CASOS / "ladder"
+HELDOUT = HERE / "heldout"
 EXEMPLOS = TOOLS / "examples"
 sys.path.insert(0, str(ROOT / "tools"))
 import cade_config  # noqa: E402
 CLI = cade_config.cli_path()
 PESOS = {"abre": 10, "geometria": 25, "testes": 35, "fios": 10, "obrigatorios": 20}
+LADDER_DSL = "ladder/1"
+OPERANDO_CLASSES = {"10050", "10051", "10060", "10061", "10062", "10066", "10204", "10205"}
+FOLHA_X, FOLHA_Y = 455, 305
+
+
+def eh_ladder(caso):
+    return caso.get("dsl") == LADDER_DSL
+
+
+def _pastas_de_caso():
+    return [CASOS, LADDER_DIR, HELDOUT]
 
 
 def carregar_caso(ref):
     p = Path(ref)
-    if not p.is_file():
-        p = CASOS / (Path(ref).stem + ".json")
-    if not p.is_file():
-        raise FileNotFoundError(f"caso nao encontrado: {ref} (casos: {[c.stem for c in sorted(CASOS.glob('*.json'))]})")
-    return json.loads(p.read_text(encoding="utf-8"))
+    if p.is_file():
+        return json.loads(p.read_text(encoding="utf-8"))
+    for base in _pastas_de_caso():
+        q = base / (Path(ref).stem + ".json")
+        if q.is_file():
+            return json.loads(q.read_text(encoding="utf-8"))
+    vistos = sorted(c.stem for b in _pastas_de_caso() for c in b.glob("*.json"))
+    raise FileNotFoundError(f"caso nao encontrado: {ref} (casos: {vistos})")
 
 
 def todos_os_casos():
-    return [json.loads(p.read_text(encoding="utf-8")) for p in sorted(CASOS.glob("*.json"))]
+    """Casos com golden (casos/ + casos/ladder/). heldout/ fica de fora (sem golden)."""
+    fs = sorted(CASOS.glob("*.json")) + sorted(LADDER_DIR.glob("*.json"))
+    return [json.loads(p.read_text(encoding="utf-8")) for p in fs]
 
 
 def _norm(rot):
@@ -57,9 +83,9 @@ def _validar(path):
 
 
 def _simbolos(path):
-    from dissect import parse_ent, split_entities
+    from dissect import parse_ent, split_all
     d = Path(path).read_bytes().decode("latin1")
-    _, ents, _ = split_entities(d)
+    _, ents, _ = split_all(d)  # split_all: nao perde a 1a entidade (split_entities some com 3007/3011)
     out = []
     for e in ents:
         p = parse_ent(e)
@@ -87,8 +113,36 @@ def testes_funcionais(path, casos):
     return ok, len(casos), det
 
 
+def testes_funcionais_ladder(path, casos):
+    """-> (passaram, total, detalhes). Mesmo contrato de testes_funcionais, via clp_sim
+    (sequencia/ticks/tempo_s, inicial com operandos, esperado_bits, OSCILA/INDEFINIDO)."""
+    import clp_sim as cs
+    c = cs.CircuitoCLP(str(path))
+    ok, det = 0, []
+    for t in casos:
+        ruim = cs.chaves_invalidas(c, t)
+        if ruim:
+            det.append(f"{t.get('nome')}: chave(s) inexistente(s) no circuito {[f'{k} ({cp})' for cp, k in ruim]} "
+                       f"(entradas {sorted(c.entradas)}, operandos {sorted(c.operandos)}, "
+                       f"bobinas {sorted(c.bobinas)}, lampadas {sorted(c.lampadas)})")
+            continue
+        falhas, r, _ = cs.executar_caso(c, t)
+        if not falhas:
+            ok += 1
+        else:
+            det.append(f"{t.get('nome')}: {'; '.join(falhas)} "
+                       f"(bobinas={r['bobinas']} lampadas={r['lampadas']} status={r['status']} bits1="
+                       f"{sorted(k for k, v in r['bits'].items() if v)})")
+    return ok, len(casos), det
+
+
+def _operandos_presentes(path):
+    """Rotulos das celulas ladder/CLP (10050/10051 bobinas e portas de CLP)."""
+    return {r for cid, r in _simbolos(path) if cid in OPERANDO_CLASSES}
+
+
 def obrigatorios(path, spec):
-    """-> (frac, faltas). Conta classes (min), 'uma_de' (grupos) e rotulos presentes."""
+    """-> (frac, faltas). Conta classes (min), 'uma_de' (grupos), rotulos e operandos (ladder) presentes."""
     sims = _simbolos(path)
     cont = Counter(c for c, _ in sims)
     rots = {r for _, r in sims}
@@ -105,7 +159,43 @@ def obrigatorios(path, spec):
         itens += 1
         if _norm(r) not in rots:
             faltas.append(f"rotulo {r} ausente")
+    if spec.get("operandos"):
+        ops = _operandos_presentes(path)
+        for o in spec["operandos"]:
+            itens += 1
+            if _norm(o) not in ops:
+                faltas.append(f"operando {o} ausente nas celulas ladder/CLP")
     return ((itens - len(faltas)) / itens if itens else 1.0), faltas
+
+
+def extremos_da_folha(path):
+    """(xmax, ymax) do desenho: fios pelos extremos, simbolos por posicao + dimensao."""
+    from dissect import parse_ent, split_all
+    try:
+        dims = json.loads((TOOLS / "symbol_dims.json").read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        dims = {}
+    d = Path(path).read_bytes().decode("latin1")
+    _, ents, _ = split_all(d)
+    mx = my = 0
+    for e in ents:
+        p = parse_ent(e)
+        if not p or len(p["nums"]) < 12:
+            continue
+        try:
+            x, y = int(p["nums"][8]), int(p["nums"][9])
+        except (ValueError, IndexError):
+            continue
+        if p["id"].startswith("40") and len(p["id"]) == 4:
+            try:
+                mx = max(mx, x, int(p["nums"][10]))
+                my = max(my, y, int(p["nums"][11]))
+            except (ValueError, IndexError):
+                pass
+        elif p["id"] not in ("8", "20000"):
+            w, h = dims.get(p["id"], [21, 15])[:2]
+            mx, my = max(mx, x + w), max(my, y + h)
+    return mx, my
 
 
 def pontuar(cad, caso):
@@ -125,19 +215,42 @@ def pontuar(cad, caso):
         return r
     res = geo_check.analisar(str(cad))
     curtos, soltos = res[0], res[1]
-    r["criterios"]["geometria"] = 1.0 if not (curtos or soltos) else 0.0
-    if curtos or soltos:
-        r["detalhes"]["geometria"] = [f"CURTO {c}" for c in curtos] + [f"SOLTO {s}" for s in soltos]
+    if eh_ladder(caso):
+        import ladder_dsl
+        soltos = [s for s in soltos if not ladder_dsl._solto_permitido(s)]
+        import build_spec
+        ev, _ = build_spec.conferir_vinculos(str(cad))
+        mx, my = extremos_da_folha(str(cad))
+        fora = None
+        if mx > FOLHA_X or my > FOLHA_Y:
+            fora = f"desenho ate ({mx},{my}) passa da folha segura ({FOLHA_X},{FOLHA_Y})"
+        r["criterios"]["geometria"] = 1.0 if not (curtos or soltos or ev or fora) else 0.0
+        msgs = [f"CURTO {c}" for c in curtos] + [f"SOLTO {s}" for s in soltos] + ev
+        if fora:
+            msgs.append(fora)
+        if msgs:
+            r["detalhes"]["geometria"] = msgs
+    else:
+        r["criterios"]["geometria"] = 1.0 if not (curtos or soltos) else 0.0
+        if curtos or soltos:
+            r["detalhes"]["geometria"] = [f"CURTO {c}" for c in curtos] + [f"SOLTO {s}" for s in soltos]
     if caso.get("testes"):
-        a, b, det = testes_funcionais(cad, caso["testes"])
+        if eh_ladder(caso):
+            a, b, det = testes_funcionais_ladder(cad, caso["testes"])
+        else:
+            a, b, det = testes_funcionais(cad, caso["testes"])
         r["criterios"]["testes"] = a / b
         r["detalhes"]["testes"] = [f"{a}/{b} passaram"] + det
     else:
         r["criterios"]["testes"] = None          # n/a
-    _, ruins = wires_check.analisar(str(cad))
-    r["criterios"]["fios"] = 1.0 if not ruins else 0.0
-    if ruins:
-        r["detalhes"]["fios"] = [f"{n}: {a}->{b}" for n, a, b in ruins[:5]]
+    if eh_ladder(caso):
+        r["criterios"]["fios"] = 1.0     # gate de ladder nao aplica wires_check (trilho/derivacoes)
+        r["detalhes"]["fios"] = ["n/a em ladder"]
+    else:
+        _, ruins = wires_check.analisar(str(cad))
+        r["criterios"]["fios"] = 1.0 if not ruins else 0.0
+        if ruins:
+            r["detalhes"]["fios"] = [f"{n}: {a}->{b}" for n, a, b in ruins[:5]]
     frac, faltas = obrigatorios(cad, caso.get("obrigatorios") or {})
     r["criterios"]["obrigatorios"] = frac
     if faltas:
@@ -149,10 +262,20 @@ def pontuar(cad, caso):
 
 
 def construir_golden(caso, destino):
-    """Gera o .cad do layout de exemplo `caso['golden']` (None se nao existe)."""
+    """Gera o .cad do layout de exemplo `caso['golden']` (None se nao existe).
+    Golden ladder (`*.ladder`) compila pela ladder_dsl; os demais pela build_spec."""
     g = caso.get("golden")
     if not g:
         return None
+    if g.endswith(".ladder"):
+        f = EXEMPLOS / f"{g}.json"
+        if not f.is_file():
+            return None
+        import ladder_dsl
+        spec = json.loads(f.read_text(encoding="utf-8"))
+        out = Path(destino) / f"{caso['id']}.cad"
+        r = ladder_dsl.construir(spec, str(out))
+        return str(out) if r["ok"] else None
     f = EXEMPLOS / f"{g}.layout.json"
     if not f.is_file():
         return None
@@ -195,7 +318,7 @@ def main(argv=None):
             for caso in todos_os_casos():
                 cad = construir_golden(caso, t)
                 if cad is None:
-                    motivo = "sem golden" if not caso.get("golden") else f"golden '{caso['golden']}' ausente em tools/examples"
+                    motivo = "sem golden" if not caso.get("golden") else f"golden '{caso['golden']}' ausente ou com falha em tools/examples"
                     res.append({"caso": caso["id"], "pulado": motivo, "total": 0.0, "criterios": {}})
                     continue
                 res.append(pontuar(cad, caso))

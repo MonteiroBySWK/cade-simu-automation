@@ -1,0 +1,411 @@
+{
+  "id": "pratica5_complementar_ladder",
+  "dsl": "ladder/1",
+  "titulo": "Intercalacao de 2 motores por CLP com TON e termicos (pratica 5)",
+  "dificuldade": 4,
+  "enunciado": "Dois motores trifasicos se alternam a cada ciclo, comandados por CLP (ladder). Entradas: -B0 (NF) em I0.1 desliga, -B1 (NA) em I0.2 liga, -DJ1 em I0.3, NF dos termicos -RT1 em I0.4 e -RT2 em I0.5, NA dos termicos -RT1 em I0.6 e -RT2 em I0.7. Saidas: Q0.1 aciona -C1 com -H1, Q0.2 aciona -C2 com -H2 (alternancia a cada 1 s por TON), Q0.4 acende -H3 (falha -RT1), Q0.5 acende -H4 (falha -RT2). Qualquer termico desliga tudo e bloqueia nova partida. Potencia: disjuntor -DJ1 comum, contatores -C1/-C2, termicos -RT1/-RT2, motores -M1/-M2.",
+  "restricoes": [
+    "Use o CLP modular: CPU 10206 alimentada por fonte 3011 propria, entradas 10204 e saidas 10205 (n16=1, 24 Vcc).",
+    "Botoes e contatos do termico ligam o +24V da CPU as entradas; as saidas ligam as bobinas, que voltam ao 0V da CPU.",
+    "Ladder com fonte 3008 no trilho esquerdo; bobinas ladder com pino direito sem fio (trilho_direito aberto).",
+    "Operandos I0.x/Q0.x/M0.x exatamente como no enunciado; nenhum operando igual a rotulo fisico (ex.: -KM1).",
+    "Use UMA fonte trifasica multi-terminal (3007) na potencia e trilho PE separado; termico 6007 com o mesmo rotulo do 8017.",
+    "Sem coordenadas no layout; tudo cabe na folha (455x305)."
+  ],
+  "obrigatorios": {
+    "classes": {
+      "10206": 1,
+      "10204": 7,
+      "10205": 4,
+      "3008": 2,
+      "3005": 1,
+      "10050": 18,
+      "10051": 3,
+      "10060": 5,
+      "10066": 2,
+      "9000": 2,
+      "9008": 4,
+      "8000": 1,
+      "8001": 1,
+      "8016": 3,
+      "8017": 2,
+      "2001": 2,
+      "6007": 2,
+      "1000": 2,
+      "6003": 1,
+      "6002": 1
+    },
+    "uma_de": [
+      [
+        "6002",
+        "6003",
+        "6009",
+        "6010"
+      ]
+    ],
+    "rotulos": [
+      "B0",
+      "B1",
+      "DJ1",
+      "C1",
+      "C2",
+      "H1",
+      "H2",
+      "H3",
+      "H4",
+      "RT1",
+      "RT2"
+    ],
+    "operandos": [
+      "I0.1",
+      "I0.2",
+      "I0.3",
+      "I0.4",
+      "I0.5",
+      "I0.6",
+      "I0.7",
+      "Q0.1",
+      "Q0.2",
+      "Q0.3",
+      "Q0.4",
+      "Q0.5"
+    ]
+  },
+  "testes": [
+    {
+      "nome": "T1 repouso com DJ1 ligado",
+      "entradas": {
+        "DJ1": true
+      },
+      "status": "OK",
+      "esperado": [],
+      "esperado_lampadas": [],
+      "esperado_bits": {
+        "I0.1": 1,
+        "I0.3": 1,
+        "I0.4": 1,
+        "I0.5": 1,
+        "Q0.1": 0,
+        "Q0.2": 0
+      }
+    },
+    {
+      "nome": "T2 LIGA parte M1 (C1+H1)",
+      "status": "OK",
+      "sequencia": [
+        {
+          "nome": "repouso",
+          "entradas": {
+            "DJ1": true
+          },
+          "ticks": 3,
+          "esperado": []
+        },
+        {
+          "nome": "LIGA",
+          "entradas": {
+            "DJ1": true,
+            "B1": true
+          },
+          "ticks": 4,
+          "esperado": [
+            "C1"
+          ],
+          "esperado_lampadas": [
+            "H1"
+          ]
+        },
+        {
+          "nome": "solta (selo)",
+          "entradas": {
+            "DJ1": true
+          },
+          "ticks": 5,
+          "esperado": [
+            "C1"
+          ],
+          "esperado_lampadas": [
+            "H1"
+          ]
+        }
+      ]
+    },
+    {
+      "nome": "T3 alterna M1 -> M2 -> M1 a cada 1 s",
+      "status": "OK",
+      "sequencia": [
+        {
+          "nome": "LIGA",
+          "entradas": {
+            "DJ1": true,
+            "B1": true
+          },
+          "ticks": 4,
+          "esperado": [
+            "C1"
+          ],
+          "esperado_lampadas": [
+            "H1"
+          ]
+        },
+        {
+          "nome": "solta",
+          "entradas": {
+            "DJ1": true
+          },
+          "ticks": 6,
+          "esperado": [
+            "C1"
+          ],
+          "esperado_lampadas": [
+            "H1"
+          ]
+        },
+        {
+          "nome": "apos 1 s: M2",
+          "entradas": {
+            "DJ1": true
+          },
+          "ticks": 9,
+          "esperado": [
+            "C2"
+          ],
+          "esperado_lampadas": [
+            "H2"
+          ]
+        },
+        {
+          "nome": "apos mais 1 s: M1",
+          "entradas": {
+            "DJ1": true
+          },
+          "ticks": 11,
+          "esperado": [
+            "C1"
+          ],
+          "esperado_lampadas": [
+            "H1"
+          ]
+        }
+      ]
+    },
+    {
+      "nome": "T4 DESLIGA (B0) para tudo",
+      "status": "OK",
+      "sequencia": [
+        {
+          "nome": "LIGA",
+          "entradas": {
+            "DJ1": true,
+            "B1": true
+          },
+          "ticks": 4,
+          "esperado": [
+            "C1"
+          ]
+        },
+        {
+          "nome": "solta",
+          "entradas": {
+            "DJ1": true
+          },
+          "ticks": 5,
+          "esperado": [
+            "C1"
+          ]
+        },
+        {
+          "nome": "B0",
+          "entradas": {
+            "DJ1": true,
+            "B0": true
+          },
+          "ticks": 6,
+          "esperado": [],
+          "esperado_lampadas": []
+        },
+        {
+          "nome": "solta B0 (nao religa)",
+          "entradas": {
+            "DJ1": true
+          },
+          "ticks": 30,
+          "esperado": [],
+          "esperado_lampadas": []
+        }
+      ]
+    },
+    {
+      "nome": "T5 falha RT1 com M1 ligado: desliga tudo, H3, bloqueia LIGA",
+      "status": "OK",
+      "sequencia": [
+        {
+          "nome": "LIGA",
+          "entradas": {
+            "DJ1": true,
+            "B1": true
+          },
+          "ticks": 4,
+          "esperado": [
+            "C1"
+          ]
+        },
+        {
+          "nome": "solta",
+          "entradas": {
+            "DJ1": true
+          },
+          "ticks": 5,
+          "esperado": [
+            "C1"
+          ]
+        },
+        {
+          "nome": "RT1 atua",
+          "entradas": {
+            "DJ1": true,
+            "RT1": true
+          },
+          "ticks": 6,
+          "esperado": [],
+          "esperado_lampadas": [
+            "H3"
+          ],
+          "esperado_bits": {
+            "Q0.1": 0,
+            "Q0.2": 0
+          }
+        },
+        {
+          "nome": "LIGA bloqueado",
+          "entradas": {
+            "DJ1": true,
+            "RT1": true,
+            "B1": true
+          },
+          "ticks": 10,
+          "esperado": [],
+          "esperado_lampadas": [
+            "H3"
+          ]
+        },
+        {
+          "nome": "RT1 rearmado sem LIGA: nao religa",
+          "entradas": {
+            "DJ1": true
+          },
+          "ticks": 30,
+          "esperado": [],
+          "esperado_lampadas": []
+        }
+      ]
+    },
+    {
+      "nome": "T6 falha RT2 com M2 ligado: desliga tudo, H4, bloqueia LIGA",
+      "status": "OK",
+      "sequencia": [
+        {
+          "nome": "LIGA",
+          "entradas": {
+            "DJ1": true,
+            "B1": true
+          },
+          "ticks": 4,
+          "esperado": [
+            "C1"
+          ]
+        },
+        {
+          "nome": "solta ate M2",
+          "entradas": {
+            "DJ1": true
+          },
+          "ticks": 15,
+          "esperado": [
+            "C2"
+          ]
+        },
+        {
+          "nome": "RT2 atua",
+          "entradas": {
+            "DJ1": true,
+            "RT2": true
+          },
+          "ticks": 6,
+          "esperado": [],
+          "esperado_lampadas": [
+            "H4"
+          ],
+          "esperado_bits": {
+            "Q0.1": 0,
+            "Q0.2": 0
+          }
+        },
+        {
+          "nome": "LIGA bloqueado",
+          "entradas": {
+            "DJ1": true,
+            "RT2": true,
+            "B1": true
+          },
+          "ticks": 10,
+          "esperado": [],
+          "esperado_lampadas": [
+            "H4"
+          ]
+        },
+        {
+          "nome": "RT2 rearmado sem LIGA: nao religa",
+          "entradas": {
+            "DJ1": true
+          },
+          "ticks": 30,
+          "esperado": [],
+          "esperado_lampadas": []
+        }
+      ]
+    },
+    {
+      "nome": "T7 rearme + novo LIGA religa M1",
+      "status": "OK",
+      "sequencia": [
+        {
+          "nome": "RT1 atuado",
+          "entradas": {
+            "DJ1": true,
+            "RT1": true
+          },
+          "ticks": 6,
+          "esperado": [],
+          "esperado_lampadas": [
+            "H3"
+          ]
+        },
+        {
+          "nome": "rearmado",
+          "entradas": {
+            "DJ1": true
+          },
+          "ticks": 10,
+          "esperado": [],
+          "esperado_lampadas": []
+        },
+        {
+          "nome": "novo LIGA",
+          "entradas": {
+            "DJ1": true,
+            "B1": true
+          },
+          "ticks": 4,
+          "esperado": [
+            "C1"
+          ],
+          "esperado_lampadas": [
+            "H1"
+          ]
+        }
+      ]
+    }
+  ],
+  "golden": "pratica5_complementar.ladder"
+}

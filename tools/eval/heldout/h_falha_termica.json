@@ -1,0 +1,144 @@
+{
+  "id": "h_falha_termica",
+  "titulo": "Diagnostico de falha termica com rearme",
+  "dificuldade": 2,
+  "enunciado": "Partida direta de um motor trifasico -M1 (disjuntor -Q1, contator -KM1, liga -S1, desliga -S0, selo, lampada -H1 em paralelo com a bobina) com diagnostico do rele termico -RT1: o contato NF -RT1 (95-96) abre o comando e o contato NA -RT1 (97-98) acende a lampada -H2 (falha). Com o termico atuado o motor nao parte; apos o rearme (termico frio) a partida volta a funcionar.",
+  "restricoes": [
+    "Use UMA fonte trifasica multi-terminal (classe 3007) e trilho PE separado do neutro.",
+    "Ligue TODOS os terminais (nenhum pino solto).",
+    "Os rotulos dos simbolos devem ser exatamente os do enunciado (os testes usam esses nomes).",
+    "O contato termico e o rele termico usam o MESMO rotulo -RT1 (senao o app nunca dispara).",
+    "-H1 em paralelo com -KM1; -H2 em serie com o NA de -RT1."
+  ],
+  "obrigatorios": {
+    "classes": {
+      "1000": 1,
+      "2001": 1,
+      "6007": 1,
+      "6009": 1,
+      "7000": 1,
+      "8000": 1,
+      "8001": 1,
+      "8016": 1,
+      "8017": 1,
+      "9000": 1,
+      "9008": 2
+    },
+    "uma_de": [
+      [
+        "6009",
+        "6010"
+      ]
+    ],
+    "rotulos": [
+      "-S0",
+      "-S1",
+      "-KM1",
+      "-RT1",
+      "-H1",
+      "-H2"
+    ]
+  },
+  "testes": [
+    {
+      "nome": "repouso desligado",
+      "entradas": {},
+      "status": "OK",
+      "esperado": [],
+      "esperado_lampadas": []
+    },
+    {
+      "nome": "S1 liga KM1",
+      "entradas": {
+        "S1": true
+      },
+      "status": "OK",
+      "esperado": [
+        "KM1"
+      ],
+      "esperado_lampadas": [
+        "H1"
+      ]
+    },
+    {
+      "nome": "selo mantem KM1",
+      "entradas": {},
+      "inicial": [
+        "KM1"
+      ],
+      "status": "OK",
+      "esperado": [
+        "KM1"
+      ],
+      "esperado_lampadas": [
+        "H1"
+      ]
+    },
+    {
+      "nome": "S0 desliga",
+      "entradas": {
+        "S0": true
+      },
+      "inicial": [
+        "KM1"
+      ],
+      "status": "OK",
+      "esperado": [],
+      "esperado_lampadas": []
+    },
+    {
+      "nome": "RT1 derruba KM1 e acende H2",
+      "entradas": {
+        "RT1": true
+      },
+      "inicial": [
+        "KM1"
+      ],
+      "status": "OK",
+      "esperado": [],
+      "esperado_lampadas": [
+        "H2"
+      ]
+    },
+    {
+      "nome": "RT1 bloqueia a partida",
+      "entradas": {
+        "RT1": true,
+        "S1": true
+      },
+      "status": "OK",
+      "esperado": [],
+      "esperado_lampadas": [
+        "H2"
+      ]
+    },
+    {
+      "nome": "S0 com RT1: H2 acesa",
+      "entradas": {
+        "S0": true,
+        "RT1": true
+      },
+      "inicial": [
+        "KM1"
+      ],
+      "status": "OK",
+      "esperado": [],
+      "esperado_lampadas": [
+        "H2"
+      ]
+    },
+    {
+      "nome": "apos rearme parte de novo",
+      "entradas": {
+        "S1": true
+      },
+      "status": "OK",
+      "esperado": [
+        "KM1"
+      ],
+      "esperado_lampadas": [
+        "H1"
+      ]
+    }
+  ]
+}
