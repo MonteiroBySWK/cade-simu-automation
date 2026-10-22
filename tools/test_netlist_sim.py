@@ -490,3 +490,11 @@ def test_classe_nova_via_papeis_entra_no_modelo(cads, tmp_path):
 
 if __name__ == "__main__":
     raise SystemExit(pytest.main([__file__, "-q"]))
+
+def test_sensor_2_fios_vira_contato_e_3_fios_sem_modelo():
+    """7500 (2 fios) e contato NA; 7501 (3 fios PNP) segue sem modelo (A11)."""
+    import netlist_sim as ns
+    pap = ns.carregar_papeis()
+    assert pap["7500"]["papel"] == "contato" and pap["7500"]["modo"] == "NA"
+    assert "7501" not in pap
+

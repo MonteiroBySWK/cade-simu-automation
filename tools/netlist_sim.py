@@ -134,6 +134,7 @@ def _normalizar_papel(e):
     papel = str(e.get("papel") or e.get("role") or "").strip().lower()
     alias = {"na": ("contato", "NA"), "no": ("contato", "NA"), "nc": ("contato", "NC"), "nf": ("contato", "NC"),
              "contato_na": ("contato", "NA"), "contato_nc": ("contato", "NC"),
+             "sensor_na": ("contato", "NA"), "sensor_nc": ("contato", "NC"),   # so 2 fios
              "coil": "bobina", "lamp": "lampada", "sinalizador": "lampada",
              "ton": ("contato_temp", None), "tof": ("contato_temp", None),
              "temporizador": ("temporizador", None),
@@ -148,6 +149,8 @@ def _normalizar_papel(e):
              "contato_temporizado_na_nc": ("contato_temp", "NA_NC"),
              "contato_temporizado_comutado": ("contato_temp", "COMUTADO")}
     r = dict(e)
+    if papel.startswith("sensor") and len(e.get("pinos") or []) > 2:
+        return None                              # 3+ fios: sem modelo (A11 recusa)
     a = alias.get(papel, papel)
     if isinstance(a, tuple):
         r["papel"] = a[0]
