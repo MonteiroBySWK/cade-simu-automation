@@ -23,7 +23,7 @@ Atualizado: 2026-10-22 ~10h (horário de Brasília). Repo: `~/dev/codes/personal
 ## Estado (main)
 - `main` = `562852e`: Python completo (layout, gate, MCP, simulador, `app_sim`), Rust fase 1 (`cade build`,
   `cade layout`, paridade byte-a-byte) e `cade_check` (`cade gate`, `cade design` — testes funcionais marcados
-  `nao_portado` até o `cade_sim` Rust ligar o executor).
+  `nao_portado` até o `cade_sim` Rust ligar o executor — ligado no PR do cade_sim).
 - Setup: `python3 scripts/dev.py setup|doctor|test|gate|install-mcp`; Rust: `cargo test --workspace`.
 - Docs-chave: `AGENTS.md`, `docs/rust-port.md` (matriz de paridade), `docs/ladder.md` (contrato ladder/1),
   `docs/re-engenharia.md` (§9 geometria, §11 papéis, §13 ladder), `docs/app-sim.md`, `docs/integracao.md`.
@@ -42,13 +42,21 @@ Atualizado: 2026-10-22 ~10h (horário de Brasília). Repo: `~/dev/codes/personal
   `run_eval`; H1–H3/térmicos da B (opcional). Arquivos das entregas NÃO commitados no repo da UEMA.
 - Observação: tempos no app variam com carga da máquina (atrasos chegaram a ~3,9 s sob compilação Rust).
 
-### Rust `cade_sim` + conformidade + Docker (agente Sonnet, worktree, branch `feat/rust-sim`)
-- Motor de simulação próprio com paridade com `tools/netlist_sim.py`; `cade simulate`, `cade test`,
-  `cade conformidade tests/conformidade` (formato: `circuito.cad` + `cenario.json` + `golden_app.json`;
-  goldens provisórios do oráculo Python marcados `"fonte":"oraculo_python"`), `Dockerfile` só com o binário,
-  implementar `cade_check::ExecutorTestes` e ligar em `src/cade_cli/src/check.rs`.
-- Instruído a abrir PR (draft se incompleto) e mergear se ficar verde. **Retomar:** `gh pr list`, branch
-  `feat/rust-sim`.
+### Rust (cade_sim / conformidade / Docker) — PR da branch `feat/rust-sim-conformidade`
+- **Feito:** crate `cade_sim` (geometria reaproveitada de `cade_check::geom`; papéis em duas camadas: tabela embutida = a do
+  Python + derivada de `docs/classes-papeis.json`; NA/NC/NA-NC/comutados, disjuntor/interruptor iniciam abertos, fusível
+  íntegro, temporizadores 9004/9005/9006 + contatos 7004..7015 por rótulo, motores, curto, relaxação). `ExecutorSim`
+  implementa `cade_check::ExecutorTestes` e está ligado em `src/cade_cli/src/check.rs` (`cade gate`/`design` rodam testes
+  de verdade). CLI `cade simulate|test|conformidade`. Paridade com o Python: `tests/golden/sim/gerar.py` +
+  `tests/paridade/tests/simulacao.rs`. Conformidade: `tests/conformidade/<caso>/` (11 goldens **provisórios**,
+  `"fonte":"oraculo_python"`; regere com `python3 tests/conformidade/gerar.py`, que preserva goldens `"fonte":"app"`).
+  `Dockerfile` (scratch + binário musl), job de CI, `docker/wine-golden/Dockerfile` (opcional, NÃO executado).
+  Doc: `docs/conformidade.md` (formato, como gravar no app, Docker, licença) e seção "Simulação" de `docs/rust-port.md`.
+- **Falta:** (1) gravar `golden_app.json` reais com `app_sim` (Wine) — divergências esperadas listadas em
+  `docs/conformidade.md` (disjuntor 6009/6010 inicia aberto no app; térmico por rótulo; ticks de 100 ms);
+  (2) ladder/CLP em `cade_sim::ladder::ModeloLadder` (hoje só o trait; `saidas_clp` sempre `[]`);
+  (3) sem modelo: temporizador intermitente 9007, pulsos 9015, sensores 3 fios, GRAFCET/pneumática;
+  (4) motor "gira" = dois pinos de fase com estampas diferentes (confiança média, validar no app).
 
 ### Se os agentes tiverem caído sem commitar
 - Ladder/entregas: o trabalho fica **não commitado no checkout principal** (`git status` mostra `tools/dissect.py`,

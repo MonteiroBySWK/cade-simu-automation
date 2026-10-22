@@ -4,16 +4,16 @@
 //! geo, fios}, avisos, erros, proximo_passo}`, com `json.dumps(indent=1, ensure_ascii=False)`.
 //! Sem `--json`: texto humano no estilo de `build_spec.py`. Exit 0 so se `ok`.
 //!
-//! Os testes funcionais usam o executor entregue por [`executor`]; enquanto o `cade_sim` nao esta
-//! ligado e o `NaoPortado` (testes = "nao_portado", gate reprovado, nunca verde falso).
+//! Os testes funcionais usam o executor entregue por [`executor`] (o motor `cade_sim`).
+//! Sem casos (`SEM_TESTES`) ou com caso falho o gate reprova: nunca ha verde falso.
 
-use cade_check::{gate_arquivo, ExecutorTestes, NaoPortado, Relatorio};
+use cade_check::{gate_arquivo, ExecutorTestes, Relatorio};
 use serde_json::Value;
 use std::fs;
 
-/// Executor de testes funcionais em uso. Ponto unico para ligar o `cade_sim` depois.
+/// Executor de testes funcionais em uso: o motor `cade_sim`.
 pub fn executor() -> Box<dyn ExecutorTestes> {
-    Box::new(NaoPortado)
+    Box::new(cade_sim::ExecutorSim)
 }
 
 /// `--testes t.json`: lista de casos, ou objeto com a chave `testes`.

@@ -1,6 +1,6 @@
 [package]
 name = "cade_cli"
-description = "Binario unico `cade`: validate/parse/emit/new-from-json/build/layout (+ fases futuras)"
+description = "Binario unico `cade`: validate/parse/emit/new-from-json/build/layout/simulate/test/conformidade (+ fases futuras)"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
@@ -17,6 +17,7 @@ cade_model.workspace = true
 cade_build.workspace = true
 cade_layout.workspace = true
 cade_check.workspace = true
+cade_sim.workspace = true
 clap.workspace = true
 serde.workspace = true
 serde_json.workspace = true

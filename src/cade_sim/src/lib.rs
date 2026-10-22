@@ -1,9 +1,23 @@
-//! `cade_sim` — ESQUELETO (fase futura).
+//! `cade_sim` — motor de simulacao do CADe_SIMU 4.0, sem GUI (reimplementacao propria).
 //!
-//! Portar de Python (oraculo):
+//! Comportamento observado/documentado em `docs/re-engenharia.md` 9, 11 e 13, validado por
+//! **teste diferencial** (`cade conformidade`) contra goldens gravados no app real. O Python
+//! `tools/netlist_sim.py` e o oraculo de paridade enquanto o app nao e regravado.
 //!
-//! - `tools/netlist_sim.py` -> `Circuito`, `estado`, `teste_casos`, `chaves_invalidas` (status OK/RACE/INSTAVEL/CURTO,
-//!   bobinas, lampadas, temporizadores 9004..9007, semantica de docs/re-engenharia.md §11)
-//! - `tools/ladder_sim.py`  -> simulador ladder
-//!
-//! Os testes de referencia estao em `tools/test_netlist_sim.py` e `tools/eval/casos/*.json`.
+//! - geometria (extremo-a-extremo, pinos por classe, rotacao n17): reaproveitada de `cade_check::geom`;
+//! - [`papeis`] papel de cada classe (contato, bobina, polos, temporizador, motor...);
+//! - [`circuito`] netlist + relaxacao (OK/RACE/INSTAVEL/CURTO) + temporizadores;
+//! - [`casos`] casos declarativos (`entradas`/`inicial`/`esperado`/`passos`/`avanca`);
+//! - [`conformidade`] cenario temporal x golden do app;
+//! - [`ladder`] ponto de extensao do ladder/CLP (ainda nao implementado).
+
+pub mod casos;
+pub mod circuito;
+pub mod conformidade;
+pub mod executor;
+pub mod ladder;
+pub mod papeis;
+
+pub use circuito::{entradas_de_json, Circuito, Entradas, EstadoSim, Status};
+pub use executor::ExecutorSim;
+pub use papeis::{Papel, Papeis};

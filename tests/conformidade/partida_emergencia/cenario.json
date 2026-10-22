@@ -1,0 +1,601 @@
+{
+ "versao": 1,
+ "descricao": "partida_emergencia: cada entrada sozinha e pares (segura uma, aperta a outra); espera de 300 ms entre as acoes",
+ "acoes": [
+  {
+   "acao": "reiniciar"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "reiniciar"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "pressionar",
+   "alvo": "E1"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "soltar",
+   "alvo": "E1"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "reiniciar"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "alternar",
+   "alvo": "RT1"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "alternar",
+   "alvo": "RT1"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "reiniciar"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "pressionar",
+   "alvo": "S0"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "soltar",
+   "alvo": "S0"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "reiniciar"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "pressionar",
+   "alvo": "S1"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "soltar",
+   "alvo": "S1"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "reiniciar"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "pressionar",
+   "alvo": "E1"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "alternar",
+   "alvo": "RT1"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "soltar",
+   "alvo": "E1"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "alternar",
+   "alvo": "RT1"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "reiniciar"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "pressionar",
+   "alvo": "E1"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "pressionar",
+   "alvo": "S0"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "soltar",
+   "alvo": "S0"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "soltar",
+   "alvo": "E1"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "reiniciar"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "pressionar",
+   "alvo": "E1"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "pressionar",
+   "alvo": "S1"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "soltar",
+   "alvo": "S1"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "soltar",
+   "alvo": "E1"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "reiniciar"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "alternar",
+   "alvo": "RT1"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "pressionar",
+   "alvo": "E1"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "soltar",
+   "alvo": "E1"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "alternar",
+   "alvo": "RT1"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "reiniciar"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "alternar",
+   "alvo": "RT1"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "pressionar",
+   "alvo": "S0"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "soltar",
+   "alvo": "S0"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "alternar",
+   "alvo": "RT1"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "reiniciar"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "alternar",
+   "alvo": "RT1"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "pressionar",
+   "alvo": "S1"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "soltar",
+   "alvo": "S1"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "alternar",
+   "alvo": "RT1"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "reiniciar"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "pressionar",
+   "alvo": "S0"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "pressionar",
+   "alvo": "E1"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "soltar",
+   "alvo": "E1"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "soltar",
+   "alvo": "S0"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "reiniciar"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "pressionar",
+   "alvo": "S0"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "alternar",
+   "alvo": "RT1"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "soltar",
+   "alvo": "S0"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "alternar",
+   "alvo": "RT1"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "reiniciar"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "pressionar",
+   "alvo": "S0"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "pressionar",
+   "alvo": "S1"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "soltar",
+   "alvo": "S1"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "soltar",
+   "alvo": "S0"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "reiniciar"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "pressionar",
+   "alvo": "S1"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "pressionar",
+   "alvo": "E1"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "soltar",
+   "alvo": "E1"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "soltar",
+   "alvo": "S1"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "reiniciar"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "pressionar",
+   "alvo": "S1"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "alternar",
+   "alvo": "RT1"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "soltar",
+   "alvo": "S1"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "alternar",
+   "alvo": "RT1"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "reiniciar"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "pressionar",
+   "alvo": "S1"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "pressionar",
+   "alvo": "S0"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "soltar",
+   "alvo": "S0"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "soltar",
+   "alvo": "S1"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  }
+ ]
+}

@@ -21,6 +21,21 @@ jobs:
         run: cargo clippy --workspace --all-targets
       - name: cargo build --release (target/release/cade)
         run: cargo build --release -p cade_cli
+      - name: cade conformidade (motor Rust x goldens; Linux)
+        if: runner.os == 'Linux'
+        run: ./target/release/cade conformidade tests/conformidade
+
+  # Imagem Docker minima (so o binario `cade`, sem Wine) + conformidade dentro do container
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: docker build
+        run: docker build -t cade .
+      - name: cade conformidade no container
+        run: docker run --rm -v "$PWD/tests/conformidade:/conformidade:ro" cade conformidade /conformidade
+      - name: tamanho da imagem
+        run: docker image ls cade
 
   # Python: ORACULO de paridade (sai quando o binario Rust tiver paridade total)
   test:
