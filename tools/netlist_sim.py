@@ -13,15 +13,23 @@ Fidelidade (docs/re-engenharia.md 9.2):
     bobina       energiza quando um pino esta numa net com fase e o outro numa net com OUTRA estampa
     lampada      idem bobina, mas e so SAIDA observavel (nao realimenta o comando)
     polos        contatos de potencia multipolares (2001 contator; 6007/6009/6010 passam sempre)
-    contato_temp contato temporizado (ON/OFF-delay), avanca por passos de tempo
+    contato_temp contato temporizado 7004..7015: segue o temporizador-carga de mesmo
+                 rotulo (tipo do timer; sem timer, tipo pela faixa da classe e contagem
+                 propria); avanca por passos de tempo
+    temporizador carga A1/A2 9004 (ton) / 9005 (tof) / 9006 (tonof) / 9007 (intermitente):
+                 tempo = atoi(label5) x mult(label4) ticks de 100 ms; 9015 (pulso) sem modelo
 - Sem fonte no desenho (ladder 10050/10051/10060): cai no modelo legado (1o contato = fase, retorno comum
   das bobinas).
 
 Esquema aceito em docs/classes-papeis.json ({"classes": {"<id>": {...}}}), por classe:
-  papel: contato|bobina|lampada|polos|contato_temp (aliases: na, nc, nf, ton, tof, sinalizador)
+  papel: contato|bobina|lampada|polos|contato_temp|temporizador (aliases: na, nc, nf, ton, tof,
+    temporizador_ON/OFF/ON_OFF/intermitente, contato_temporizado_NA/NC/NA_NC/comutado)
   modo: NA|NC|FECHADO      pinos: [pinoA, pinoB] (default: 2 primeiros do binario)
-  tipo: ton|tof (contato_temp)   tempo: segundos fixos | tempo_label/tempo_num: indice do campo do .cad
+  tipo: ton|tof|tonof|intermitente (contato_temp; default pela faixa 7004..7015) ou
+    temporizador (default ton)   tempo: segundos fixos | tempo_label/tempo_num: indice do campo do .cad
   O tempo tambem pode vir do caso ("tempos": {rotulo: s}); sem valor, 0 s.
+  Temporizador-carga (9004..9007): tempo proprio = atoi(label5) x mult(label4) ticks de 100 ms
+  (label4 '3'->x1, '0'->x10, '1'->x100, '2'->x1000).
 
 Estado de entradas: {chave: bool} (True = acionado: botao pressionado / termico disparado).
 
@@ -54,6 +62,8 @@ PAPEIS_JSON = T.parent / "docs" / "classes-papeis.json"
 
 # --- tabela de papeis (embutida) ------------------------------------------------------------------
 # Equivalente ao modelo anterior (NA/NC/bobina) + lampada 9008 + polos de potencia.
+# Temporizadores eletricos (9004..9007 + contatos 7004..7015) vêm do JSON do RE
+# (docs/classes-papeis.json): "temporizador" (carga A1/A2) e "contato_temp".
 _NA = {"papel": "contato", "modo": "NA"}
 _NC = {"papel": "contato", "modo": "NC"}
 PAPEIS_EMBUTIDOS = {
@@ -66,7 +76,55 @@ PAPEIS_EMBUTIDOS = {
     **{c: {"papel": "polos", "modo": "FECHADO"} for c in ("6007", "6009", "6010")},   # protecao: passa
     **{c: {"papel": "polos", "modo": "FECHADO"} for c in ("6002", "6004")},   # disjuntor 2/4 polos: passa (no app, fechar a mao)
 }
-_PAPEIS_VALIDOS = {"contato", "bobina", "lampada", "polos", "contato_temp"}
+_PAPEIS_VALIDOS = {"contato", "bobina", "lampada", "polos", "contato_temp", "temporizador"}
+
+
+def _norm_tipo(t, padrao=None):
+    """Canoniza o tipo de temporizador: ton|tof|tonof|intermitente (None se sem padrao)."""
+    if t is None or str(t).strip() == "":
+        return padrao
+    s = str(t).strip().lower().replace("-", "_")
+    return {"ton": "ton", "on": "ton",
+            "tof": "tof", "off": "tof",
+            "tonof": "tonof", "ton_tof": "tonof", "tonoff": "tonof", "on_off": "tonof", "onoff": "tonof",
+            "intermitente": "intermitente", "blink": "intermitente",
+            "pulso": "pulso", "pulse": "pulso"}.get(s, padrao)
+
+
+def _ligacoes_re(cid, e):
+    """Pares do RE (contatos[].pinos + fecha_quando) em nomes do binario.
+
+    O JSON do RE usa os nomes eletricos ("55","67",...); o binario usa p1..pN na
+    mesma ordem de e["pinos"] (docs/classes-papeis.json). Retorna
+    [([pinoA, pinoB], modo)...] ou [] se nao der para mapear (o chamador cai no
+    par padrao dos 2 primeiros pinos)."""
+    try:
+        contatos = e.get("contatos") or []
+        nomes_re = [x for x in (e.get("pinos") or []) if isinstance(x, str)]
+        nomes_bin = list(G.pinos_da_classe(str(cid)))
+    except (AttributeError, TypeError):
+        return []
+    out = []
+    for c in contatos:
+        if not isinstance(c, dict):
+            return []
+        par = c.get("pinos") or []
+        fq = str(c.get("fecha_quando") or "").strip()
+        if len(par) < 2 or par[0] not in nomes_re or par[1] not in nomes_re:
+            return []
+        i, j = nomes_re.index(par[0]), nomes_re.index(par[1])
+        if i >= len(nomes_bin) or j >= len(nomes_bin):
+            return []
+        if fq == "estado==1":
+            modo = "NA"
+        elif fq == "estado==0":
+            modo = "NC"
+        elif fq == "sempre":
+            modo = "NA"
+        else:
+            return []
+        out.append(([nomes_bin[i], nomes_bin[j]], modo))
+    return out
 
 
 def _normalizar_papel(e):
@@ -77,17 +135,32 @@ def _normalizar_papel(e):
     alias = {"na": ("contato", "NA"), "no": ("contato", "NA"), "nc": ("contato", "NC"), "nf": ("contato", "NC"),
              "contato_na": ("contato", "NA"), "contato_nc": ("contato", "NC"),
              "coil": "bobina", "lamp": "lampada", "sinalizador": "lampada",
-             "ton": ("contato_temp", None), "tof": ("contato_temp", None)}
+             "ton": ("contato_temp", None), "tof": ("contato_temp", None),
+             "temporizador": ("temporizador", None),
+             "temporizador_on": ("temporizador", "ton"),
+             "temporizador_off": ("temporizador", "tof"),
+             "temporizador_on_off": ("temporizador", "tonof"),
+             "temporizador_onoff": ("temporizador", "tonof"),
+             "temporizador_intermitente": ("temporizador", "intermitente"),
+             "contato_temporizado": ("contato_temp", "NA"),
+             "contato_temporizado_na": ("contato_temp", "NA"),
+             "contato_temporizado_nc": ("contato_temp", "NC"),
+             "contato_temporizado_na_nc": ("contato_temp", "NA_NC"),
+             "contato_temporizado_comutado": ("contato_temp", "COMUTADO")}
     r = dict(e)
     a = alias.get(papel, papel)
     if isinstance(a, tuple):
         r["papel"] = a[0]
-        if a[1] and not r.get("modo"):
+        if a[1] and not r.get("modo") and a[0] in ("contato", "contato_temp"):
             r["modo"] = a[1]
+        if a[0] == "temporizador" and a[1]:
+            r.setdefault("tipo", a[1])
         if papel in ("ton", "tof") and not r.get("tipo"):
             r["tipo"] = papel
     else:
         r["papel"] = a
+    if r["papel"] in ("contato_temp", "temporizador") and r.get("tipo"):
+        r["tipo"] = _norm_tipo(r["tipo"], r["tipo"])
     if r["papel"] not in _PAPEIS_VALIDOS:
         return None
     if r.get("modo"):
@@ -114,6 +187,10 @@ def carregar_papeis(path=None):
             conhecidos = set(G.pinos_da_classe(str(cid)))
             if n.get("pinos") and not set(n["pinos"]) <= conhecidos:
                 n.pop("pinos")
+            if n.get("papel") == "contato_temp" and isinstance(e, dict):
+                ligs = _ligacoes_re(str(cid), e)     # 7006/7007/7010/...: pares por fecha_quando
+                if ligs:
+                    n["ligacoes"] = ligs
             if str(cid) in tab and path is None:
                 continue           # papel embutido (validado no app) prevalece; o JSON padrao do RE so ACRESCENTA
             tab[str(cid)] = n
@@ -159,9 +236,13 @@ class Circuito:
         self.entradas = []     # chaves externas (botoes/termicos)
         self.soltos = []       # pinos de papel funcional sem fio no ponto
         self.fixos = []        # (no, char de fase) estampados pelas fontes
-        self._bob = []         # (chave, A, B) por instancia
+        self._bob = []         # (chave, A, B) por instancia (inclui temporizador-carga A1/A2)
         self._lamp = []
-        self._cont = []        # dicts: id, chave, a, b, modo, temp(None|{tipo,tempo})
+        self._cont = []        # dicts: chave, a, b, modo, cid, fonte, temp, id
+                               # fonte: rotulo (bobina/entrada) | timer (segue 9004.. de mesmo rotulo)
+                               #        | proprio (contagem propria; temp={tipo,tempo}, id unico)
+        self._tim = []         # temporizadores-carga 9004..9007: {id, chave, tipo, tempo}
+        self._por_rotulo = {}  # chave -> indice em _tim (1a ocorrencia)
         self._polos = []       # dicts: chave, modo, pares [(a,b)]
         for p in ps:
             cid = p["id"]
@@ -190,7 +271,7 @@ class Circuito:
             nomes = list(offs)
             par = papel.get("pinos") or nomes[:2]
             a = b = None
-            if papel["papel"] in ("contato", "bobina", "lampada", "contato_temp"):
+            if papel["papel"] in ("contato", "bobina", "lampada", "contato_temp", "temporizador"):
                 if len(par) < 2 or par[0] not in pinos or par[1] not in pinos:
                     continue
                 a, b = pinos[par[0]][0], pinos[par[1]][0]
@@ -205,24 +286,61 @@ class Circuito:
                 self.lampadas.setdefault(chave, (a, b))
             elif papel["papel"] == "contato":
                 self._cont.append({"chave": chave, "a": a, "b": b, "modo": papel.get("modo", "NA"),
-                                   "temp": None, "cid": cid})
+                                    "temp": None, "cid": cid, "fonte": "rotulo"})
             elif papel["papel"] == "contato_temp":
-                self._cont.append({"chave": chave, "a": a, "b": b, "modo": papel.get("modo", "NA"), "cid": cid,
-                                   "temp": {"tipo": str(papel.get("tipo", "ton")).lower(),
-                                            "tempo": self._tempo_do_simbolo(p, papel)}})
+                tipo = _norm_tipo(papel.get("tipo")) or self._tipo_por_classe(cid)
+                tempo = self._tempo_do_simbolo(p, papel)
+                ligs = papel.get("ligacoes")
+                pares = [(tuple(lg[0]), lg[1]) for lg in ligs] if ligs else [(tuple(par[:2]), papel.get("modo", "NA"))]
+                for (na_, nb_), modo in pares:
+                    if na_ not in pinos or nb_ not in pinos:
+                        continue
+                    for nm in (na_, nb_):
+                        if not pinos[nm][1]:
+                            self.soltos.append(f"{rot or cid}({cid}).{nm}")
+                    self._cont.append({"chave": chave, "a": pinos[na_][0], "b": pinos[nb_][0],
+                                       "modo": modo, "cid": cid, "fonte": "proprio",
+                                       "temp": {"tipo": tipo, "tempo": tempo}})
+            elif papel["papel"] == "temporizador":
+                self._bob.append((chave, a, b))
+                self.bobinas.setdefault(chave, (a, b))
+                self._tim.append({"chave": chave, "tipo": _norm_tipo(papel.get("tipo"), "ton"),
+                                  "tempo": self._tempo_do_temporizador(p["labels"]), "cid": cid})
             elif papel["papel"] == "polos":
                 self._polos.append({"chave": chave, "modo": papel.get("modo", "NA"),
                                     "pares": self._pares_polos(offs, pinos)})
-        # ids unicos para contatos temporizados (estado de tempo e por instancia)
+        # ids unicos para temporizadores (carga 9004.. e contatos de contagem propria).
+        # contato 7004..7015 com 9004.. de MESMO rotulo nao conta sozinho: segue a saida
+        # do temporizador-carga (como no app: copia de +0x30e24 por label igual).
         total = defaultdict(int)
-        for c in self._cont:
-            if c["temp"]:
-                total[c["chave"]] += 1
+        for t in self._tim:
+            total[t["chave"]] += 1
         vistos = defaultdict(int)
+        for t in self._tim:
+            vistos[t["chave"]] += 1
+            t["id"] = t["chave"] if total[t["chave"]] == 1 else f"{t['chave']}#{vistos[t['chave']]}"
+        for i, t in enumerate(self._tim):
+            self._por_rotulo.setdefault(t["chave"], i)
+        usados = {t["id"] for t in self._tim}
+        total_p, vistos_p = defaultdict(int), defaultdict(int)
         for c in self._cont:
-            if c["temp"]:
-                vistos[c["chave"]] += 1
-                c["id"] = c["chave"] if total[c["chave"]] == 1 else f"{c['chave']}#{vistos[c['chave']]}"
+            if c.get("fonte") == "proprio" and c["chave"] not in self._por_rotulo:
+                total_p[c["chave"]] += 1
+        for c in self._cont:
+            if c.get("fonte") != "proprio":
+                continue
+            if c["chave"] in self._por_rotulo:
+                c["fonte"] = "timer"
+                c["temp"] = None
+                continue
+            vistos_p[c["chave"]] += 1
+            base = c["chave"] if total_p[c["chave"]] == 1 else f"{c['chave']}#{vistos_p[c['chave']]}"
+            k = vistos_p[c["chave"]]
+            while base in usados:
+                k += 1
+                base = f"{c['chave']}#{k}"
+            c["id"] = base
+            usados.add(base)
         self.contatos = [("NC" if c["modo"] == "NC" else "NO", c["a"], c["b"], c["chave"])
                          for c in self._cont if c["modo"] in ("NA", "NC")]
         nomes_bob = set(self.bobinas)
@@ -304,6 +422,51 @@ class Circuito:
                 return None
         return None
 
+    @staticmethod
+    def _atoi(s):
+        """Prefixo inteiro com sinal (atoi do C); resto/invalido vira 0 ("0.5" -> 0)."""
+        s = str(s or "").lstrip()
+        sinal = -1 if s.startswith("-") else 1
+        if s[:1] in ("-", "+"):
+            s = s[1:]
+        n = ""
+        for c in s:
+            if c.isdigit():
+                n += c
+            else:
+                break
+        try:
+            return sinal * int(n) if n else 0
+        except ValueError:
+            return 0
+
+    @classmethod
+    def _tempo_do_temporizador(cls, labels):
+        """Tempo do 9004..9007 em segundos: atoi(label5) x mult(label4) ticks de 100 ms.
+
+        label4 (unidade): '3'->x1 | '0'->x10 | '1'->x100 | '2'->x1000 ticks; label5 = tempo.
+        Ex. do .cad "#A1#A2#0#5#" = unidade '0', tempo 5 -> 50 ticks -> 5,0 s."""
+        labels = labels or []
+        un = str(labels[4]).strip() if len(labels) > 4 else ""
+        mult = {"3": 1, "0": 10, "1": 100, "2": 1000}.get(un, 1)
+        ticks = cls._atoi(labels[5] if len(labels) > 5 else "")
+        return max(ticks * mult, 0) / 10.0
+
+    @staticmethod
+    def _tipo_por_classe(cid):
+        """Tipo do contato 7004..7015 pela faixa da classe (ON: 7004..7007; OFF: 7008..7011)."""
+        try:
+            n = int(cid)
+        except (TypeError, ValueError):
+            return "ton"
+        if 7004 <= n <= 7007:
+            return "ton"
+        if 7008 <= n <= 7011:
+            return "tof"
+        if 7012 <= n <= 7015:
+            return "tonof"
+        return "ton"
+
     # --- avaliacao combinacional -------------------------------------------------------------------
     def _controle(self, chave, ent, coil):
         """Estado do comando de um contato: bobina de mesmo rotulo, senao entrada externa."""
@@ -328,17 +491,29 @@ class Circuito:
             if rx != ry:
                 parent[ry] = rx
 
+        saidas = {}                                    # chave -> saida do temporizador-carga
+        for e in self._tim:
+            saidas.setdefault(e["chave"], tm.get(e["id"], False))
+        interm = {e["chave"] for e in self._tim if e["tipo"] == "intermitente"}
         for c in self._cont:
-            if c["temp"]:
-                fechado = tm.get(c["id"], False)
+            fonte = c.get("fonte", "rotulo")
+            if fonte == "timer":
+                fechado = bool(saidas.get(c["chave"], False))     # segue o 9004.. de mesmo rotulo
+            elif fonte == "proprio":
+                fechado = bool(tm.get(c["id"], False))            # contagem propria do contato
             else:
                 fechado = self._controle(c["chave"], ent, coil)
+                if c["chave"] in interm:                          # 9007: ate o instantaneo pisca
+                    fechado = bool(saidas.get(c["chave"], False))
             if c["modo"] == "NC":
                 fechado = not fechado
             if fechado:
                 union(c["a"], c["b"])
         for pl in self._polos:
-            ativo = pl["modo"] == "FECHADO" or self._controle(pl["chave"], ent, coil)
+            if pl["chave"] in interm:                            # 9007 copia o pisca aos polos
+                ativo = bool(saidas.get(pl["chave"], False))
+            else:
+                ativo = pl["modo"] == "FECHADO" or self._controle(pl["chave"], ent, coil)
             if pl["modo"] == "NC":
                 ativo = not ativo
             if ativo:
@@ -375,32 +550,49 @@ class Circuito:
             coil = novo
         return "INSTAVEL", coil, lamp, curtos
 
-    # --- tempo (ON/OFF-delay) ----------------------------------------------------------------------
+    # --- tempo (ON/OFF/ON+OFF-delay, intermitente) -------------------------------------------------
     def _timers(self, tempos=None):
         t = {}
+        for e in self._tim:
+            tempo = (tempos or {}).get(e["id"], (tempos or {}).get(e["chave"], e["tempo"]))
+            t[e["id"]] = {"chave": e["chave"], "tipo": e["tipo"],
+                          "tempo": float(tempo) if tempo is not None else 0.0}
         for c in self._cont:
-            if c["temp"]:
+            if c.get("fonte") == "proprio":
                 tempo = (tempos or {}).get(c["id"], (tempos or {}).get(c["chave"], c["temp"]["tempo"]))
                 t[c["id"]] = {"chave": c["chave"], "tipo": c["temp"]["tipo"],
                               "tempo": float(tempo) if tempo is not None else 0.0}
         return t
 
     def _ativos(self, ent, coil):
-        return {c["id"]: self._controle(c["chave"], ent, coil) for c in self._cont if c["temp"]}
+        """Comando (energizacao) de cada temporizador: bobina de mesmo rotulo, senao entrada."""
+        out = {}
+        for e in self._tim:
+            out[e["id"]] = self._controle(e["chave"], ent, coil)
+        for c in self._cont:
+            if c.get("fonte") == "proprio":
+                out[c["id"]] = self._controle(c["chave"], ent, coil)
+        return out
 
     @staticmethod
     def _passo_tempo(tim, tm, el, ativo, dt):
-        """Avanca dt nos temporizadores; devolve True se alguma saida mudou."""
+        """Avanca dt nos temporizadores; devolve True se alguma saida mudou.
+
+        ton: conta energizado ate T (desenergizou: zera e abre na hora).
+        tof: fecha na hora que energiza; desenergizado conta ate T e abre.
+        tonof: mesmo T nos dois sentidos. intermitente: energizado alterna a
+        cada T; desenergizado volta a 0 na hora. pulso (9015): sem modelo."""
         mudou = False
         for i, t in tim.items():
             a = ativo[i]
-            if t["tipo"] == "ton":
+            tipo = t["tipo"]
+            if tipo == "ton":
                 if not a:
                     el[i], novo = 0.0, False
                 else:
                     el[i] += dt
                     novo = el[i] >= t["tempo"] - 1e-9
-            else:                                    # tof
+            elif tipo == "tof":
                 if a:
                     el[i], novo = 0.0, True
                 elif tm[i]:
@@ -408,6 +600,31 @@ class Circuito:
                     novo = el[i] < t["tempo"] - 1e-9
                 else:
                     novo = False
+            elif tipo == "tonof":
+                if a:
+                    if tm[i]:
+                        el[i], novo = 0.0, True
+                    else:
+                        el[i] += dt
+                        novo = el[i] >= t["tempo"] - 1e-9
+                elif tm[i]:
+                    el[i] += dt
+                    novo = el[i] < t["tempo"] - 1e-9
+                else:
+                    el[i], novo = 0.0, False
+            elif tipo == "intermitente":
+                if not a:
+                    el[i], novo = 0.0, False
+                else:
+                    T = max(t["tempo"], 0.1)         # T=0 (atoi) pisca a cada tick, como no app
+                    el[i] += dt
+                    if el[i] >= T - 1e-9:
+                        el[i] -= T
+                        novo = not tm[i]
+                    else:
+                        novo = tm[i]
+            else:                                    # tipo sem modelo (ex. pulso): saida 0
+                el[i], novo = 0.0, False
             if novo != tm[i]:
                 tm[i] = novo
                 mudou = True
@@ -418,8 +635,20 @@ class Circuito:
         """Menor tempo ate alguma saida mudar (None se nenhuma esta correndo)."""
         r = None
         for i, t in tim.items():
-            if (t["tipo"] == "ton" and ativo[i] and not tm[i]) or (t["tipo"] != "ton" and not ativo[i] and tm[i]):
-                falta = max(t["tempo"] - el[i], 0.0)
+            tipo = t["tipo"]
+            if tipo == "ton":
+                corre = ativo[i] and not tm[i]
+            elif tipo == "tof":
+                corre = not ativo[i] and tm[i]
+            elif tipo == "tonof":
+                corre = (ativo[i] and not tm[i]) or (not ativo[i] and tm[i])
+            elif tipo == "intermitente":
+                corre = bool(ativo[i])
+            else:
+                corre = False
+            if corre:
+                T = max(t["tempo"], 0.1) if tipo == "intermitente" else t["tempo"]
+                falta = max(T - el[i], 0.0)
                 r = falta if r is None else min(r, falta)
         return r
 

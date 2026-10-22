@@ -191,13 +191,28 @@ def test_cad_design_recusa_pneumatica_10500(tmp_path):
     assert r["proximo_passo"].startswith("Troque")
 
 
-def test_cad_design_recusa_9007_e_sensor_7501(tmp_path):
-    r = _design(_spec_com_classe("9007"), tmp_path / "t.cad")
+def test_cad_design_recusa_9015_e_sensor_7501(tmp_path):
+    r = _design(_spec_com_classe("9015"), tmp_path / "t.cad")
     assert not r["ok"]
-    assert any("classe 9007" in e and "sem modelo" in e for e in r["erros"]), r["erros"]
+    assert any("classe 9015" in e and "sem modelo" in e for e in r["erros"]), r["erros"]
     r = _design(_spec_com_classe("7501"), tmp_path / "s.cad")
     assert not r["ok"]
     assert any("classe 7501" in e and "3 fios" in e for e in r["erros"]), r["erros"]
+
+
+def test_cad_design_aceita_9007_como_carga(tmp_path):
+    """9007 tem modelo (temporizador intermitente): entra como carga no gate."""
+    import build_spec
+    spec = {"titulo": "PISCA", "layout": {
+        "trilhos": {"L1": 14, "L2": 20, "L3": 26, "N": 282, "x0": 25, "x1": 395, "PE": 291},
+        "fontes": [{"id": "X1", "classe": "3007", "rotulo": "-X",
+                    "pinos": {"L1": "L1", "L2": "L2", "L3": "L3", "N": "N", "PE": "PE"}}],
+        "comando": [{"id": "m1", "de": "L1", "para": "N", "serie": [["S1", "8000", "-S1"]],
+                     "ramos": [{"carga": ["KT1", "9007", "-KT1"]}]}],
+        "testes": [{"nome": "repouso", "entradas": {}, "esperado": [], "status": "OK"}]}}
+    r = build_spec.construir(spec, str(tmp_path / "p.cad"))
+    assert r["ok"], r["erros"]
+    assert not any("9007" in e and "sem modelo" in e for e in r["erros"])
 
 
 def test_cad_design_recusa_grafcet_ladder_plc_protecao(tmp_path):
@@ -224,13 +239,13 @@ def test_cad_gate_recusa_classe_sem_modelo_mesmo_com_testes_ok(tmp_path):
     assert _design(d, out)["ok"]
     raw = out.read_text(encoding="latin1")
     assert "*9008#-H1" in raw
-    ruim = tmp_path / "g9007.cad"
-    ruim.write_text(raw.replace("*9008#-H1", "*9007#-H1"), encoding="latin1")
+    ruim = tmp_path / "g9015.cad"
+    ruim.write_text(raw.replace("*9008#-H1", "*9015#-H1"), encoding="latin1")
     testes = [{"nome": "S1 liga KM1", "entradas": {"S1": True}, "esperado": ["KM1"], "status": "OK"}]
     r = json.loads(C.cad_gate(str(ruim), json.dumps(testes)))
-    assert r["gate"]["testes"]["ok"], r  # o teste funcional passa: o 9007 e ignorado (falso verde)
+    assert r["gate"]["testes"]["ok"], r  # o teste funcional passa: o 9015 e ignorado (falso verde)
     assert not r["ok"], r
-    assert any("classe 9007" in e and "sem modelo" in e for e in r["erros"]), r["erros"]
+    assert any("classe 9015" in e and "sem modelo" in e for e in r["erros"]), r["erros"]
 
 
 def test_cad_design_partida_direta_e_ladder_continuam_verdes(tmp_path):
