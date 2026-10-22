@@ -21,14 +21,31 @@ Atualizado: 2026-10-22 ~10h (horário de Brasília). Repo: `~/dev/codes/personal
 - Responder em PT-BR, direto.
 
 ## Estado (main)
-- `main` = `562852e`: Python completo (layout, gate, MCP, simulador, `app_sim`), Rust fase 1 (`cade build`,
-  `cade layout`, paridade byte-a-byte) e `cade_check` (`cade gate`, `cade design` — testes funcionais marcados
-  `nao_portado` até o `cade_sim` Rust ligar o executor — ligado no PR do cade_sim).
+- `main` = `3b25658` + trabalho desta sessão (goldens do app, conformidade 11/11, correções do gravador,
+  `3012` como fonte, bibliografia/skill). Python completo (layout, gate, MCP, simulador, `app_sim`), Rust
+  fase 1 (`cade build`, `cade layout`), `cade_check`/`cade_sim` com testes funcionais de verdade.
+- **Conformidade**: `tests/conformidade/` tem os 11 casos com `golden_app.json` **gravado no app**
+  (`"fonte":"app"`) e `cade conformidade` dá **11 ok, 0 divergentes, 0 provisórios**.
 - Setup: `python3 scripts/dev.py setup|doctor|test|gate|install-mcp`; Rust: `cargo test --workspace`.
 - Docs-chave: `AGENTS.md`, `docs/rust-port.md` (matriz de paridade), `docs/ladder.md` (contrato ladder/1),
-  `docs/re-engenharia.md` (§9 geometria, §11 papéis, §13 ladder), `docs/app-sim.md`, `docs/integracao.md`.
+  `docs/re-engenharia.md` (§9 geometria, §11 papéis, §13 ladder), `docs/conformidade.md`,
+  `docs/bibliografia/automacao-industrial.md`, `docs/app-sim.md`, `docs/integracao.md`.
 
 ## Trabalho em andamento quando esta sessão acabou
+### Goldens do app + conformidade — CONCLUÍDO (main, 22/10/2026)
+- `tools/golden_app.py`: gravador `cenario.json` → `golden_app.json` no app real (Wine), com observador
+  injetável e testes unitários. Fecha os disjuntores após Play/`reiniciar` (`--sem-disjuntores` grava o
+  app cru), recusa cenário com dois atuadores segurados e solta o mouse **no ponto do clique**.
+- **Fatos do app que custaram caro** (todos agora documentados): disjuntores iniciam **abertos** (sem
+  clique o motor não gira); **um ponteiro só** (não dá para segurar S1 e apertar S0); o app repinta em
+  ticks de 100 ms e a captura pega **quadro parcial** (settle de 0,5 s + 0,25 s antes de ler);
+  **`3012` é fonte** (secundário `p4`=L/`p3`=N) — somar `3003` no mesmo par de trilhos = **CURTO**.
+- Correções de modelo: `3012` como fonte no Python (`geo_check`) e no Rust (`cade_check::geom`/`geo`/
+  `acionavel`, `cade_sim::circuito`); `vinculos` do Rust passou a aceitar disjuntor (`6002/6003/6009/6010`)
+  no contato 8016/8017, como o Python. Exemplo `partida_trafo_comando` sem a `3003` extra.
+- Verificação: `python3 scripts/dev.py test` (192), `cargo test --workspace`, `python3 scripts/dev.py gate`
+  (11 exemplos, média 100), `cade conformidade tests/conformidade` (11/11).
+
 ### Ladder + entregas A/B — CONCLUÍDO (main `836dc4a`)
 - DSL `ladder/1` em Python: `tools/ladder_dsl.py` (V1–V8, modelo lógico 100 ms = geométrico `tools/clp_sim.py`),
   `tools/cadfile.py` (round-trip .cad), pinos do CLP corrigidos, `app_sim` (Play via Stop vermelho, DJ1, saídas
@@ -69,18 +86,19 @@ Atualizado: 2026-10-22 ~10h (horário de Brasília). Repo: `~/dev/codes/personal
   revisado nesta sessão. Sobrepõe a Entrega B; pergunte ao usuário antes de mergear/fechar.
 
 ## Próximos passos (ordem)
-1. Fechar entregas A e B (validadas no Wine) — prazo do usuário.
-2. Mergear `feat/rust-sim` quando verde; gate Rust passa a rodar testes funcionais.
-3. **Gravar goldens do app** (`tools/app_sim.py` em lote sobre o acervo + exemplos → `tests/conformidade/*/
-   golden_app.json` com `"fonte":"app"`); `cade conformidade` deve passar; divergência = bug do motor ou RE.
-4. Portar ladder para o `cade_sim` (contrato `docs/ladder.md`, oráculo = Python novo).
+1. ~~Fechar entregas A e B~~ — feito (validadas no Wine); arquivos seguem sem commit no repo da UEMA.
+2. ~~Mergear `feat/rust-sim`~~ — feito (PR #9).
+3. ~~Gravar goldens do app~~ — feito: 11 casos `"fonte":"app"`, `cade conformidade` 11/11.
+4. **Portar ladder para o `cade_sim`** (contrato `docs/ladder.md`, oráculo = Python novo) — próximo.
 5. Restante do port (crates esqueleto em `src/`): `cade_render` (preview PNG), `cade_mcp` (servidor MCP stdio +
    `cade install-mcp`), `cade_app` (Wine), `cade_vision` (detector), `cade_maint` (gen_symbol_lib/learn_pins/
    apply_bin_pins). Depois: PR que **apaga o Python** (dev.py, requirements, tools/*.py) quando tudo tiver paridade.
 6. Benchmark de confiabilidade (≥ 80%): 12 casos held-out em `tools/eval/heldout/` (ainda NÃO criados — o
    agente que ia criá-los caiu), agentes resolvendo só com o MCP, `run_eval.py` pontua; iterar skill/DSL/erros.
+   Falta também `run_eval` pontuar `.ladder.json` (hoje os casos de `tools/eval/casos/ladder/` ficam de fora).
 7. Temporizadores 9004–9007 + bancada de cobertura por classe: rascunho não verificado na branch
    `wip/temporizadores-bancada` (remota).
+8. Roadmap do `ladder/1` (borda 10052/10053, TOF 10067, contador 10063, GRAFCET 10100) — `docs/ladder.md` §2.6.
 
 ## Fatos que custaram caro (não reaprender)
 - Conectividade do app é **geometria** (extremo a extremo; T só com `4001`); nets gravados são descartados.

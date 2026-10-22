@@ -376,7 +376,9 @@ def cad_example(nome: str) -> str:
 def _proximo_passo(r, path):
     if r["ok"] and r["fios"]["ok"] is not False:
         return (f"Gate verde. Chame cad_preview(path='{path}') e confira: nenhuma fase misturada, "
-                f"nenhum pino vermelho. Se estiver certo, entregue o .cad e resuma os testes que passaram.")
+                f"nenhum pino vermelho. Se estiver certo, entregue o .cad e resuma os testes que passaram. "
+                f"No app (Wine): apos o Play, clique nos disjuntores (Q1...) — eles iniciam abertos e sem o "
+                f"clique o motor nao gira; acione um atuador por vez (ha um ponteiro so).")
     if r["ok"]:
         return (f"Gate verde, mas {len(r['fios']['atravessam'])} fio(s) atravessam simbolo (estetico). "
                 f"Veja cad_preview; se o desenho estiver legivel, entregue; senao reordene serie/ramos.")

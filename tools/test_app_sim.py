@@ -157,3 +157,27 @@ def test_ler_estado_le_saidas_clp_e_bobinas_ladder(tmp_path):
     ImageDraw.Draw(im).rectangle([ox + s * x0 + 3, oy + s * y0 + 3, ox + s * x0 + 8, oy + s * y0 + 8], fill=(255, 0, 0))
     est = A.ler_estado(im, cad, A.Calib(s, ox, oy, 1, 1))
     assert est["saidas_clp"]["Q0.3"] and not est["saidas_clp"]["Q0.1"]
+
+
+def test_soltar_no_mesmo_ponto_do_pressionar():
+    """Regressao 22/10/2026: soltar em (0,0) nao liberava a botoeira no app (ficava presa)."""
+    cad = Path(__file__).resolve().parent.parent / "tests" / "golden" / "partida_direta.cad"
+    app = A.AppSim(cad)
+    chamadas = []
+    app._alvo = lambda alvo, aliases=None: (111, 222, None)
+    app._clica_win = lambda wx, wy, du=None: chamadas.append((wx, wy, du))
+    app.pressionar("S1", segurar_s=None)
+    app.soltar()
+    app.soltar()                                   # sem press anterior: fallback, nao quebra
+    assert chamadas[:2] == [(111, 222, "down"), (111, 222, "up")]
+    assert chamadas[2] == (0, 0, "up")
+
+
+def test_vista_maximizada_pega_fundo_cinza_do_mdi():
+    """Regressao 22/10/2026: barra de titulo verde-agua + filha pequena passavam como 'maximizada'."""
+    img = Image.new("RGB", (956, 1052), (255, 255, 255))
+    assert A.vista_maximizada(img) is True
+    img2 = Image.new("RGB", (956, 1052), (128, 128, 128))
+    img2.paste((255, 255, 255), (0, 0, 956, 545))
+    img2.paste((0, 128, 128), (600, 82, 700, 92))
+    assert A.vista_maximizada(img2) is False

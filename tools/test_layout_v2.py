@@ -210,7 +210,8 @@ def test_rede_conecta_como_a_expressao():
         assert R("k1ok", "7000", "p2") == R("S2", "8000", "p1") == R("selo2", "7000", "p1")
 
 
-def test_trilhos_de_comando_transformador_e_fonte():
+def test_trilhos_de_comando_transformador_sem_fonte_extra():
+    """O 3012 ja e fonte no app: poe-lo com uma 3003 no secundario da CURTO (medido 22/10/2026)."""
     with tempfile.TemporaryDirectory() as t:
         d = json.loads((EX / "partida_trafo_comando.layout.json").read_text(encoding="utf-8"))["layout"]
         out, r = _build(d, t, "tc")
@@ -220,8 +221,8 @@ def test_trilhos_de_comando_transformador_e_fonte():
         c1 = R("-RT1", "8017", "p1")                # topo da rede = trilho C1
         c2 = R("-KM1", "9000", "p2")                # base da rede = trilho C2
         assert c1 != c2
-        assert R("-T1", "3012", "p4") == c1 and R("-T1", "3012", "p3") == c2     # secundario
-        assert R("-X2", "3003", "N") == c1 and R("-X2", "3003", "L") == c2       # fonte de comando
+        assert R("-T1", "3012", "p4") == c1 and R("-T1", "3012", "p3") == c2     # secundario alimenta
+        assert not [k for k in redes if k[1] == "3003"]                          # sem fonte extra
         assert R("-T1", "3012", "p1") != c1 and R("-T1", "3012", "p1") != c2     # primario separado
         # o comando NAO esta no L1/N principais
         assert R("-Q1", "6009", "p1") != c1 and R("-X", "3007", "N") != c2

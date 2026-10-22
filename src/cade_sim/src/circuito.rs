@@ -6,7 +6,7 @@
 //! (selo, intertravamento) e relaxada ate o ponto fixo (OK / RACE / INSTAVEL).
 
 use crate::papeis::{Cond, Fonte, Modo, ModoPolos, Papel, Papeis, TipoTemp};
-use cade_check::geom::{entidades_do_cad, estampa_de, num, pinos_da_classe, rotacionar, Conectividade, FONTE, SKIP};
+use cade_check::geom::{entidades_do_cad, estampa_de_classe, num, pinos_da_classe, rotacionar, Conectividade, FONTE, SKIP};
 use cade_model::{dados, latin1};
 use serde_json::{json, Value};
 use std::collections::{BTreeMap, BTreeSet, HashMap};
@@ -308,7 +308,7 @@ impl Circuito {
             if FONTE.contains(&cid) {
                 for (nm, (no, lig)) in offs.iter().filter_map(|(n, _)| pinos.get(n).map(|v| (n, v))) {
                     if *lig {
-                        if let Some(ch) = estampa_de(nm).and_then(|e| e.chars().next()) {
+                        if let Some(ch) = estampa_de_classe(&cid, nm).and_then(|e| e.chars().next()) {
                             c.fixos.push((*no, ch));
                         }
                     }

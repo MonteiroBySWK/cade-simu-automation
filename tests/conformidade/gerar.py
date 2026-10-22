@@ -50,11 +50,17 @@ def destrava(k):
 
 
 def blocos_de(c):
-    """Cenarios canonicos: cada entrada sozinha (testa selo) e pares (segura uma, aperta a outra)."""
+    """Cenarios canonicos: cada entrada sozinha (testa selo) e pares em sequencia.
+
+    Um atuador por vez: no app ha **um ponteiro so** (mousedown/mouseup), entao "segurar A e
+    apertar B" nao existe — aperta A, solta, aperta B, solta. O que importa no par (ex.:
+    intertravamento) e o estado das bobinas (selo), nao as duas botoeiras pressionadas.
+    """
     ents = list(c.entradas)
     out = [BASE + liga(k) + ESP + solta(k) + ESP + destrava(k) for k in ents]
     for a, b in itertools.permutations(ents, 2):
-        out.append(BASE + liga(a) + ESP + liga(b) + ESP + solta(b) + ESP + solta(a) + ESP + destrava(a) + destrava(b))
+        out.append(BASE + liga(a) + ESP + solta(a) + ESP + liga(b) + ESP + solta(b)
+                   + ESP + destrava(a) + destrava(b))
     return out
 
 
@@ -94,8 +100,9 @@ def main(forcar=False):
         acoes = acoes_de(c)
         passos = simular(c, acoes)
         assert passos is not None, nome
-        cen = {"versao": 1, "descricao": f"{nome}: cada entrada sozinha e pares (segura uma, aperta a outra); "
-                                         f"espera de {ESPERA_MS} ms entre as acoes", "acoes": acoes}
+        cen = {"versao": 1, "descricao": f"{nome}: cada entrada sozinha e pares em sequencia (um atuador por "
+                                         f"vez: o app tem um ponteiro so); espera de {ESPERA_MS} ms entre as acoes",
+               "acoes": acoes}
         (d / "cenario.json").write_text(json.dumps(cen, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
         gold = d / "golden_app.json"
         if gold.is_file() and not forcar:
