@@ -1,0 +1,24 @@
+{
+ "entrada": "tests/golden/reversao_monofasica.cad",
+ "tipo": "gate",
+ "titulo": null,
+ "n_simbolos": null,
+ "build": {
+  "ok": true,
+  "mensagem": "OK {PATH} modo=0 versao=3003"
+ },
+ "geo": {
+  "curtos": [],
+  "soltos": [],
+  "curtos_msg": [],
+  "soltos_msg": []
+ },
+ "fios": {
+  "ok": true,
+  "n": 122,
+  "atravessam": []
+ },
+ "avisos": [],
+ "erros": [],
+ "estatico_ok": true
+}
