@@ -60,9 +60,13 @@ Consequência: A7 (estrela-triângulo) e A10 (GRAFCET/pneumática) saem do camin
   - Aceite: DSL + modelo lógico + modelo geométrico + caso no app por instrução; teste unitário e
     exemplo em `tools/examples`. Custo M (era L; o layout de 4 pinos do 10063 saiu com o R ligado
     via contato a partir do trilho e o D sem fio).
-- [ ] **A4. Temporizadores elétricos 9007/9015** (`recomendado`) (intermitente/pulso) + contatos associados.
+- [bloqueado] **A4. Temporizadores elétricos 9007/9015** (`recomendado`) — `netlist_sim.py` NAO tem modelo de
+  temporizador elétrico (0 refs a 9004; o Rust tem `TipoTemp`); 9007 tem protótipo, 9015 nao. Passos: portar
+  9004-9006 para o Python (oraculo) + 9007, depois 9015 quando houver protótipo/RE. (intermitente/pulso) + contatos associados.
   - Aceite: caso no app com 9007 (pisca) e 9015 (pulso), lido por imagem; exemplo no gate. Custo M.
-- [ ] **A5. Sensores 3 fios (PNP/NPN)** (`recomendado`) — 56 classes do catálogo (`7501/7502/7504/7505`…); hoje só
+- [bloqueado] **A5. Sensores 3 fios (PNP/NPN)** (`recomendado`) — sem protótipo/geometria no `symbol_lib`
+  (so 2 fios: 7500/7506/...) e sem doador no acervo (grep 7501/7502 vazio). 2 fios pode ser modelado ja;
+  3 fios exige Ghidra/desenho no app. — 56 classes do catálogo (`7501/7502/7504/7505`…); hoje só
   contato de 2 fios.
   - Aceite: modelo de sensor alimentado (pino de alimentação + saída), caso no app com objeto
     detectado, exemplo de partida com sensor. Custo M.
