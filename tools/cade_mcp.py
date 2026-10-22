@@ -147,12 +147,20 @@ def cad_simulate(path: str, entradas_json: str = "{}", inicial_json: str = "[]")
     status ∈ {OK, RACE (corrida), INSTAVEL, CURTO}; tambem devolve lampadas_acesas e curtos. Use para TESTAR de verdade o comando."""
     sys.path.insert(0, str(ROOT / "tools"))
     import netlist_sim as ns
-    c = ns.Circuito(path)
+    import clp_sim
     try:
         ent = json.loads(entradas_json)
         ini = set(json.loads(inicial_json))
     except json.JSONDecodeError as e:
         return f"ERRO json: {e}"
+    if clp_sim.tem_clp(path):          # CLP/ladder: modelo geometrico por ticks de 100 ms (docs/ladder.md §3.2)
+        c = clp_sim.CircuitoCLP(path)
+        est, r = c.regime(ent, c.imagem_inicial({"entradas": ent, "inicial": sorted(ini)}))
+        return json.dumps({"status": r["status"], "bobinas_energizadas": r["bobinas"], "lampadas_acesas": r["lampadas"],
+                           "curtos": r["curtos"], "bits": {k: v for k, v in r["bits"].items() if v}, "ticks": r["ticks"],
+                           "entradas": c.entradas, "bobinas": sorted(c.bobinas), "operandos": c.operandos},
+                          ensure_ascii=False, default=str)
+    c = ns.Circuito(path)
     e = c.estado(ent, ini)
     return json.dumps({"status": e.get("status"), "bobinas_energizadas": sorted(e.get("bobinas", [])),
                        "lampadas_acesas": sorted(e.get("lampadas", [])), "curtos": e.get("curtos", []),
@@ -175,6 +183,11 @@ def cad_test(path: str, casos_json: str = "[]") -> str:
     except json.JSONDecodeError as e:
         return f"ERRO json: {e}"
     buf = io.StringIO()
+    import clp_sim
+    if casos and clp_sim.tem_clp(path):     # CLP/ladder: clp_sim (sequencia, esperado_bits, inicial, ticks/tempo_s)
+        with contextlib.redirect_stdout(buf):
+            ok = clp_sim.teste_casos(path, casos)
+        return ("PASSOU\n" if ok else "FALHOU\n") + buf.getvalue()
     if not casos:
         # a antiga suite embutida (intercalada) era aplicada a QUALQUER circuito com KM1+KM2
         # e reprovava circuitos corretos (ex.: reversao 13/15). Sem casos = sem prova.
@@ -316,6 +329,17 @@ def cad_examples() -> str:
     enunciado e leia com cad_example(nome). Copiar a estrutura de um exemplo que passa o gate e o
     caminho de menor erro. Todos passam o gate (cad_design) por construcao."""
     itens = []
+    for f in sorted(EXEMPLOS.glob("*.ladder.json")):       # DSL ladder/1 (CLP + ladder; cad_design aceita direto)
+        try:
+            d = json.loads(f.read_text(encoding="utf-8"))
+        except Exception:
+            continue
+        lay = d.get("layout", {})
+        itens.append({"nome": f.name[:-len(".json")], "titulo": d.get("titulo"), "dsl": "ladder/1",
+                      "descricao": f"{len((lay.get('ladder') or {}).get('rungs', []))} degrau(s) ladder, "
+                                   f"{len((lay.get('clp') or {}).get('entradas', []))} entrada(s), "
+                                   f"{len((lay.get('clp') or {}).get('saidas', []))} saida(s) de CLP",
+                      "n_testes": len(d.get("testes") or [])})
     for f in sorted(EXEMPLOS.glob("*.layout.json")):
         try:
             d = json.loads(f.read_text(encoding="utf-8"))
@@ -341,10 +365,11 @@ def cad_example(nome: str) -> str:
     Quando usar: como modelo para o seu cad_design. O JSON retornado pode ser enviado
     inalterado a cad_design(layout_json=..., out_path=...) e passa o gate."""
     base = Path(str(nome)).name
-    for cand in (EXEMPLOS / f"{base}.layout.json", EXEMPLOS / base):
-        if cand.is_file() and cand.name.endswith(".layout.json"):
+    for cand in (EXEMPLOS / f"{base}.layout.json", EXEMPLOS / f"{base}.json", EXEMPLOS / base):
+        if cand.is_file() and cand.name.endswith((".layout.json", ".ladder.json")):
             return cand.read_text(encoding="utf-8")
-    disp = [f.name[:-len(".layout.json")] for f in sorted(EXEMPLOS.glob("*.layout.json"))]
+    disp = [f.name[:-len(".layout.json")] for f in sorted(EXEMPLOS.glob("*.layout.json"))] + \
+           [f.name[:-len(".json")] for f in sorted(EXEMPLOS.glob("*.ladder.json"))]
     return json.dumps({"erro": f"exemplo '{nome}' nao existe", "disponiveis": disp}, ensure_ascii=False)
 
 
@@ -383,6 +408,9 @@ def _relatorio(r, path):
 def cad_design(layout_json: str, out_path: str) -> str:
     """FERRAMENTA PRINCIPAL: layout TOPOLOGICO (sem x/y) -> .cad pronto + gate completo, numa chamada.
 
+    CLP + LADDER: envie {"dsl":"ladder/1","layout":{"clp","potencia","ladder","textos"},"testes"} (docs/ladder.md,
+      exemplos *.ladder.json em cad_examples): hardware 10206/10204/10205, ladder 10050/10051/10060/10061/10062/TON inline,
+      gate geometrico (clp_sim) + modelo logico; testes com "sequencia", "esperado_bits", "inicial", "ticks".
     layout_json = string JSON no formato de cad_examples/cad_example (DSL de docs/dsl-layout.md):
       {"titulo","layout":{"trilhos","fontes","comando","potencia"},"testes":[...]}
       (aceita tambem o layout 'puro' com "testes" dentro; ou spec baixa com "simbolos").

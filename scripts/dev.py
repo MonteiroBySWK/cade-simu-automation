@@ -69,6 +69,13 @@ def gate():
         ult = (r.stdout.strip().splitlines() or ["?"])[-1]
         print(f"{n:34s} {ult}")
         ruins += r.returncode != 0
+    for f in sorted(glob.glob(str(ROOT / "tools" / "examples" / "*.ladder.json"))):       # DSL ladder/1 (CLP)
+        n = Path(f).name.replace(".json", "")
+        r = subprocess.run([py(), "tools/ladder_dsl.py", f, str(ROOT / "out" / f"{n}.cad")], cwd=ROOT,
+                           capture_output=True, text=True, encoding="utf-8", errors="replace")
+        ult = (r.stdout.strip().splitlines() or ["?"])[-1]
+        print(f"{n:34s} {ult}")
+        ruins += r.returncode != 0
     run([py(), "tools/eval/run_eval.py", "--golden"])
     if ruins:
         sys.exit(f"{ruins} exemplo(s) reprovado(s)")

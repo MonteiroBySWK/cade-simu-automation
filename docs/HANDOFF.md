@@ -53,6 +53,16 @@ Atualizado: 2026-10-22 ~10h (horário de Brasília). Repo: `~/dev/codes/personal
 - Instruído a abrir PR (draft se incompleto) e mergear se ficar verde. **Retomar:** `gh pr list`, branch
   `feat/rust-sim`.
 
+### Se os agentes tiverem caído sem commitar
+- Ladder/entregas: o trabalho fica **não commitado no checkout principal** (`git status` mostra `tools/dissect.py`,
+  `tools/app_sim.py`, `docs/pinos-binario.json`, …). Revise, rode `python3 scripts/dev.py test`, commite com
+  `wip:` se incompleto e continue de onde parou.
+- Rust sim: worktree `.claude/worktrees/agent-aa61b087d86f7595a` (branch `feat/rust-sim`); idem.
+
+### PR de terceiro aberto
+- **#7** (autor `murillous`, colega do usuário): "exercicio de partida sequencial de 3 motores com CLP". Não foi
+  revisado nesta sessão. Sobrepõe a Entrega B; pergunte ao usuário antes de mergear/fechar.
+
 ## Próximos passos (ordem)
 1. Fechar entregas A e B (validadas no Wine) — prazo do usuário.
 2. Mergear `feat/rust-sim` quando verde; gate Rust passa a rodar testes funcionais.
