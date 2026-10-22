@@ -37,6 +37,8 @@ pub enum TipoTemp {
     Tof,
     /// mesmo T nos dois sentidos (9006)
     TonTof,
+    /// pisca-pisca: energizado alterna 1/0 a cada T (9007)
+    Intermitente,
 }
 
 /// Condicao de fechamento de um par de pinos em funcao do `estado` do elemento.
@@ -68,7 +70,7 @@ pub enum Papel {
     ContatoTemp { modo: Modo, tipo: TipoTemp, tempo: Option<f64> },
     /// RE: pares de pinos (indices na ordem do binario) com condicao propria
     Chaves { ligacoes: Vec<(usize, usize, Cond)>, fonte: Fonte, polos: bool },
-    /// RE: temporizador (carga) 9004/9005/9006; tempo = rotulo 6, unidade = rotulo 5
+    /// RE: temporizador (carga) 9004/9005/9006/9007; tempo = rotulo 6, unidade = rotulo 5
     Temporizador(TipoTemp),
     /// RE: motor; gira com fases distintas nos pinos de fase
     Motor,
@@ -146,6 +148,7 @@ fn derivar(cid: &str, v: &Value) -> Option<Papel> {
         "temporizador_ON" => return Some(Papel::Temporizador(TipoTemp::Ton)),
         "temporizador_OFF" => return Some(Papel::Temporizador(TipoTemp::Tof)),
         "temporizador_ON_OFF" => return Some(Papel::Temporizador(TipoTemp::TonTof)),
+        "temporizador_intermitente" => return Some(Papel::Temporizador(TipoTemp::Intermitente)),
         _ => {}
     }
     let contatos = v.get("contatos")?.as_array()?;
@@ -209,11 +212,12 @@ mod tests {
         assert_eq!(t.get("9004"), Some(&Papel::Temporizador(TipoTemp::Ton)));
         assert_eq!(t.get("9005"), Some(&Papel::Temporizador(TipoTemp::Tof)));
         assert_eq!(t.get("9006"), Some(&Papel::Temporizador(TipoTemp::TonTof)));
+        assert_eq!(t.get("9007"), Some(&Papel::Temporizador(TipoTemp::Intermitente)));
         assert_eq!(t.get("1000"), Some(&Papel::Motor));
         // disjuntor: conduz com estado==1 (inicia aberto); fusivel: estado==0 (inicia integro)
         assert!(matches!(t.get("6000"), Some(Papel::Chaves { ligacoes, .. }) if ligacoes == &vec![(0, 1, Cond::Estado(1))]));
         assert!(matches!(t.get("5000"), Some(Papel::Chaves { ligacoes, .. }) if ligacoes == &vec![(0, 1, Cond::Estado(0))]));
-        // intermitente/pulso: ainda sem modelo
-        assert!(t.get("9007").is_none() && t.get("9015").is_none());
+        // pulso (9015): ainda sem modelo
+        assert!(t.get("9015").is_none());
     }
 }

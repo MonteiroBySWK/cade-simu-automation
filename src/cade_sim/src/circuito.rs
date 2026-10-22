@@ -123,7 +123,7 @@ impl EstadoSim {
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum FonteEstado {
     Rotulo,
-    /// saida do temporizador de mesmo rotulo (contatos 7004..)
+    /// saida do temporizador de mesmo rotulo (contatos 7004..; e 7000..7003/polos sob 9007)
     PorRotulo,
     /// temporizador proprio do contato (`Papel::ContatoTemp`)
     Embutido(usize),
@@ -174,6 +174,8 @@ pub struct Circuito {
     motores: Vec<Motor>,
     timers: Vec<Timer>,
     timer_por_rotulo: HashMap<String, usize>,
+    /// rotulos com temporizador intermitente (9007): contatos/polos de mesmo rotulo seguem `tm`
+    intermitentes: BTreeSet<String>,
     fixos: Vec<(u32, char)>,
     /// bobinas (e temporizadores) por rotulo; 1a ocorrencia
     pub bobinas: BTreeMap<String, (u32, u32)>,
@@ -268,6 +270,7 @@ impl Circuito {
             motores: vec![],
             timers: vec![],
             timer_por_rotulo: HashMap::new(),
+            intermitentes: BTreeSet::new(),
             fixos: vec![],
             bobinas: BTreeMap::new(),
             lampadas: BTreeMap::new(),
@@ -434,6 +437,16 @@ impl Circuito {
         for (i, t) in c.timers.iter().enumerate() {
             c.timer_por_rotulo.entry(t.chave.clone()).or_insert(i);
         }
+        // 9007 intermitente (RE 11.4, FUN_00632a20): o estado alterna e e copiado a polos e a
+        // 7000..7015 de mesmo rotulo — ou seja, ate o contato "instantaneo" pisca. Como no
+        // oraculo Python, todo contato/polo de fonte Rotulo cujo rotulo tem 9007 segue `tm`.
+        // AMBIGUO: o RE nao diz o que vale se o mesmo rotulo tiver bobina 9000 e 9007 juntos;
+        // aqui o 9007 prevalece (o rotulo entra em `intermitentes`).
+        for t in &c.timers {
+            if t.tipo == TipoTemp::Intermitente {
+                c.intermitentes.insert(t.chave.clone());
+            }
+        }
         let mut ent: BTreeSet<String> = BTreeSet::new();
         for k in c.chaves.iter().filter(|k| !k.polos) {
             if !c.bobinas.contains_key(&k.chave) {
@@ -493,7 +506,13 @@ impl Circuito {
 
     fn estado_da_chave(&self, k: &Chave, ent: &Entradas, coil: &BTreeMap<String, bool>, tm: &[bool]) -> i64 {
         match k.fonte {
-            FonteEstado::Rotulo => self.controle(&k.chave, ent, coil),
+            FonteEstado::Rotulo => {
+                if self.intermitentes.contains(&k.chave) {
+                    self.timer_por_rotulo.get(&k.chave).map(|&i| tm[i] as i64).unwrap_or(0)
+                } else {
+                    self.controle(&k.chave, ent, coil)
+                }
+            }
             FonteEstado::PorRotulo => self.timer_por_rotulo.get(&k.chave).map(|&i| tm[i] as i64).unwrap_or(0),
             FonteEstado::Embutido(i) => tm[i] as i64,
         }
@@ -628,6 +647,24 @@ impl Circuito {
                         false
                     }
                 }
+                TipoTemp::Intermitente => {
+                    if !a {
+                        st.el[i] = 0.0;
+                        false
+                    } else if tempo <= 1e-9 {
+                        // T=0: sem periodo definido; como o oraculo, alterna a cada passo com dt>0
+                        st.el[i] = 0.0;
+                        if dt > 0.0 { !st.tm[i] } else { st.tm[i] }
+                    } else {
+                        st.el[i] += dt;
+                        let mut n = st.tm[i];
+                        while st.el[i] >= tempo - 1e-9 {
+                            st.el[i] -= tempo;
+                            n = !n;
+                        }
+                        n
+                    }
+                }
             };
             if novo != st.tm[i] {
                 st.tm[i] = novo;
@@ -645,6 +682,7 @@ impl Circuito {
                 TipoTemp::Ton => ativo[i] && !st.tm[i],
                 TipoTemp::Tof => !ativo[i] && st.tm[i],
                 TipoTemp::TonTof => (ativo[i] && !st.tm[i]) || (!ativo[i] && st.tm[i]),
+                TipoTemp::Intermitente => ativo[i],
             };
             if corre {
                 let falta = (st.tempos[i] - st.el[i]).max(0.0);
@@ -716,6 +754,7 @@ impl Circuito {
                         TipoTemp::Ton => "ton",
                         TipoTemp::Tof => "tof",
                         TipoTemp::TonTof => "tonof",
+                        TipoTemp::Intermitente => "intermitente",
                     },
                     tempo: st.tempos[i],
                     decorrido: (st.el[i] * 1e6).round() / 1e6,
