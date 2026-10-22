@@ -197,7 +197,8 @@ def lint_layout(layout_d, low=None):
                       f"\"L3\":\"L3\",\"N\":\"N\",\"PE\":\"PE\"}}}}")
     for g in layout_d.get("potencia", []):
         classes = [cl for c in g.get("colunas", []) for cl in _classes_da_coluna(c)]
-        tem_pe = any("PE" in ((pins.get(cl, {}).get("pins")) or {}) for cl in classes)
+        tem_pe = any("PE" in ((pins.get(cl, {}).get("pins")) or {}) or cl in ("1002", "1008", "1010")
+                    for cl in classes)
         if tem_pe:
             if not g.get("pe") or g.get("pe") == g.get("neutro", "N"):
                 av.append(f"potencia '{g.get('id')}': o PE do motor vai ao neutro (curto N x PE). Declare um "
@@ -282,7 +283,7 @@ def conferir_vinculos(path):
     _, ents, _ = split_all(Path(path).read_bytes().decode("latin1"))
     ps = [p for p in map(parse_ent, ents) if p]
     rot = lambda p: ((p["labels"] or [""])[0]).strip()
-    termicos = {rot(p) for p in ps if p["id"] in ("6007", "6002", "6003", "6009", "6010")}   # termico OU disjuntor (DJ1)
+    termicos = {rot(p) for p in ps if p["id"] in ("6007", "6002", "6003", "6004", "6009", "6010")}   # termico OU disjuntor (DJ1)
     bobinas = {rot(p) for p in ps if p["id"] in ("9000", "9001", "9002", "9004", "9005", "9006", "9007",
                                                   "9014", "9015", "10060")}
     erros, avisos = [], []
@@ -292,7 +293,7 @@ def conferir_vinculos(path):
             erros.append(f"contato termico {r or p['id']} ({p['id']}) nao segue nenhum rele termico 6007 de "
                          f"mesmo rotulo (6007: {sorted(termicos) or 'nenhum'}): no app o termico NUNCA dispara. "
                          f"Use o MESMO rotulo no 6007 e no contato 95-96.")
-        if p["id"] in ("7000", "7001", "2001") and r and r not in bobinas:
+        if p["id"] in ("7000", "7001", "2001", "2002") and r and r not in bobinas:
             avisos.append(f"{p['id']} {r}: nenhuma bobina de mesmo rotulo (contato nunca e comandado)")
     return erros, avisos
 

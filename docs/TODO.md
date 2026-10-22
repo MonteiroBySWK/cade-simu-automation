@@ -63,12 +63,21 @@ Consequência: A7 (estrela-triângulo) e A10 (GRAFCET/pneumática) saem do camin
 - [ ] **A7. Estrela-triângulo** (`opcional` — fora das refs) — 3 contatores (principal, estrela, triângulo),
   intertravamento e temporizador.
   - Aceite: layout no DSL (ou `cad_build` documentado), exemplo + app. Custo L.
-- [ ] **A8. Reversão monofásica** (`núcleo`) — motor `1008` (`U1 V1 PE U2 V2`), contatores `2002` (4 polos),
-  disjuntor `6004`, cruzamento do enrolamento auxiliar.
-  - Aceite: modo de ligação no `potencia` (ou `conexoes` de alto nível), exemplo + app. Custo L.
-- [ ] **A9. Dispositivos de 4 polos** (`núcleo` — fidelidade ao desenho) (`6004`/`2002`) nos exemplos de reversão trifásica — opção
+- [x] **A8. Reversão monofásica** (`núcleo`) — motor `1008` (`U1 V1 PE U2 V2`), contatores `2002` (4 polos),
+  disjuntor `6002`, cruzamento do enrolamento auxiliar.
+  - Aceite: modo de ligação no `potencia` (`tipo:"monofasico"`, ou `conexoes` de alto nível), exemplo + app. Custo L.
+  - Entregue (22/10/2026, sem Wine): `potencia` com `tipo:"monofasico"` (`tools/layout.py:_potencia_mono`;
+    Q1 `6002` + 2×`2002` em paralelo + `1008`; KM1 referência, KM2 cruza V1/V2), exemplo
+    `tools/examples/reversao_monofasica.layout.json` (GATE OK, 10 testes, FIOS/GEO ok, nets conferidas por
+    geometria); `2002`/`6002`/`6004` com protótipo em `tools/symbol_lib.json` e modelo no `netlist_sim`.
+    Pendente: validar sentido de giro no app (Wine).
+- [x] **A9. Dispositivos de 4 polos** (`núcleo` — fidelidade ao desenho) (`6004`/`2002`) nos exemplos de reversão trifásica — opção
   `polos: 4` no `potencia` (o 4º polo no N), fidelidade ao desenho do professor.
   - Aceite: exemplo `reversao` gera com 6004/2002 e passa no app. Custo S.
+  - Entregue (22/10/2026, sem Wine): `polos: 4` no `potencia` (`tools/layout.py`; linhas = fases+[neutro];
+    `6004`+`2002`; `ordem` com N reto; bypass do N em estágio simples de 3 polos; erro claro sem 4 polos);
+    exemplo `tools/examples/reversao_4polos.layout.json` (GATE OK, 13 testes; `reversao` original intacto).
+    Pendente: validar no app (Wine).
 - [ ] **A10. GRAFCET (10100+) e pneumática (10500+)** (`opcional`) — **bloqueado**: classes sem pinos no binário.
   - Aceite (quando desbloquear): geometria/pinos via Ghidra, modelo, exemplo. Custo L.
 - [ ] **A11. Recusa explícita de classe sem modelo** — em vez de simular silenciosamente errado

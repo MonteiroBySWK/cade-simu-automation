@@ -309,6 +309,15 @@ def test_papeis_embutidos_cobrem_o_modelo_anterior():
     assert t["9008"]["papel"] == "lampada"
 
 
+def test_papeis_embutidos_4polos_e_disjuntor():
+    """2002 = polos NA por rotulo (senao viraria contato p1-p2 e daria curto L1-L2);
+    6002/6004 = protecao passante (no app, fechar a mao)."""
+    t = ns.carregar_papeis(Path("/nao/existe.json"))
+    assert t["2002"] == {"papel": "polos", "modo": "NA"}
+    assert t["6002"] == {"papel": "polos", "modo": "FECHADO"}
+    assert t["6004"] == {"papel": "polos", "modo": "FECHADO"}
+
+
 def test_papeis_json_sobrepoe_e_ignora_lixo(tmp_path):
     f = tmp_path / "classes-papeis.json"
     f.write_text(json.dumps({"classes": {"7004": {"papel": "contato", "modo": "NF"},

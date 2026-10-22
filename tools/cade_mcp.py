@@ -545,9 +545,12 @@ def cad_build(titulo: str, simbolos_json: str, fios_json: str = "[]", out_path: 
 
 def _shorts(ents):
     """Símbolos com o mesmo net em A e B (curto) — o autor deve corrigir o layout."""
+    # 2002/6004: A/B do binario sao dois pinos vizinhos do TOPO (p1/p2), nao um polo;
+    # com entradas em paralelo (reversao mono/4 polos) vao ao mesmo trilho por desenho.
+    _SEM_PAR_AB = {"2002", "6004"}
     bad = []
     for e in ents:
-        if e["id"] in ("4000", "4018", "4009", "4001"):
+        if e["id"] in ("4000", "4018", "4009", "4001") or e["id"] in _SEM_PAR_AB:
             continue
         n = e["nums"]
         if len(n) > 22 and n[21] == n[22] and n[21] not in ("0", ""):
