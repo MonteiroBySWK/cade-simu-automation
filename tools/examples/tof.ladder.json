@@ -1,0 +1,71 @@
+{
+  "titulo": "TOF: DESLIGA COM RETARDO (10067)",
+  "dsl": "ladder/1",
+  "layout": {
+    "trilhos": {"L1": 14, "L2": 20, "L3": 26, "N": 282, "PE": 291, "x0": 25, "x1": 160},
+    "fontes": [
+      {"id": "X1", "classe": "3007", "rotulo": "-X",
+       "pinos": {"L1": "L1", "L2": "L2", "L3": "L3", "N": "N", "PE": "PE"}}
+    ],
+    "potencia": [
+      {"id": "m1", "fases": ["L1", "L2", "L3"], "neutro": "N", "pe": "PE",
+       "colunas": [
+         ["Q1", "6009", "-Q1"],
+         ["F1", "6007", "-RT1"],
+         ["KM1p", "2001", "-KM1"],
+         ["M1", "1000", "-M1"]
+       ]}
+    ],
+    "clp": {
+      "id": "CLP1", "classe": "10206", "rotulo": "-CLP",
+      "alimentacao": {"fonte": {"id": "X2", "classe": "3011", "rotulo": "-X2"}},
+      "entradas": [
+        {"operando": "I0.1", "dispositivo": ["S1", "8000", "-S1"]}
+      ],
+      "saidas": [
+        {"operando": "Q0.0", "carga": ["KM1", "9000", "-KM1"]},
+        {"operando": "Q0.1", "carga": ["H1", "9008", "-H1"]}
+      ]
+    },
+    "ladder": {
+      "fonte": {"id": "XL", "classe": "3008", "rotulo": "+L"},
+      "trilho_direito": "aberto",
+      "rungs": [
+        {"id": "r1", "comentario": "KM1 liga com S1 e so desliga 1 s depois de soltar",
+         "logica": {"serie": [["NA", "I0.1"], ["TOF", "T1", {"tempo": 1, "base": "1s"}]]},
+         "saida": ["OUT", "Q0.0"]},
+        {"id": "r2", "comentario": "H1 acompanha KM1",
+         "logica": ["NA", "Q0.0"],
+         "saida": ["OUT", "Q0.1"]}
+      ]
+    }
+  },
+  "testes": [
+    {"nome": "repouso desligado", "entradas": {}, "status": "OK",
+     "esperado": [], "esperado_lampadas": [],
+     "esperado_bits": {"I0.1": 0, "T1": 0, "Q0.0": 0, "Q0.1": 0}},
+    {"nome": "S1 liga KM1 e H1", "entradas": {"S1": true}, "status": "OK",
+     "esperado": ["KM1"], "esperado_lampadas": ["H1"],
+     "esperado_bits": {"I0.1": 1, "T1": 1, "Q0.0": 1}},
+    {"nome": "TOF segura 1 s apos soltar", "status": "OK",
+     "sequencia": [
+       {"nome": "S1 pressionado", "entradas": {"S1": true},
+        "esperado": ["KM1"], "esperado_lampadas": ["H1"]},
+       {"nome": "solta ha 0,5 s: ainda ligado", "entradas": {}, "ticks": 5,
+        "esperado": ["KM1"], "esperado_lampadas": ["H1"],
+        "esperado_bits": {"T1": 1}},
+       {"nome": "solta ha 1,0 s: ultimo tick ligado", "entradas": {}, "ticks": 5,
+        "esperado": ["KM1"], "esperado_lampadas": ["H1"],
+        "esperado_bits": {"T1": 1}},
+       {"nome": "solta ha 1,1 s: ainda ligado (tick da borda)", "entradas": {}, "ticks": 1,
+        "esperado": ["KM1"], "esperado_lampadas": ["H1"],
+        "esperado_bits": {"T1": 1}},
+       {"nome": "solta ha 1,2 s: T1 caiu, KM1 acompanha com atraso", "entradas": {}, "ticks": 1,
+        "esperado": ["KM1"], "esperado_lampadas": ["H1"],
+        "esperado_bits": {"T1": 0, "Q0.0": 0}},
+       {"nome": "solta ha 1,5 s: desligou", "entradas": {}, "ticks": 3,
+        "esperado": [], "esperado_lampadas": [],
+        "esperado_bits": {"T1": 0, "Q0.0": 0}}
+     ]}
+  ]
+}

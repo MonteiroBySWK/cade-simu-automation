@@ -95,13 +95,19 @@ bit **1 no repouso** — no ladder use contato **NA** desse operando para "parar
 | `rungs[]` (alias `degraus`) | sim | `{id, comentario?, logica, saida}` |
 
 **`logica`** — expressão série-paralelo (mesma álgebra do comando v2):
-- folha `[tipo, operando]`, `tipo` ∈ `NA` (10050), `NF` (10051), `P` (10052 flanco ↑, B),
-  `N` (10053 flanco ↓, B). `ladder/1` exige `NA`/`NF`; `P`/`N` são reservados.
+- folha `[tipo, operando]`, `tipo` ∈ `NA` (10050), `NF` (10051), `SUBIDA` (10052 flanco ↑),
+  `DESCIDA` (10053 flanco ↓). Aliases curtos `P`/`N` = `SUBIDA`/`DESCIDA`.
   Desambiguação: array cujo 1º item é **string** = folha (`["NA","I0.0"]`); array de
   arrays/objetos = série.
 - `{"serie":[…]}`, `{"paralelo":[…]}` aninháveis; lista solta = série; grupos de 1 somem;
   série-em-série e paralelo-em-paralelo achatam. Pelo menos 1 contato por degrau. Sem ponte
   (rede não série-paralela) — o contato ladder é direcional e o motor não desenha ramos cruzados.
+- `["TON", op, {tempo, base}]` e `["TOF", op, {tempo, base}]` inline na **série principal**
+  do degrau (IN = nó anterior; TON conduz `IN ∧ acc≥T`, TOF conduz `IN ∨ acc>0`); `["CTU"…]`
+  **não** aparece na lógica (é saída de degrau, com a lógica do degrau como CU).
+- borda conduz **só no tick em que o operando mudou** (imagem anterior × anterior-1, §3.1):
+  `SUBIDA` = 0→1, `DESCIDA` = 1→0. Como tudo no ladder síncrono, o pulso chega à bobina física
+  com atraso de 2–3 ticks (ver `tools/examples/borda.ladder.json`).
 
 **`saida`** — uma saída ou `{"paralelo":[saída, …]}` (várias bobinas no mesmo nó final):
 | saída | classe | labels gravados | conf. | `ladder/1` |
@@ -109,14 +115,26 @@ bit **1 no repouso** — no ladder use contato **NA** desse operando para "parar
 | `["OUT", op]` | 10060 | `[op]` | A | obrigatório |
 | `["SET", op]` | 10061 | `[op]` | M | obrigatório |
 | `["RST", op]` | 10062 | `[op]` | M | obrigatório |
-| `["TON", op, {"tempo":n, "base":"0.1s"\|"1s"\|"10s"\|"100s", "q": op_q?}]` | 10066 | `[op,"","IN","Q",u,str(n)]`, `u` = `3`/`0`/`1`/`2` | M-A | obrigatório |
-| `["CTU", op, {"preset":n, "reset": expr, "desce": expr?, "q": op_q?}]` | 10063 | `[op,"","R","C","D","Q",n,n]` | M | opcional (v2) |
-| `["TOF"…]`, `["TP"…]` | 10067, 10081 | como TON | B | reservado |
+| `["TON", op, {"tempo":n, "base":"0.1s"\|"1s"\|"10s"\|"100s", "q": op_q?}]` | 10066 | `[op,"","IN","Q",u,str(n)]`, `u` = `3`/`0`/`1`/`2` | M-A | sim |
+| `["TOF", op, {"tempo":n, "base":…, "q": op_q?}]` | 10067 | como TON | B | sim |
+| `["CTU", op, {"preset":n, "reset": op_rst?, "q": op_q?}]` | 10063 | `[op,"","R","C","D","Q",n,n]` | M | sim (CU pela lógica do degrau; D sem fio) |
 
 `TON`: o pino Q **sempre** recebe fio até uma bobina OUT de operando `q` (default `op + ".Q"`),
 porque Q sem fio estampa na entidade 0 (M). Contatos podem ler o temporizador pelo próprio `op`
 (`["NA","T1"]`, A) ou por `q`. Base `"100s"` é o rádio "x 60 Seg" do diálogo (o código usa
-×1000 ticks; §11.4).
+×1000 ticks; §11.4). `TOF` é simétrico: como saída vira TOF inline + `OUT(q)`; conduz enquanto
+a entrada é 1 e por `T = tempo × base` ticks depois de cair (o tick da queda conta, então são
+`T+1` avaliações com saída 1 a partir da imagem com entrada 1).
+
+`CTU`: a **lógica do degrau é o CU** (conta a borda de subida do valor da série a cada tick,
+saturado em 99999); `preset` ≥ 1 liga `Q = (contagem ≥ preset)`; `reset` (opcional) é um
+**operando** cujo bit 1 zera a contagem (lido na imagem do tick anterior, como tudo no §3.1).
+Como saída vira CTU inline + `OUT(q)` (default `op + ".Q"`); o bit `op` segue a contagem
+independente da série, a bobina `q` segue a série (igual ao TON). Geometria (zona C, §4): o
+símbolo 10063 entra na linha do degrau com C no cursor; Q (15,12) desce 6 e segue para a
+bobina; R (0,0) recebe fio do trilho via contato `NA(reset)` desenhado em `y−6` (ver
+`tools/examples/ctu.ladder.json`); D (0,12, contagem decrescente) **fica sem fio** — fora do
+escopo da DSL, permitido no gate. Sem `reset`, o pino R fica sem fio (= reset 0).
 
 ### 2.3 Operandos
 String de 1–15 caracteres, `^[A-Za-z][A-Za-z0-9._:/]*$` (sem `#`/`*`, delimitadores do `.cad`).
@@ -145,12 +163,16 @@ Convenção do gerador (o app aceita qualquer string; acervo usa também `B3:L`,
 
 ---
 
-### 2.5 Extensões implementadas (Python)
+### 2.5 Extensões implementadas (Python e Rust)
 - `layout.potencia` = `{"tipo":"dj_comum","fonte":{"classe":"3005"},"disjuntor":[id,"6003","DJ1"],"motores":[{"contator","termico"?,"motor"}]}`:
   um disjuntor + n colunas contator → (térmico) → motor; o 6002 de `clp.alimentacao.protecao` e o aux `8016` usam o MESMO rótulo (o app alterna todos).
 - TON **em linha** na série principal: `["TON","T1",{"tempo":1,"base":"1s"}]` (IN = nó anterior, Q segue a série, +6 em y).
+- TOF em linha/saída (§2.2): `["TOF","T1",{"tempo":1,"base":"1s"}]`, simétrico ao TON (Q estampa `+` com IN ou `acc>0`).
+- CTU como saída (§2.2): `["CTU","C1",{"preset":3,"reset":"I0.2"}]` (CU = lógica do degrau, reset por bit, D sem fio).
+- Contatos de borda (§2.2): `["SUBIDA","I0.1"]` (10052) / `["DESCIDA","I0.1"]` (10053), aliases `P`/`N`; pulso de 1 tick.
 - `clp.saidas[].carga` pode ser lista (cargas em paralelo, ex.: bobina + lâmpada). `textos`: classe 8.
 - Medido no app: bobina ladder, TON em linha, SET/RST e entrada/saída 10204/10205 funcionam; tick ≈ 100 ms.
+  Borda/TOF/contador ainda **não** foram medidos no app (modelo segue o RE de `docs/re-engenharia.md` §13).
 
 ### 2.6 Roadmap do `ladder/1` — o que o CADe_SIMU tem e a DSL ainda não
 
@@ -160,11 +182,13 @@ o conjunto completo; hoje a DSL cobre só uma parte:
 | elemento | classe | na DSL? | nota |
 |---|---|---|---|
 | contato NA / NF | 10050 / 10051 | sim | |
+| contato de borda (subida/descida) | 10052 / 10053 | sim | `SUBIDA`/`DESCIDA` (aliases `P`/`N`); pulso de 1 tick; sem caso no app ainda |
 | bobina OUT / SET / RST | 10060 / 10061 / 10062 | sim | |
 | TON em linha | 10066 | sim | `["TON","T1",{"tempo":1,"base":"1s"}]` |
-| **contato de borda** (subida/descida) | 10052 / 10053 | **não** | livro §3.2.1: detector de variação, ON por 1 ciclo |
-| **TOF / intermitente / pulso** | 10067 / 10068 / 10069 / 10081 | **não** | no lado elétrico, 9005/9006 já estão no `cade_sim`; 9007/9015 ainda não |
-| **contador de pulsos / up-down** | 10063 / 10075 | **não** | livro §3.2 (contadores) |
+| **TOF em linha/saída** | 10067 | **sim** | como TON; sem caso no app ainda |
+| **contador de pulsos** | 10063 | **sim** | `["CTU","C1",{"preset":n,"reset":op?}]`; D (desce) sem fio; sem caso no app ainda |
+| contador up-down | 10075 | **não** | |
+| **intermitente / gerador / pulso** | 10068 / 10069 / 10081 | **não** | no lado elétrico, 9005/9006 já estão no `cade_sim`; 9007/9015 ainda não |
 | **biestável RS** | 10064 | **não** | SET/RST cobrem o caso simples |
 | **funções lógicas INV / EXOR** | 10040 / 10041 | **não** | |
 | **GRAFCET (etapas)** | 10100+ | **não** | livro Apêndice SFC; futuro front-end `grafcet/1` |
@@ -182,9 +206,14 @@ contatores/lâmpadas. **Um tick** (100 ms):
    entrada: `bit[op] = CPU ∧ todos os elementos da cadeia conduzem` (botão NA conduz se
    acionado; NF conduz se **não** acionado; 8017 conduz se o térmico **não** disparou).
 2. **Degraus**, todos com a imagem `bits_ant` do tick anterior (síncrono): `v = logica(bits_ant)`
-   (NA: `bit`, NF: `¬bit`, série = ∧, paralelo = ∨). `OUT`: `bit[op]=v`. `SET`: `v ⇒ bit[op]=1`.
-   `RST`: `v ⇒ bit[op]=0`. `TON`: `v ? acc+=1 : acc=0`; `bit[op] = bit[q] = (acc ≥ T)` com
+   (NA: `bit`, NF: `¬bit`, SUBIDA: `bit ∧ ¬prev`, DESCIDA: `¬bit ∧ prev`, série = ∧, paralelo = ∨;
+   TON inline: `vin ∧ acc≥T`, TOF inline: `vin ∨ acc>0`, CTU inline: `vin ∧ cnt≥preset`).
+   `OUT`: `bit[op]=v`. `SET`: `v ⇒ bit[op]=1`. `RST`: `v ⇒ bit[op]=0`.
+   `TON`: `v ? acc+=1 : acc=0`; `bit[op] = bit[q] = (acc ≥ T)` com
    `T = max(1, tempo × {0.1s:1, 1s:10, 10s:100, 100s:1000})`.
+   `TOF`: `acc = v ? T : max(0, acc−1)`; `bit[op] = bit[q] = (v ∨ acc_ant>0)`.
+   `CTU`: borda de subida de `v` ⇒ `cnt+=1` (satura em 99999); `bit[reset]=1 ⇒ cnt=0`;
+   `bit[op] = (cnt ≥ preset)`.
 3. **Hardware de saída**: `energizada[carga] = CPU ∧ bit[op] ∧ série conduz` (série física usa o
    estado de **contatores do tick anterior**, ex.: NF 7001 de intertravamento).
 4. Polos (2001 de mesmo rótulo da bobina) seguem as bobinas físicas; motor gira se as 3 fases
@@ -205,7 +234,8 @@ Deve dar o mesmo resultado que 3.1. Nets por geometria (§9.2). Por tick, chars 
 fios; fontes estampam (3007/3011 fases e N; 3008 `'+'`; 3009 `'-'`; CPU alimentada estampa `'+'`
 em p3 e `'-'` em p4); relaxação de 8 passadas: contatos elétricos copiam nos dois sentidos,
 contatos ladder só de A→B; na passada 7 comitam bobinas 9000 (`(+,-)`, fase/N…), bobinas
-ladder (A=`'+'` ∧ B∈{sem fio, `'-'`}), entradas 10204 (net = `'+'`), TON/CTU. Saídas 10205 e
+ladder (A=`'+'` ∧ B∈{sem fio, `'-'`}), entradas 10204 (net = `'+'`), TON/TOF (acumuladores) e
+CTU (contagem na borda de C, reset por R, Q estampa `'+'` com `cnt≥preset`). Saídas 10205 e
 bobinas ladder repassam o bit por label0 como em §1. A verificação estrutural do netlist inclui:
 cada degrau desenhado reproduz a expressão de `logica` (série/paralelo entre o nó do trilho e o
 nó da bobina) e cada 10204/10205 está na cadeia física declarada.
@@ -277,6 +307,9 @@ mais:
 | `tools/examples/partida_direta.ladder.json` | CLP + 3 entradas (S0 NF, S1 NA, RT1 NF) + 3 saídas (KM1, H1, H2); selo em ladder | 8 |
 | `tools/examples/reversao.ladder.json` | intertravamento lógico (NF de Q0.x) **e** elétrico (7001 em série na saída); inversão de fases na potência; caso `OSCILA` | 12 + sequência de 6 passos |
 | `tools/examples/intercalada.ladder.json` | memória SET/RST (`M0.0`) alterna M1/M2 a cada partida; 2 térmicos | 9 + sequência de 12 passos |
+| `tools/examples/borda.ladder.json` | `SUBIDA`/`DESCIDA` (10052/10053): pulso de 1 tick na subida e na descida de S1, com atraso síncrono até KM1/H1 | 3 (1 sequência de 8 passos) |
+| `tools/examples/tof.ladder.json` | `TOF` (10067): KM1 segura 1 s após soltar S1 | 3 (1 sequência de 5 passos) |
+| `tools/examples/ctu.ladder.json` | `CTU` (10063, preset 3, reset por `I0.2`): conta 3 pulsos, liga KM1/H1, S2 zera | 3 (1 sequência de 9 passos) |
 
 Os esperados foram conferidos com uma implementação descartável do modelo §3.1 (fora do
 repositório, por decisão de escopo: o simulador será escrito em Rust). Todos os casos passam,

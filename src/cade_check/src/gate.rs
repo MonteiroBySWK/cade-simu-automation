@@ -396,9 +396,12 @@ pub fn gate_em(cad: &[u8], casos: &[Value], exec: &dyn ExecutorTestes, r: &mut R
 }
 
 /// `_solto_permitido` de `tools/ladder_dsl.py`: pino B de bobina ladder (trilho direito
-/// aberto, `docs/ladder.md` §4) e por desenho, nao pino solto.
+/// aberto, `docs/ladder.md` §4) e por desenho, nao pino solto; 10063: pino D (contagem
+/// decrescente, fora do escopo da DSL) fica sem fio, e o pino R sem fio le reset 0.
 fn solto_permitido(s: &str) -> bool {
     ["10060", "10061", "10062"].iter().any(|c| s.contains(&format!("({c}).p2@")) || s.contains(&format!("({c}).B@")))
+        || s.contains("(10063).p1@")
+        || s.contains("(10063).p3@")
 }
 
 fn descreve_falha(f: &Value) -> String {

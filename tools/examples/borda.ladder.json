@@ -1,0 +1,83 @@
+{
+  "titulo": "CONTATOS DE BORDA SUBIDA/DESCIDA (10052/10053)",
+  "dsl": "ladder/1",
+  "layout": {
+    "trilhos": {"L1": 14, "L2": 20, "L3": 26, "N": 282, "PE": 291, "x0": 25, "x1": 160},
+    "fontes": [
+      {"id": "X1", "classe": "3007", "rotulo": "-X",
+       "pinos": {"L1": "L1", "L2": "L2", "L3": "L3", "N": "N", "PE": "PE"}}
+    ],
+    "potencia": [
+      {"id": "m1", "fases": ["L1", "L2", "L3"], "neutro": "N", "pe": "PE",
+       "colunas": [
+         ["Q1", "6009", "-Q1"],
+         ["F1", "6007", "-RT1"],
+         ["KM1p", "2001", "-KM1"],
+         ["M1", "1000", "-M1"]
+       ]}
+    ],
+    "clp": {
+      "id": "CLP1", "classe": "10206", "rotulo": "-CLP",
+      "alimentacao": {"fonte": {"id": "X2", "classe": "3011", "rotulo": "-X2"}},
+      "entradas": [
+        {"operando": "I0.1", "dispositivo": ["S1", "8000", "-S1"]}
+      ],
+      "saidas": [
+        {"operando": "Q0.0", "carga": ["KM1", "9000", "-KM1"]},
+        {"operando": "Q0.1", "carga": ["H1", "9008", "-H1"]}
+      ]
+    },
+    "ladder": {
+      "fonte": {"id": "XL", "classe": "3008", "rotulo": "+L"},
+      "trilho_direito": "aberto",
+      "rungs": [
+        {"id": "r1", "comentario": "pulso de 1 tick na subida de S1",
+         "logica": ["SUBIDA", "I0.1"],
+         "saida": ["OUT", "M0.0"]},
+        {"id": "r2", "comentario": "pulso de 1 tick na descida de S1",
+         "logica": ["DESCIDA", "I0.1"],
+         "saida": ["OUT", "M0.1"]},
+        {"id": "r3", "comentario": "KM1 segue o pulso de subida",
+         "logica": ["NA", "M0.0"],
+         "saida": ["OUT", "Q0.0"]},
+        {"id": "r4", "comentario": "H1 segue o pulso de descida",
+         "logica": ["NA", "M0.1"],
+         "saida": ["OUT", "Q0.1"]}
+      ]
+    }
+  },
+  "testes": [
+    {"nome": "repouso: nada conduz", "entradas": {}, "status": "OK",
+     "esperado": [], "esperado_lampadas": [],
+     "esperado_bits": {"I0.1": 0, "M0.0": 0, "M0.1": 0, "Q0.0": 0, "Q0.1": 0}},
+    {"nome": "S1 mantido: pulsos ja passaram", "entradas": {"S1": true}, "status": "OK",
+     "esperado": [], "esperado_lampadas": [],
+     "esperado_bits": {"I0.1": 1, "M0.0": 0, "M0.1": 0}},
+    {"nome": "pulso completo de subida e descida", "status": "OK",
+     "sequencia": [
+       {"nome": "S1 pressionado: I sobe, borda ainda nao viu", "entradas": {"S1": true}, "ticks": 1,
+        "esperado": [], "esperado_lampadas": [],
+        "esperado_bits": {"I0.1": 1, "M0.0": 0, "M0.1": 0}},
+       {"nome": "tick seguinte: SUBIDA conduz 1 tick", "entradas": {"S1": true}, "ticks": 1,
+        "esperado": [], "esperado_lampadas": [],
+        "esperado_bits": {"M0.0": 1, "M0.1": 0}},
+       {"nome": "pulso acabou; Q0.0 ve M0.0", "entradas": {"S1": true}, "ticks": 1,
+        "esperado": [], "esperado_lampadas": [],
+        "esperado_bits": {"M0.0": 0, "Q0.0": 1}},
+       {"nome": "KM1 pulsa 1 tick atrasado", "entradas": {"S1": true}, "ticks": 1,
+        "esperado": ["KM1"], "esperado_lampadas": [],
+        "esperado_bits": {"Q0.0": 0}},
+       {"nome": "S1 solto: I cai, borda ainda nao viu", "entradas": {}, "ticks": 1,
+        "esperado": [], "esperado_lampadas": [],
+        "esperado_bits": {"I0.1": 0, "M0.1": 0}},
+       {"nome": "tick seguinte: DESCIDA conduz 1 tick", "entradas": {}, "ticks": 1,
+        "esperado": [], "esperado_lampadas": [],
+        "esperado_bits": {"M0.1": 1}},
+       {"nome": "pulso acabou; Q0.1 ve M0.1", "entradas": {}, "ticks": 1,
+        "esperado": [], "esperado_lampadas": [],
+        "esperado_bits": {"M0.1": 0, "Q0.1": 1}},
+       {"nome": "assenta desligado", "entradas": {}, "esperado": [], "esperado_lampadas": [],
+        "esperado_bits": {"M0.0": 0, "M0.1": 0, "Q0.0": 0, "Q0.1": 0}}
+     ]}
+  ]
+}

@@ -115,6 +115,21 @@ fn paridade_partida_sequencial_3() {
 }
 
 #[test]
+fn paridade_borda() {
+    confere_paridade("borda");
+}
+
+#[test]
+fn paridade_tof() {
+    confere_paridade("tof");
+}
+
+#[test]
+fn paridade_ctu() {
+    confere_paridade("ctu");
+}
+
+#[test]
 fn sanidade_repouso_liga_selo() {
     let (cad, _) = gerar("partida_direta");
     let c = CircuitoClp::de_bytes(&cad).unwrap();
@@ -186,6 +201,7 @@ fn conformidade_preenche_saidas_clp() {
     let (cad, _) = gerar("partida_direta");
     let c = CircuitoClp::de_bytes(&cad).unwrap();
     let cen = Cenario {
+        tempo_parede: false,
         descricao: "liga e desliga".into(),
         acoes: vec![
             Acao::Pressionar("S1".into()),
@@ -194,7 +210,7 @@ fn conformidade_preenche_saidas_clp() {
             Acao::Reiniciar,
         ],
     };
-    let obs = executar_clp(&c, &cen).unwrap();
+    let obs = executar_clp(&c, &cen, None).unwrap();
     assert_eq!(obs.len(), 4);
     assert_eq!(obs[0].saidas_clp, ["Q0.0", "Q0.1"], "S1 liga as saidas");
     assert_eq!(obs[1].saidas_clp, ["Q0.0", "Q0.1"], "selo mantem as saidas");
