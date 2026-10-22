@@ -1,6 +1,8 @@
 name: ci
 on:
-  push: { branches: [main] }
+  push:
+    branches: [main]
+    tags: ["v*"]
   pull_request:
 jobs:
   # Rust: o binario unico `cade` + paridade byte-a-byte com o oraculo Python (tests/golden)
@@ -24,6 +26,38 @@ jobs:
       - name: cade conformidade (motor Rust x goldens; Linux)
         if: runner.os == 'Linux'
         run: ./target/release/cade conformidade tests/conformidade
+
+  # Release: a cada tag v*, compila o binario estatico (musl) e anexa ao GitHub Release
+  # (instalacao sem clonar: baixar `cade-<tag>-x86_64-unknown-linux-musl` + SHA256SUMS)
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - name: musl + build estatico
+        run: |
+          sudo apt-get update && sudo apt-get install -y --no-install-recommends musl-tools
+          rustup target add x86_64-unknown-linux-musl
+          cargo build --release --locked -p cade_cli --target x86_64-unknown-linux-musl
+      - name: empacotar + checksum
+        run: |
+          mkdir -p dist
+          nome="cade-${GITHUB_REF_NAME}-x86_64-unknown-linux-musl"
+          cp "target/x86_64-unknown-linux-musl/release/cade" "dist/$nome"
+          strip "dist/$nome" 2>/dev/null || true
+          (cd dist && sha256sum "$nome" > SHA256SUMS)
+          cat dist/SHA256SUMS
+      - name: publicar no release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1 \
+            || gh release create "$GITHUB_REF_NAME" --title "$GITHUB_REF_NAME" --generate-notes
+          gh release upload "$GITHUB_REF_NAME" dist/* --clobber
 
   # Imagem Docker minima (so o binario `cade`, sem Wine) + conformidade dentro do container
   docker:
