@@ -68,6 +68,9 @@ Consequência: A7 (estrela-triângulo) e A10 (GRAFCET/pneumática) saem do camin
   (liga apos 1 s) e `out/timer_pisca_9007.cad` (pisca 0,5 s), gerados por `tools/demo_timers.py`.
   **Pendente**: 9015 gerador de pulsos (sem protótipo em `symbol_lib.json`, RE §11.4 pouco
   documentado) + caso no app com 9007 (pisca) e 9015 (pulso), lido por imagem. Custo M.
+  **App (22/10/2026)**: o demo **nao disparou** no app (H1 nao ligou com 9004 nem piscou com 9007),
+  embora o modelo Python/Rust passe; nao ha doador 9004/9007 no acervo (grep vazio). Antes de
+  declarar funcional, isolar: fiacao/rotulos do demo x comportamento real do app (Ghidra/experimento).
 - [bloqueado] **A5. Sensores 3 fios (PNP/NPN)** (`recomendado`) — sem protótipo/geometria no `symbol_lib`
   (so 2 fios: 7500/7506/...) e sem doador no acervo (grep 7501/7502 vazio). 2 fios pode ser modelado ja;
   3 fios exige Ghidra/desenho no app. — 56 classes do catálogo (`7501/7502/7504/7505`…); hoje só
