@@ -2,7 +2,42 @@
 
 Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/). Datas em AAAA-MM-DD.
 
-## [Unreleased]
+## [0.3.0] — 2026-10-22
+
+Conformidade **com o app real** (11/11), ladder/CLP no Rust e benchmark held-out.
+
+### Conformidade com o app (teste diferencial)
+- 11 goldens gravados no CADe_SIMU (`"fonte":"app"`) com o novo `tools/golden_app.py` (Wine): estado
+  lido por imagem depois de cada ação; `cade conformidade` compara o motor Rust passo a passo
+  (bobinas, lâmpadas, motores, saídas do CLP). **11 ok, 0 divergentes, 0 provisórios.**
+- Fatos do app provados/corrigidos: disjuntores iniciam **abertos** (sem clique o motor não gira);
+  **um ponteiro só** (não dá para segurar S1 e apertar S0); a captura pega **quadro parcial** (settle
+  antes de ler); `soltar` no mesmo ponto do clique; o aviso de **CURTO é janela separada**
+  (detectada/fechada, `curto:true` no golden).
+- Transformador `3012` é **fonte** (secundário p4=L/p3=N): somar `3003` no mesmo par de trilhos dá
+  CURTO no app — exemplo `partida_trafo_comando` corrigido; Python e Rust tratam `3012` como fonte.
+- `geo_check`/`vinculos`: disjuntor (6002/6003/6009/6010) também comanda o contato 8016/8017.
+
+### Ladder/CLP no Rust
+- `cade_sim::ladder::CircuitoClp`: port fiel de `clp_sim.py` (tick de 100 ms, 10204/10205, contatos
+  10050/10051, bobinas 10060/10061/10062, TON 10066, regime/oscilação), com os mesmos textos.
+- `cade gate`/`design` rodam testes de ladder (ramo CLP sem `wires_check`); `cade conformidade`
+  preenche `saidas_clp`. Paridade Rust×Python nos 5 exemplos (`tests/ladder_paridade.rs`).
+- Corrigido `_desgruda` do `split_entities` (entidade colada ao IP do 10206 sumia no Rust).
+
+### Avaliação e recusa explícita
+- `tools/eval/heldout/`: 12 casos held-out em PT-BR, sem solução no repo (relé + ladder).
+- `run_eval` pontua ladder (`clp_sim`, operandos, folha) e inclui `casos/ladder/` + `heldout/`;
+  `--golden` = 100 em 11 relé + 5 ladder (16 casos).
+- O gate **recusa classe sem modelo** (A11): pneumática, GRAFCET, 9007/9015, instruções de ladder não
+  portadas, sensores 3+ fios, CLPs fora de 10204/5/6, 6015/6017 — erro acionável em vez de falso verde.
+
+### Documentação e distribuição
+- `docs/TODO.md` (100% funcional × ≥80% autônomo), `docs/bibliografia/automacao-industrial.md`
+  (digest da disciplina + livro Miyagi), roadmap do `ladder/1` (§2.6), skill atualizada (reversão
+  monofásica × trifásica, inversor, fatos do app, roteiro de projeto).
+- CI publica o binário estático (`cade-<tag>-x86_64-unknown-linux-musl` + `SHA256SUMS`) no GitHub
+  Release a cada tag `v*`.
 
 ### Porte para Rust (fase 1)
 - Workspace Cargo na raiz; binário único `cade` (`validate|parse|emit|new-from-json|build|layout`).

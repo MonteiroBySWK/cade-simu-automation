@@ -54,7 +54,7 @@ dependencies = [
 
 [[package]]
 name = "cade_app"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "cade_model",
  "serde_json",
@@ -62,7 +62,7 @@ dependencies = [
 
 [[package]]
 name = "cade_build"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "cade_core",
  "cade_model",
@@ -71,7 +71,7 @@ dependencies = [
 
 [[package]]
 name = "cade_check"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "cade_build",
  "cade_core",
@@ -82,7 +82,7 @@ dependencies = [
 
 [[package]]
 name = "cade_cli"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "cade_build",
  "cade_check",
@@ -97,11 +97,11 @@ dependencies = [
 
 [[package]]
 name = "cade_core"
-version = "0.2.0"
+version = "0.3.0"
 
 [[package]]
 name = "cade_layout"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "cade_model",
  "serde",
@@ -110,7 +110,7 @@ dependencies = [
 
 [[package]]
 name = "cade_maint"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "cade_model",
  "serde_json",
@@ -118,7 +118,7 @@ dependencies = [
 
 [[package]]
 name = "cade_mcp"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "cade_build",
  "cade_check",
@@ -132,14 +132,14 @@ dependencies = [
 
 [[package]]
 name = "cade_model"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "serde_json",
 ]
 
 [[package]]
 name = "cade_render"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "cade_check",
  "cade_model",
@@ -147,7 +147,7 @@ dependencies = [
 
 [[package]]
 name = "cade_sim"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "cade_build",
  "cade_check",
@@ -157,7 +157,7 @@ dependencies = [
 
 [[package]]
 name = "cade_vision"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "cade_model",
  "serde_json",
@@ -269,7 +269,7 @@ checksum = "384b8ab6d37215f3c5301a95a4accb5d64aa607f1fcb26a11b5303878451b4fe"
 
 [[package]]
 name = "paridade"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "cade_build",
  "cade_core",
