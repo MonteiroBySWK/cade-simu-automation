@@ -698,6 +698,10 @@ def _redes(L, uf, pp, nomes, bordas, folhas):
 def _pot_largura(pw):
     """largura estimada de um grupo de potencia (reserva na faixa 0)."""
     nf = len(pw.get("fases", [])) or 3
+    if pw.get("polos") == 4:
+        nf += 1
+    if pw.get("tipo") == "monofasico":
+        nf = 2
     mx = 0
     for c in pw.get("colunas", []):
         est = _estagio(c)
@@ -992,10 +996,19 @@ def _degrau(L, chunks, x_left, yi, de_nome, para_nome):
 
 
 def _tops_bots(classe):
-    """(pinos_topo, pinos_base) por fase, ordenados; motor tem so topo + PE."""
+    """(pinos_topo, pinos_base, PE) por fase, ordenados; motor 3f tem so topo + PE."""
     pins = (PINS.get(classe, {}).get("pins") or {})
     if "U1" in pins:
         return [p for p in ("U1", "V1", "W1") if p in pins], [], "PE" if "PE" in pins else None
+    if "1" in pins:
+        return ([p for p in ("1", "3", "5", "7") if p in pins],
+                [p for p in ("2", "4", "6", "8") if p in pins], None)
+    if classe == "1008":
+        # motor monofasico (doador: U1=p1, V1=p2, PE=p3, U2=p4, V2=p5)
+        return ["p1", "p2"], ["p4", "p5"], "p3"
+    if classe in ("2002", "6004"):
+        # contator/disjuntor 4 polos (nomes p1..p8 do binario)
+        return ["p1", "p2", "p3", "p4"], ["p5", "p6", "p7", "p8"], None
     top = [p for p in ("1", "3", "5") if p in pins]
     bot = [p for p in ("2", "4", "6") if p in pins]
     return top, bot, None
@@ -1016,18 +1029,45 @@ def _estagio(c):
     return [(sid, cl, rot, ordem)]
 
 
+def _classes_colunas(colunas):
+    """Classes citadas nas colunas de um grupo de potencia (inclui paralelo)."""
+    out = []
+    for c in colunas:
+        if isinstance(c, dict):
+            for m in c.get("paralelo", []):
+                if isinstance(m, (list, tuple)) and len(m) > 1:
+                    out.append(str(m[1]))
+        elif isinstance(c, (list, tuple)) and len(c) > 1:
+            out.append(str(c[1]))
+    return out
+
+
 def _potencia(L, pw, x, y0):
     """Grupo de potencia: estagios em cascata; um estagio pode ter varios contatores
     em PARALELO (ex.: reversao). Cada membro pode permutar as fases de entrada
     (`ordem`: nomes de fase na ordem dos pinos 1,3,5). Contatores em paralelo sao
     unidos por trilhos auxiliares (entrada e saida) — fios so se encontram em
-    extremo, nunca em T sem junta."""
+    extremo, nunca em T sem junta.
+
+    `polos: 4`: as linhas passam a ser fases + [neutro] (o 4o polo comuta o N);
+    use disjuntor 6004 e contatores 2002. Estagios de 3 polos (ex.: termico 6007)
+    deixam a 4a linha passar direto (bypass). `tipo: "monofasico"`: esquema proprio
+    (fonte L/N, disjuntor 2 polos, 2 contatores 2002, motor 1008)."""
+    if pw.get("tipo") == "monofasico":
+        return _potencia_mono(L, pw, x, y0)
     fases = pw["fases"]
     neutro = pw.get("neutro", "N")
+    polos = pw.get("polos", 3)
+    if polos not in (3, 4):
+        raise ValueError(f"potencia '{pw.get('id')}': 'polos' vale 3 ou 4 (recebido {polos!r})")
+    linhas = list(fases) + ([neutro] if polos == 4 else [])
+    if polos == 4 and not any(c in ("6004", "2002") for c in _classes_colunas(pw.get("colunas", []))):
+        raise ValueError(f"potencia '{pw.get('id')}': 'polos: 4' pede disjuntor 6004 e contatores 2002 "
+                         f"(o 4o polo comuta o neutro)")
     estagios = [_estagio(c) for c in pw["colunas"]]
-    nf = len(fases)
+    nf = len(linhas)
     pid = pw.get("id", "P")
-    src = [(f, "rail") for f in fases]       # fonte de cada fase: pino (id,pino) ou trilho
+    src = [(f, "rail") for f in linhas]  # fonte de cada linha: pino (id,pino) ou trilho
     src_y = None                              # y do pino de saida do estagio anterior
     src_direto = False                        # src sao pinos de UM simbolo (id,pino)
     y = y0
@@ -1042,6 +1082,15 @@ def _potencia(L, pw, x, y0):
             nomes.append(nm)
         return nomes
 
+    def ordem_fi(ordem):
+        """ordem (nomes de linha na ordem dos pinos de entrada) -> indices em `linhas`."""
+        if not ordem:
+            return list(range(nf))
+        try:
+            return [linhas.index(nm) for nm in ordem]
+        except ValueError:
+            raise ValueError(f"potencia '{pid}': 'ordem' {ordem} fora das linhas {linhas}")
+
     for k, est in enumerate(estagios):
         n = len(est)
         # --- posicao dos membros ---
@@ -1052,14 +1101,18 @@ def _potencia(L, pw, x, y0):
             xc += max(_width(cl), PHASE_DX * (nf - 1) + 1) + GAP
         # --- trilhos de entrada se >1 membro vem de pinos de um simbolo ---
         if n > 1 and src_direto:
+            for sid, cl, _rot, ordem in est:
+                top, _, _ = _tops_bots(cl)
+                if len(top) != nf:
+                    raise ValueError(f"{sid} ({cl}) em paralelo tem {len(top)} pinos de entrada "
+                                     f"!= {nf} linhas (paralelo exige todos os polos)")
             ry = [src_y + 11 + 6 * i for i in range(nf)]
             # x de cada pino de origem
             pxs = [p for p in _src_x]
             tops = {}
             for mi, (sid, cl, rot, ordem) in enumerate(est):
                 top, _, _ = _tops_bots(cl)
-                for pi in range(nf):
-                    fi = fases.index(ordem[pi]) if ordem else pi
+                for pi, fi in enumerate(ordem_fi(ordem)):
                     tops.setdefault(fi, []).append(xs_m[mi] + pin_off(cl, top[pi])[0])
             xs = [[pxs[i]] + tops.get(i, []) for i in range(nf)]
             nomes = mk_rails("e", ry, xs)
@@ -1072,22 +1125,28 @@ def _potencia(L, pw, x, y0):
         ult_bots = []
         for mi, (sid, cl, rot, ordem) in enumerate(est):
             top, bot, pe = _tops_bots(cl)
-            if len(top) < nf:
+            if len(top) != nf or (len(bot) != len(top) and len(bot) != 0):
                 if cl in ("1002", "1008", "1010"):
                     raise ValueError(
-                        f"{sid} ({cl}) e motor MONOFASICO (U1/V1/U2/V2): a DSL `potencia` so monta 3 fases. "
-                        f"Reversao monofasica inverte o enrolamento auxiliar (U2/V2) com contatores de 4 polos "
-                        f"(2002) e disjuntor 6004 — nao e suportada; use `cad_build` (baixo nivel) ou "
-                        f"peca um circuito trifasico. Ver docs/bibliografia/automacao-industrial.md")
-                raise ValueError(f"{sid} ({cl}) tem {len(top)} pinos de topo < {nf} fases")
+                        f"{sid} ({cl}) e motor MONOFASICO (U1/V1/U2/V2): a DSL `potencia` trifasica "
+                        f"so monta 3 fases. Para reversao monofasica use o grupo "
+                        f"`tipo: \"monofasico\"` (disjuntor 2 polos + 2 contatores 2002 + motor 1008). "
+                        f"Ver docs/bibliografia/automacao-industrial.md")
+                if len(bot) == 0:
+                    pass  # motor terminal: consome as linhas que tem; a extra morre aqui
+                elif not (polos == 4 and n == 1 and len(top) == nf - 1 and len(bot) == len(top)):
+                    raise ValueError(f"{sid} ({cl}) tem {len(top)} pinos de entrada != {nf} linhas "
+                                     f"(paralelo exige todos os polos; bypass so vale em estagio "
+                                     f"simples de 3 polos com `polos: 4`)")
+                # bypass: ex. termico 6007 com polos:4 — o N passa direto
             L.sym(sid, cl, rot, xs_m[mi], y)
-            for pi in range(nf):
-                fi = fases.index(ordem[pi]) if ordem else pi
+            fis = ordem_fi(ordem)[:len(top)]
+            for pi, fi in enumerate(fis):
                 s = src[fi]
                 L.con((s[0], s[1]), (sid, top[pi]))
             if pe:
                 L.con((sid, pe), (pw.get("pe", neutro), "rail"))
-            ult_bots.append((sid, cl, bot))
+            ult_bots.append((sid, cl, bot, top))
             xend = max(xend, xs_m[mi] + max(_width(cl), PHASE_DX * (nf - 1) + 1))
         h = max(dim(cl)[1] for _, cl, _, _ in est)
         bots = ult_bots[0][2]
@@ -1097,25 +1156,141 @@ def _potencia(L, pw, x, y0):
         yb = y + pin_off(est[0][1], bots[0])[1]
         if n == 1:
             sid = est[0][0]
-            src = [(sid, bots[i]) for i in range(nf)]
+            m = len(ult_bots[0][2])
+            fis_in = ordem_fi(est[0][3])[:m]
+            usados = set(fis_in)
+            resto = [fi for fi in range(nf) if fi not in usados]   # linhas nao consumidas: bypass
+            novo_src, novo_x = [], []
+            for i in range(nf):
+                if i < m:
+                    novo_src.append((sid, bots[i]))
+                    novo_x.append(xs_m[0] + pin_off(est[0][1], bots[i])[0])
+                else:                          # bypass: a linha passa direto
+                    novo_src.append(src[resto[i - m]])
+                    novo_x.append(_src_x[resto[i - m]] if src_direto and resto[i - m] < len(_src_x)
+                                    else xs_m[0] + PHASE_DX * resto[i - m])
+            src = novo_src
             src_direto = True
-            _src_x[:] = [xs_m[0] + pin_off(est[0][1], bots[i])[0] for i in range(nf)]
+            _src_x[:] = novo_x
             src_y = yb
             y += h + 20
         else:
             ry = [yb + 11 + 6 * i for i in range(nf)]
-            xs = [[xs_m[mi] + pin_off(cl, b[i])[0] for mi, (_s, cl, b) in enumerate(ult_bots)]
+            xs = [[xs_m[mi] + pin_off(cl, b[i])[0] for mi, (_s, cl, b, _t) in enumerate(ult_bots)]
                   for i in range(nf)]
             # o proximo estagio (alinhado ao 1o membro) tambem toca o trilho
             xs = [v + [xs_m[0] + PHASE_DX * i] for i, v in enumerate(xs)]
             nomes = mk_rails("s", ry, xs)
-            for mi, (sid, cl, b) in enumerate(ult_bots):
+            for mi, (sid, cl, b, _t) in enumerate(ult_bots):
                 for i in range(nf):
                     L.con((sid, b[i]), (nomes[i], "rail"))
             src = [(nm, "rail") for nm in nomes]
             src_direto = False
             y = ry[-1] + 10
     return xend
+
+
+def _potencia_mono(L, pw, x, y0):
+    """Reversao monofasica: fonte L/N -> disjuntor 2 polos -> 2 contatores 2002
+    (4 polos) em paralelo -> motor 1008 (U1=p1, V1=p2, PE=p3, U2=p4, V2=p5).
+
+    O 1o contator e a ligacao de referencia (U1/V1 no L, U2/V2 no N); o 2o cruza
+    o enrolamento auxiliar (V1<->V2 nas saidas p6/p8). Ver
+    docs/bibliografia/automacao-industrial.md §1 e o desenho
+    out/bibliografia/rev_mono_print-1.png.
+
+    Spec: {"id","tipo":"monofasico","fase":"L1","neutro":"N","pe":"PE",
+           "colunas": [[Q,6002,rot], {"paralelo": [[KM1,2002,rot],[KM2,2002,rot]]}, [M,1008,rot]]}.
+    """
+    pid = pw.get("id", "P")
+    fase, neu = pw.get("fase"), pw.get("neutro", "N")
+    pe_trilho = pw.get("pe")
+    if not fase:
+        raise ValueError(f"potencia '{pid}': tipo monofasico exige 'fase' (ex.: 'L1') e 'neutro'")
+    if not pe_trilho or pe_trilho == neu:
+        raise ValueError(f"potencia '{pid}': tipo monofasico exige 'pe' em trilho proprio "
+                         f"(PE nunca no neutro)")
+    cols = pw.get("colunas", [])
+    if len(cols) != 3 or not isinstance(cols[0], (list, tuple)) or \
+            not isinstance(cols[1], dict) or not isinstance(cols[2], (list, tuple)):
+        raise ValueError(f"potencia '{pid}': tipo monofasico exige colunas "
+                         f"[disjuntor, {{paralelo: [KM1, KM2]}}, motor]")
+    qid, qcl, qrot = _t(cols[0])
+    mid, mcl, mrot = _t(cols[2])
+    par = [_t(m) for m in cols[1].get("paralelo", [])]
+    if len(par) != 2:
+        raise ValueError(f"potencia '{pid}': reversao monofasica exige 2 contatores em paralelo")
+    qtop, qbot, _qpe = _tops_bots(qcl)
+    if len(qtop) != 2 or len(qbot) != 2:
+        raise ValueError(f"{qid} ({qcl}) nao e disjuntor de 2 polos (topo {qtop}, base {qbot})")
+    for sid, cl, _rot in par:
+        top, bot, _pe = _tops_bots(cl)
+        if len(top) != 4 or len(bot) != 4:
+            raise ValueError(f"{sid} ({cl}) nao tem 4 polos (reversao monofasica usa 2002)")
+    mtop, mbot, mpe = _tops_bots(mcl)
+    if mcl != "1008" or len(mtop) != 2 or len(mbot) != 2 or not mpe:
+        raise ValueError(f"{mid} ({mcl}) nao e motor monofasico 1008 (U1/V1/PE/U2/V2)")
+
+    def rails(ys, xs_por_linha, prefixo):
+        nomes = []
+        for i, yy in enumerate(ys):
+            nm = f"{pid}_{prefixo}{i + 1}"
+            xs = xs_por_linha[i]
+            L.rails.append({"nome": nm, "y": yy, "x0": min(xs), "x1": max(xs)})
+            nomes.append(nm)
+        return nomes
+
+    # --- disjuntor: L/N -> L'/N' ---
+    L.sym(qid, qcl, qrot, x, y0)
+    L.con((fase, "rail"), (qid, qtop[0]))
+    L.con((neu, "rail"), (qid, qtop[1]))
+    yb = y0 + pin_off(qcl, qbot[0])[1]
+    xq = x + _width(qcl)
+    y = yb + 11
+    # --- contatores lado a lado, entradas retas (L' nos pinos 1-2, N' nos 3-4) ---
+    xs_m = []
+    xc = x
+    for sid, cl, rot in par:
+        xs_m.append(xc)
+        xc += _width(cl) + GAP
+    tops = [_tops_bots(cl)[0] for _, cl, _ in par]
+    bots = [_tops_bots(cl)[1] for _, cl, _ in par]
+    ent = rails([y, y + 6], [[xq, xs_m[0] + pin_off(par[0][1], tops[0][0])[0],
+                              xs_m[1] + pin_off(par[1][1], tops[1][0])[0]],
+                             [xq, xs_m[0] + pin_off(par[0][1], tops[0][2])[0],
+                              xs_m[1] + pin_off(par[1][1], tops[1][2])[0]]], "e")
+    L.con((qid, qbot[0]), (ent[0], "rail"))
+    L.con((qid, qbot[1]), (ent[1], "rail"))
+    y += 10
+    for mi, (sid, cl, rot) in enumerate(par):
+        L.sym(sid, cl, rot, xs_m[mi], y)
+        for pi in (0, 1):
+            L.con((ent[0], "rail"), (sid, tops[mi][pi]))
+        for pi in (2, 3):
+            L.con((ent[1], "rail"), (sid, tops[mi][pi]))
+    yb = y + pin_off(par[0][1], bots[0][0])[1]
+    ry = [yb + 11 + 6 * i for i in range(4)]
+    # saidas: s1=U1, s2=V1, s3=U2, s4=V2; KM2 cruza V1/V2 (p6->s4, p8->s2)
+    saidas = [((0, 0), (1, 0)), ((0, 1), (1, 3)), ((0, 2), (1, 2)), ((0, 3), (1, 1))]
+    pinos_motor = [mtop[0], mtop[1], mbot[0], mbot[1]]   # U1, V1, U2, V2
+    xs = []
+    for mi_saida, (a, b) in enumerate(saidas):
+        mia, pa = a
+        mib, pb = b
+        xs.append([xs_m[mia] + pin_off(par[mia][1], bots[mia][pa])[0],
+                   xs_m[mib] + pin_off(par[mib][1], bots[mib][pb])[0],
+                   xs_m[0] + pin_off(mcl, pinos_motor[mi_saida])[0]])
+    sai = rails(ry, xs, "s")
+    for (a, b), nm in zip(saidas, sai):
+        L.con((par[a[0]][0], bots[a[0]][a[1]]), (nm, "rail"))
+        L.con((par[b[0]][0], bots[b[0]][b[1]]), (nm, "rail"))
+    # --- motor alinhado ao 1o contator ---
+    ym = ry[-1] + 10
+    L.sym(mid, mcl, mrot, xs_m[0], ym)
+    for nm, pino in zip(sai, pinos_motor):
+        L.con((nm, "rail"), (mid, pino))
+    L.con((mid, mpe), (pe_trilho, "rail"))
+    return max(xc - GAP, xs_m[0] + _width(mcl))
 
 
 _src_x = []

@@ -62,7 +62,9 @@ PAPEIS_EMBUTIDOS = {
     **{c: {"papel": "bobina"} for c in ("9000", "10060")},
     "9008": {"papel": "lampada"},
     "2001": {"papel": "polos", "modo": "NA"},               # contatos principais do contator (rotulo = bobina)
+    "2002": {"papel": "polos", "modo": "NA"},               # contator 4 polos (reversao mono/trifasica 4 polos)
     **{c: {"papel": "polos", "modo": "FECHADO"} for c in ("6007", "6009", "6010")},   # protecao: passa
+    **{c: {"papel": "polos", "modo": "FECHADO"} for c in ("6002", "6004")},   # disjuntor 2/4 polos: passa (no app, fechar a mao)
 }
 _PAPEIS_VALIDOS = {"contato", "bobina", "lampada", "polos", "contato_temp"}
 

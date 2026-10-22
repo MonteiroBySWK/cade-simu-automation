@@ -104,6 +104,57 @@ S1 energiza KM1 (selo mantem), S0 desliga, S2 energiza KM2, S1 com KM2 ligado na
 Caixa do circuito: ~x 288, y 215 (cabe em 455x295). No app, fios nao mudam de cor por fase;
 a conferencia de fases e pela netlist (`test_reversao_fases_na_geometria`).
 
+### Quarto polo (`polos: 4`) — reversao trifasica como no desenho do professor
+O desenho da disciplina usa disjuntor `6004` e contatores `2002` de **4 polos** (o 4o polo
+comuta o neutro). No grupo de `potencia`, `"polos": 4` troca as linhas para
+`fases + [neutro]` (ex.: L1,L2,L3,N):
+
+```jsonc
+"potencia": [{ "id":"m1", "fases":["L1","L2","L3"], "neutro":"N", "pe":"PE", "polos": 4,
+  "colunas": [["Q1","6004","-Q1"], ["F1","6007","-RT1"],
+    {"paralelo": [["KM1p","2002","-KM1"],
+                  ["KM2p","2002","-KM2", {"ordem": ["L3","L2","L1","N"]}]]},
+    ["M1","1000","-M1"]] }]
+```
+
+- `ordem` usa os nomes das 4 linhas (o `N` segue reto no exemplo: 4o pino <- N).
+- Estagio de 3 polos em grupo de 4 (ex.: termico `6007`) e permitido **so em estagio
+  simples**: as 3 primeiras linhas passam por ele e a 4a (N) faz **bypass** direto para o
+  proximo estagio. Em `paralelo` todos os membros precisam ter os 4 polos.
+- O motor (`1000`, 3 fases + PE) consome as 3 primeiras linhas; a 4a termina nos
+  trilhos de saida (`<id>_s4`); o PE vai ao trilho proprio (`"pe":"PE"`, nunca no N).
+- `polos` so aceita 3 ou 4; com 4 o grupo exige `6004`/`2002` nas colunas (erro claro
+  caso contrario). Exemplo: `tools/examples/reversao_4polos.layout.json` (mesmos 13
+  testes do `reversao`; `test_reversao_4polos_fases_na_geometria` confere o bypass do N
+  e o cruzamento L1<->L3 por geometria).
+- Simulador (`netlist_sim`): `2002` = polos NA por rotulo; `6002`/`6004` = protecao
+  passante (FECHADO — no app, fechar a mao, como os demais disjuntores da DSL).
+
+### Reversao monofasica (`tipo: "monofasico"`)
+Motor `1008` (U1/V1/PE/U2/V2 = p1..p5 no binario), contatores `2002` (4 polos) e
+disjuntor 2 polos `6002`. A reversao **nao** troca fase e neutro: o 1o contator faz a
+**ligacao de referencia** (U1/V1 no L, U2/V2 no N) e o 2o **cruza o enrolamento
+auxiliar** (V1<->V2 nas saidas). Ver `docs/bibliografia/automacao-industrial.md` §1.
+
+```jsonc
+"potencia": [{ "id":"m1", "tipo":"monofasico", "fase":"L1", "neutro":"N", "pe":"PE",
+  "colunas": [["Q1","6002","-Q1"],
+    {"paralelo": [["KM1p","2002","-KM1"], ["KM2p","2002","-KM2"]}]},
+    ["M1","1008","-M1"]] }]
+```
+
+- `"fase"` (ex. `L1`) + `"neutro"` (ex. `N`) em vez de `"fases"`; `"pe"` e obrigatorio e
+  precisa de trilho proprio (PE nunca no neutro — senao e curto N x PE).
+- Forma fixa: `[disjuntor 2 polos, {paralelo: [KM1, KM2 de 4 polos]}, motor 1008]`
+  (outra forma da erro explicito). Entradas retas (L' nos pinos 1-2, N' nos 3-4) e saidas
+  em trilhos `m1_s1..s4` (U1/V1/U2/V2); o motor alinha ao 1o contator.
+- O `comando` e o mesmo da reversao trifasica (S0 NF; S1/S2 NA com selo `7000` do
+  proprio contator e NF cruzado `7001`; bobinas `9000` KM1/KM2).
+- Exemplo: `tools/examples/reversao_monofasica.layout.json` (fonte `3003` L/N; 10 testes:
+  repouso, S1→KM1, selo, intertravamentos, S0 desliga, S2 apos soltar, sem
+  auto-religamento). `test_reversao_monofasica_fases_na_geometria` confere o cruzamento
+  por geometria. Validacao no app (sentido de giro) pendente — sem Wine aqui.
+
 ## Comando v2: rede série-paralelo recursiva
 
 O `comando` aceita, **por bloco**, duas formas. A legada (`serie` + `ramos`, acima) continua
