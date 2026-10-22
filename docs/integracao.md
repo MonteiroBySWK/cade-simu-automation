@@ -19,6 +19,11 @@ e linka a skill em `~/.claude/skills/` e `~/.config/opencode/skills/` (no Window
 O caminho é absoluto: funciona de qualquer projeto. Mover o repo de lugar = rodar `install-mcp` de novo.
 `git pull` no repo atualiza servidor e skill sem reinstalar.
 
+> **Nota**: o MCP roda **deste checkout** (sem release — não há versão publicada do
+> servidor). Depois de `git pull`, **reconecte** o MCP no cliente (`/mcp` no Claude
+> Code / opencode) para carregar a versão nova. O binário do Release serve para usar
+> o `cade` fora do repo (validate/parse/emit sem o checkout).
+
 ## Conferir
 ```bash
 claude mcp get cade-simu      # Status: Connected

@@ -109,6 +109,27 @@ Série só passa se fechada; paralelo liga se *qualquer* ramo fechar.
 | Fonte "L1 só" ou sem fonte | circuito "não simula" no app | fonte `3007` (ou `3006`/`3003`) ligada aos trilhos |
 | Contato da bobina com rótulo diferente | selo/intertravamento não fecha nos testes | rótulo do contato = rótulo da bobina (`-KM1`) |
 | Série longa / muitos ramos | `layout invalido: ... fora da folha` | menos elementos por série; dividir em blocos `comando` |
+| **Classe sem modelo** (A11) | `classe ... sem modelo` | **troque o componente, não insista**: pneumática/GRAFCET, sensor 3 fios, `9007`, instruções de ladder não portadas — o gate não vai passar por repetição |
+
+### Classe sem modelo (A11): troque, não insista
+
+Se o gate falhar com "classe ... sem modelo", **não tente de novo com a mesma classe nem
+contorne o gate**: o componente não tem modelo geométrico/lógico (pneumática/GRAFCET,
+sensor 3 fios, `9007` intermitente/pulso, instruções de ladder ainda não portadas — ver
+`docs/TODO.md` A3/A4/A5/A10/A11). Troque por um equivalente suportado (ex.: contato de
+2 fios no lugar do sensor, TON 10066 no lugar do 9007) ou declare o limite ao usuário.
+
+### Gravando goldens (só para validar no app, com Wine)
+
+```bash
+./scripts/golden-display.sh :2
+DISPLAY=:2 python3 tools/golden_app.py --todos
+```
+
+Ladder (saídas 10205 piscam no repaint de 100 ms): `DISPLAY=:2 python3 tools/golden_app.py
+--todos --leituras 3 --sem-motores`. **Não chamar `zoom_todo`** (os cliques na barra de
+título da MDI mexem na vista; o app já abre em zoom automático). Detalhe em
+`docs/conformidade.md`.
 
 ## CLP + ladder (DSL `ladder/1`, `docs/ladder.md`)
 
@@ -128,10 +149,16 @@ gate (`cad_example`): `partida_direta.ladder`, `reversao.ladder`, `intercalada.l
   Não reutilize operandos ocupados; rearme não religa (o selo depende de bits que caíram).
 - **Testes**: `sequencia` de passos `{entradas, ticks|tempo_s, esperado, esperado_lampadas, esperado_bits}`; `inicial`; `DJ1: true`
   em todo passo (disjuntor ligado). O gate roda o modelo **geométrico** (`clp_sim`, a partir do .cad) e o **lógico** da DSL e exige igualdade.
+  `cade gate` / `cade design` rodam esses testes de ladder no **modelo geométrico Rust** (não só o lógico);
+  `cade conformidade` cobre relé (11 casos) e ladder — detalhe em `docs/ladder.md` e `docs/conformidade.md`.
 - **No app**: `python3 tools/app_sim.py x.cad --roteiro roteiro.json` (alternar `DJ1` antes; `pressionar`, `aguardar`, `foto` por
   instante; lê bobinas 9000, lâmpadas 9008, saídas 10205 e bobinas ladder). Um Wine por vez.
   **Disjuntores iniciam ABERTOS em cada Play**: sem o clique o motor não gira. **Um ponteiro só**: não
   dá para segurar S1 e apertar S0 ao mesmo tempo — solte antes (ver `docs/conformidade.md`).
+  **O aviso de CURTO é uma janela separada** (título `Erro`, ~150x82): o app fica bloqueado até
+  fechá-la (Return, senão clique no OK); o gravador marca `curto:true` no passo. **O app repinta
+  em ticks de 100 ms**: a captura logo após uma ação pode pegar um **quadro parcial** — dar
+  settle (≥ 300 ms) antes de ler.
 
 ## Quando pedir esclarecimento (pontos de parada)
 
@@ -197,3 +224,5 @@ Avaliação offline de saídas de agentes: `python3 tools/eval/run_eval.py --gol
 
 - `out/<nome>.cad` com `ok: true` no `cad_design`, conferido no `cad_preview`.
 - Descrição da topologia (o que cada degrau faz), testes que passaram e **limites honestos** do que não foi provado.
+- Roteiro do projeto: `docs/TODO.md` (100% funcional × ≥ 80% autônomo) e o material da
+  disciplina em `docs/bibliografia/automacao-industrial.md`.
