@@ -1,7 +1,8 @@
 # Ladder (CLP) no CADe_SIMU — semântica e contrato da DSL `ladder/1`
 
-Status: **especificação** (contrato do port em Rust). Nada aqui está implementado em Python; os
-exemplos `tools/examples/*.ladder.json` e os casos `tools/eval/casos/ladder/*.json` são só dados.
+Status: **implementado em Python** (`tools/ladder_dsl.py` gerador/validação/modelo lógico, `tools/clp_sim.py` modelo
+geométrico, `cad_design`/`cad_test`/`cad_gate`) e **verificado no app (Wine)** nas Práticas A/B; contrato do port em Rust.
+Extensões §2.5: TON em linha, `potencia` `dj_comum`, cargas em paralelo, `textos`. Os casos `tools/eval/casos/ladder/*.json` seguem só como dados.
 Evidência de engenharia reversa em `docs/re-engenharia.md` §13 (endereços do EXE). Esquema
 formal: `docs/ladder.schema.json`.
 
@@ -143,6 +144,13 @@ Convenção do gerador (o app aceita qualquer string; acervo usa também `B3:L`,
 - V8 tudo cabe na folha (`tools/sheet.json`: x ≤ 455, y ≤ 305) — ver §4.
 
 ---
+
+### 2.5 Extensões implementadas (Python)
+- `layout.potencia` = `{"tipo":"dj_comum","fonte":{"classe":"3005"},"disjuntor":[id,"6003","DJ1"],"motores":[{"contator","termico"?,"motor"}]}`:
+  um disjuntor + n colunas contator → (térmico) → motor; o 6002 de `clp.alimentacao.protecao` e o aux `8016` usam o MESMO rótulo (o app alterna todos).
+- TON **em linha** na série principal: `["TON","T1",{"tempo":1,"base":"1s"}]` (IN = nó anterior, Q segue a série, +6 em y).
+- `clp.saidas[].carga` pode ser lista (cargas em paralelo, ex.: bobina + lâmpada). `textos`: classe 8.
+- Medido no app: bobina ladder, TON em linha, SET/RST e entrada/saída 10204/10205 funcionam; tick ≈ 100 ms.
 
 ## 3. Simulação (contrato do `cad_test`/netlist em Rust)
 

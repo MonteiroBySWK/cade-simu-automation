@@ -1,0 +1,389 @@
+{
+ "titulo": "PARTIDA SEQUENCIAL DE 3 MOTORES (M3, M2, M1) - CLP MODULAR",
+ "dsl": "ladder/1",
+ "layout": {
+  "clp": {
+   "id": "CLP1",
+   "classe": "10206",
+   "rotulo": "-CLP",
+   "alimentacao": {
+    "fonte": {
+     "id": "X2",
+     "classe": "3011",
+     "rotulo": "-X"
+    },
+    "protecao": [
+     "DJ1p",
+     "6002",
+     "DJ1"
+    ]
+   },
+   "entradas": [
+    {
+     "operando": "I0.1",
+     "dispositivo": [
+      "B0",
+      "8001",
+      "B0"
+     ]
+    },
+    {
+     "operando": "I0.2",
+     "dispositivo": [
+      "B1",
+      "8000",
+      "B1"
+     ]
+    },
+    {
+     "operando": "I0.3",
+     "dispositivo": [
+      "DJ1a",
+      "8016",
+      "DJ1"
+     ]
+    }
+   ],
+   "saidas": [
+    {
+     "operando": "Q0.1",
+     "carga": [
+      "C1",
+      "9000",
+      "C1"
+     ]
+    },
+    {
+     "operando": "Q0.2",
+     "carga": [
+      "C2",
+      "9000",
+      "C2"
+     ]
+    },
+    {
+     "operando": "Q0.3",
+     "carga": [
+      "C3",
+      "9000",
+      "C3"
+     ]
+    }
+   ]
+  },
+  "potencia": {
+   "tipo": "dj_comum",
+   "fonte": {
+    "classe": "3005",
+    "rotulo": "-X"
+   },
+   "disjuntor": [
+    "DJ1",
+    "6003",
+    "DJ1"
+   ],
+   "motores": [
+    {
+     "contator": "C1",
+     "motor": "M1"
+    },
+    {
+     "contator": "C2",
+     "motor": "M2"
+    },
+    {
+     "contator": "C3",
+     "motor": "M3"
+    }
+   ]
+  },
+  "ladder": {
+   "fonte": {
+    "id": "XL",
+    "classe": "3008",
+    "rotulo": "+L"
+   },
+   "trilho_direito": "aberto",
+   "rungs": [
+    {
+     "id": "R1",
+     "comentario": "RUN com selo",
+     "logica": {
+      "serie": [
+       [
+        "NA",
+        "I0.3"
+       ],
+       [
+        "NA",
+        "I0.1"
+       ],
+       {
+        "paralelo": [
+         [
+          "NA",
+          "I0.2"
+         ],
+         [
+          "NA",
+          "M0.1"
+         ]
+        ]
+       }
+      ]
+     },
+     "saida": [
+      "OUT",
+      "M0.1"
+     ]
+    },
+    {
+     "id": "R2",
+     "comentario": "M3 parte primeiro",
+     "logica": [
+      "NA",
+      "M0.1"
+     ],
+     "saida": [
+      "OUT",
+      "Q0.3"
+     ]
+    },
+    {
+     "id": "R3",
+     "comentario": "M2 apos 2 s",
+     "logica": {
+      "serie": [
+       [
+        "NA",
+        "M0.1"
+       ],
+       [
+        "TON",
+        "T1",
+        {
+         "tempo": 2,
+         "base": "1s"
+        }
+       ]
+      ]
+     },
+     "saida": [
+      "OUT",
+      "Q0.2"
+     ]
+    },
+    {
+     "id": "R4",
+     "comentario": "M1 apos mais 2 s (4 s no total)",
+     "logica": {
+      "serie": [
+       [
+        "NA",
+        "Q0.2"
+       ],
+       [
+        "TON",
+        "T2",
+        {
+         "tempo": 2,
+         "base": "1s"
+        }
+       ]
+      ]
+     },
+     "saida": [
+      "OUT",
+      "Q0.1"
+     ]
+    }
+   ]
+  },
+  "textos": [
+   {
+    "x": 24,
+    "y": 8,
+    "txt": "CIRCUITO DE COMANDO CLP"
+   },
+   {
+    "x": 219,
+    "y": 8,
+    "txt": "CIRCUITO DE POTENCIA MOTORES"
+   },
+   {
+    "x": 330,
+    "y": 18,
+    "txt": "TABELA DE I/O"
+   },
+   {
+    "x": 330,
+    "y": 24,
+    "txt": "I0.1 B0 DESLIGA (NF)"
+   },
+   {
+    "x": 330,
+    "y": 30,
+    "txt": "I0.2 B1 LIGA (NA)"
+   },
+   {
+    "x": 330,
+    "y": 36,
+    "txt": "I0.3 DJ1 aux. disjuntor"
+   },
+   {
+    "x": 330,
+    "y": 42,
+    "txt": "Q0.3 C3 (M3) parte primeiro"
+   },
+   {
+    "x": 330,
+    "y": 48,
+    "txt": "Q0.2 C2 (M2) apos 2 s"
+   },
+   {
+    "x": 330,
+    "y": 54,
+    "txt": "Q0.1 C1 (M1) apos 4 s"
+   },
+   {
+    "x": 330,
+    "y": 60,
+    "txt": "M0.1 RUN (memoria interna)"
+   },
+   {
+    "x": 96,
+    "y": 8,
+    "txt": "PAINEL DE COMANDOS"
+   }
+  ]
+ },
+ "testes": [
+  {
+   "nome": "S1 repouso",
+   "entradas": {
+    "DJ1": true
+   },
+   "status": "OK",
+   "esperado": [],
+   "esperado_bits": {
+    "M0.1": 0
+   }
+  },
+  {
+   "nome": "S2 sequencia M3 -> M2 (2 s) -> M1 (4 s)",
+   "status": "OK",
+   "sequencia": [
+    {
+     "nome": "LIGA (t=0)",
+     "entradas": {
+      "DJ1": true,
+      "B1": true
+     },
+     "ticks": 4,
+     "esperado": [
+      "C3"
+     ]
+    },
+    {
+     "nome": "solta, t~1,9 s: so M3",
+     "entradas": {
+      "DJ1": true
+     },
+     "ticks": 14,
+     "esperado": [
+      "C3"
+     ]
+    },
+    {
+     "nome": "t~2,3 s: M3+M2",
+     "entradas": {
+      "DJ1": true
+     },
+     "ticks": 6,
+     "esperado": [
+      "C2",
+      "C3"
+     ]
+    },
+    {
+     "nome": "t~3,9 s: M3+M2",
+     "entradas": {
+      "DJ1": true
+     },
+     "ticks": 16,
+     "esperado": [
+      "C2",
+      "C3"
+     ]
+    },
+    {
+     "nome": "t~4,5 s: M3+M2+M1",
+     "entradas": {
+      "DJ1": true
+     },
+     "ticks": 6,
+     "esperado": [
+      "C1",
+      "C2",
+      "C3"
+     ]
+    }
+   ]
+  },
+  {
+   "nome": "S3 B0 desliga tudo",
+   "status": "OK",
+   "sequencia": [
+    {
+     "nome": "LIGA",
+     "entradas": {
+      "DJ1": true,
+      "B1": true
+     },
+     "ticks": 4,
+     "esperado": [
+      "C3"
+     ]
+    },
+    {
+     "nome": "regime",
+     "entradas": {
+      "DJ1": true
+     },
+     "ticks": 60,
+     "esperado": [
+      "C1",
+      "C2",
+      "C3"
+     ]
+    },
+    {
+     "nome": "B0",
+     "entradas": {
+      "DJ1": true,
+      "B0": true
+     },
+     "ticks": 8,
+     "esperado": []
+    },
+    {
+     "nome": "solta B0",
+     "entradas": {
+      "DJ1": true
+     },
+     "ticks": 30,
+     "esperado": []
+    }
+   ]
+  },
+  {
+   "nome": "S4 DJ1 desligado: nada liga",
+   "entradas": {
+    "DJ1": false,
+    "B1": true
+   },
+   "status": "OK",
+   "esperado": []
+  }
+ ]
+}

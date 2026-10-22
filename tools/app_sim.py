@@ -24,6 +24,7 @@ alheio). Sempre faz `down` ao terminar (a menos de manter=True).
 """
 import json
 import os
+import shutil
 import subprocess
 import sys
 import time
@@ -906,6 +907,11 @@ def executar_roteiro(cad, roteiro, saida=None, verbose=False, manter=False):
                     if all(sorted(v) == obs.get(k) for k, v in alvo.items()):
                         alcancou = True
                         break
+                if alcancou:                       # o quadro que satisfez a condicao vira a evidencia (nome do passo)
+                    try:
+                        shutil.copy(app.saida / "_poll.png", app.saida / f"{p.get('nome', f'aguardar{i}')}.png")
+                    except OSError:
+                        pass
                 reg = {"nome": p.get("nome", f"aguardar{i}"), "tipo": "aguardar", "alcancou": alcancou,
                        "t_s": round(time.time() - marca, 2), "espera_s": round(time.time() - ti, 2), "obtido": obs,
                        "esperado": alvo, "ok": alcancou, "falhas": [] if alcancou else [f"timeout; obtido {obs}"]}
