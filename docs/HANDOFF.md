@@ -20,6 +20,18 @@ Atualizado: 2026-10-22 ~10h (horário de Brasília). Repo: `~/dev/codes/personal
 - Não declarar "funciona" sem prova (testes; para comportamento do app, screenshot no Wine).
 - Responder em PT-BR, direto.
 
+## Estado (main, 22/10/2026 pos-v0.3.0)
+- Rust: **`cade mcp`** (stdio, 10 ferramentas: design/gate/pins/examples/build/test/
+  simulate/validate/symbols), **A8/A9/A11 portados** (layout monofasico/4 polos byte-identico +
+  recusa sem modelo; skips de paridade removidos) e **9007 intermitente** no `cade_sim`.
+- Python: **A4** (9004-9006 + 9007 + contatos 7004..7015 no `netlist_sim`) e **A5 parcial**
+  (sensores 2 fios como contato; 3+ fios sem modelo).
+- **A4/A5 no app: BLOQUEADO** — os `.cad` gerados com 9004/9007 e 7500 nao disparam no app
+  (modelo Python/Rust passa). Sem doador 9004/9007/7501/7502 no acervo. Investigacao com Ghidra
+  em andamento (campos `nums`/labels do 9004/7004/7500).
+- Pendente de harness: A2 timers (comparacao por janela; app ~0,41x tempo de parede sob Xvfb).
+- A13 restante: `cade_render` (preview PNG), `cade_app` (Wine), `cade_vision`, `cade_maint`.
+
 ## Estado (main)
 - `main` = `3b25658` + trabalho desta sessão (goldens do app, conformidade 11/11, correções do gravador,
   `3012` como fonte, bibliografia/skill). Python completo (layout, gate, MCP, simulador, `app_sim`), Rust
