@@ -21,6 +21,7 @@ python scripts/dev.py gate      # gera e valida todos os exemplos
 - **Dependências** (núcleo × opcionais, variáveis `CADE_*`): [`docs/DEPENDENCIAS.md`](docs/DEPENDENCIAS.md)
 - **Usar com Claude Code / opencode**: `python scripts/dev.py install-mcp` (MCP + skill via os próprios CLIs) — [`docs/integracao.md`](docs/integracao.md)
 - **Para agentes e contribuidores**: [`AGENTS.md`](AGENTS.md), [`CONTRIBUTING.md`](CONTRIBUTING.md), [`CHANGELOG.md`](CHANGELOG.md)
+- **Roteiro do projeto** (100% funcional × ≥ 80% autônomo): [`docs/TODO.md`](docs/TODO.md) · **Conformidade com o app real**: [`docs/conformidade.md`](docs/conformidade.md)
 
 ## Como funciona
 
