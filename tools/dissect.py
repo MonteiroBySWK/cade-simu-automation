@@ -8,8 +8,27 @@ def split_entities(d):
     header, rest = d[:m.start()+1], d[m.start()+1:]
     f = rest.find('$$$')
     body, footer = rest[:f], rest[f:]
-    ents = re.split(r'#(?=\*\d+\*-?\d+#)', body)
+    ents = []
+    for e in re.split(r'#(?=\*\d+\*-?\d+#)', body):
+        ents += _desgruda(e)
     return header, ents, footer
+
+
+# Entidade = `*seq*id#` + rotulos + `*n`x23 + `#%s` (string final, quase sempre vazia). Quando a string
+# NAO e vazia (IP do CPU 10206, texto da classe 8) a proxima entidade vem colada a ela, sem '#':
+# `...*31*32#192.128.0.1*26*10204#I0.1...`. Sem separar, o 10204 seguinte some dentro do 10206.
+_GRUDADA = re.compile(r'#((?:\*-?\d+){4,})#([^#*]*)(?=\*\d+\*-?\d+#)')
+
+
+def _desgruda(e):
+    out = []
+    while True:
+        m = _GRUDADA.search(e)
+        if not m:
+            out.append(e)
+            return out
+        out.append(e[:m.end()])
+        e = e[m.end():]
 
 def split_all(d):
     """Como split_entities, mas a entidade 0 (serializada colada ao 'CADe_SIMU*') entra em ents.
@@ -39,7 +58,11 @@ def parse_ent(e):
             break
     else:
         labels = parts
-    return {'seq': seq, 'id': idc, 'labels': labels, 'nums': nums, 'raw': e}
+    extra = ''
+    if nums:
+        resto = tail.split('#', i + 1)
+        extra = resto[i + 1] if len(resto) > i + 1 else ''
+    return {'seq': seq, 'id': idc, 'labels': labels, 'nums': nums, 'raw': e, 'extra': extra}
 
 def show_group(ents, idc, maxn=6):
     g = [p for p in map(parse_ent, ents) if p and p['id'] == idc]

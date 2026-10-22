@@ -36,7 +36,8 @@ def test_cad_examples_lista_os_layouts():
     r = json.loads(C.cad_examples())
     nomes = {e["nome"] for e in r["exemplos"]}
     assert {"partida_direta", "intercalada"} <= nomes
-    assert r["n"] == len(NOMES)
+    assert r["n"] == len(NOMES) + len(list(EX.glob("*.ladder.json")))
+    assert {"intercalada.ladder", "partida_sequencial_3.ladder"} <= nomes
     assert all(e["titulo"] for e in r["exemplos"])
 
 

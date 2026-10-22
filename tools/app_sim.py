@@ -45,14 +45,18 @@ CALIB_ARQ = ROOT / "out" / "app_sim" / "calibracao.json"
 FIO = {"4000", "4009", "4010", "4018", "4019"}
 IGNORA = FIO | {"4001", "4002", "4003", "4004", "4012", "8", "20000"}
 BOBINA = {"9000", "10060"}
+SAIDA_CLP = {"10205"}                        # celula DO do CLP modular (acesa com a saida em 1)
 LAMPADA = {"9008"}
 BOTOEIRA = {"8000", "8001"}                  # momentaria: segurar o mouse
 CONTATO_NA = {"7000", "8000", "8016", "10050"}
 CONTATO_NF = {"7001", "8001", "8017", "10051"}
 # toolbar (px relativos a janela, alinhados a esquerda): Play, Stop
 BTN_PLAY, BTN_STOP = (505, 32), (528, 32)
-MENU_VER, ITEM_ZOOM_TODO = (212, 10), (237, 116)   # menu Ver -> 'Zoom Todo' (popup a +197,+19 da janela)
-RED = (255, 0, 0)
+# O menu Ver/'Zoom Todo' NAO e mais usado: o popup nao aparece em captura de janela (XWayland) e a posicao mudou
+# com a janela maximizada. A vista util = filha MDI MAXIMIZADA (duplo-clique na barra de titulo da filha), que no
+# Wine atual da escala 4 px/unidade sem scroll: px = 24 + 4*x, py = 69 + 4*y (confirmado pela calibracao FFT).
+TITULO_FILHA = (600, 85)                     # barra de titulo da filha MDI quando NAO maximizada
+BTN_STOP_COR = RED = (255, 0, 0)
 CINZA_FILL = (192, 192, 192)
 
 
@@ -110,6 +114,9 @@ class Cad:
         pts = [(px, py) for _, px, py in s["pinos"]] or [(s["x"], s["y"])]
         x0, x1 = min(p[0] for p in pts), max(p[0] for p in pts)
         y0, y1 = min(p[1] for p in pts), max(p[1] for p in pts)
+        if s["classe"] in ("10204", "10205", "10206") and len(s["box"]) == 4 and s["box"][2] > 0:
+            dx, dy, w, h = s["box"]                 # celula DI/DO do CLP: a caixa gravada (-12,-3,12,27)
+            return s["x"] + dx, s["y"] + dy, s["x"] + dx + w, s["y"] + dy + h
         if s["classe"] == "1000":                   # motor: disco abaixo dos pinos
             x0, x1, y1 = min(x0, s["x"] - 12), max(x1, s["x"] + 12), max(y1, s["y"] + 18)
         return x0 - margem, y0 - margem, x1 + margem, y1 + margem
@@ -168,6 +175,8 @@ class Cad:
 
 
 def tipo_simbolo(cid):
+    if cid in ("10060", "10061", "10062"):
+        return "bobina_ladder"                   # OUT/SET/RST do ladder (estado = vermelho no corpo)
     if cid in BOBINA:
         return "bobina"
     if cid in LAMPADA:
@@ -180,8 +189,10 @@ def tipo_simbolo(cid):
         return "contato_aux_termico"             # contato NA 97-98
     if cid in ("7000", "7001", "10050", "10051"):
         return "contato"
-    if cid in ("6009", "6010"):
-        return "disjuntor"
+    if cid in ("6002", "6003", "6009", "6010"):
+        return "disjuntor"                         # DJ1 6002/6003: de mesmo rotulo do aux 8016; alterna ANTES do teste
+    if cid in SAIDA_CLP:
+        return "saida_clp"
     if cid in ("2001",):
         return "contator_potencia"
     if cid == "6007":
@@ -358,8 +369,14 @@ def ler_estado(img, cad, cal, base=None):
     bob = {}
     lamp = {}
     cont = {}
+    sai = {}
+    bl = {}
     for it in itens:
-        if it["tipo"] == "bobina":
+        if it["tipo"] == "bobina_ladder":
+            bl[it["chave"]] = bl.get(it["chave"], False) or it["ativo"]
+        elif it["tipo"] == "saida_clp":
+            sai[it["chave"]] = sai.get(it["chave"], False) or it["ativo"]
+        elif it["tipo"] == "bobina":
             bob[it["chave"]] = bob.get(it["chave"], False) or it["ativo"]
         elif it["tipo"] == "lampada":
             lamp[it["chave"]] = lamp.get(it["chave"], False) or it["ativo"]
@@ -367,7 +384,7 @@ def ler_estado(img, cad, cal, base=None):
             k = f'{it["rotulo"]}({it["classe"]})@{it["x"]},{it["y"]}'
             cont[k] = it["ativo"]
     motores = {it["chave"]: it["ativo"] or it["cinza_px"] >= 12 for it in itens if it["tipo"] == "motor"}
-    return {"bobinas": bob, "lampadas": lamp, "contatos_acionados": cont, "motores": motores,
+    return {"bobinas": bob, "lampadas": lamp, "saidas_clp": sai, "bobinas_ladder": bl, "contatos_acionados": cont, "motores": motores,
             "fora_da_janela": [it["rotulo"] for it in itens if not it["visivel"]],
             "simbolos": itens}
 
@@ -383,8 +400,22 @@ def toolbar_ativa(img):
 
 
 def em_simulacao(img):
-    """Pausa vermelha + Step verde so existem com a simulacao rodando."""
-    return _cor_em(img, 551, 32, RED) >= 5
+    """Botao Stop (528,32) VERMELHO = simulacao rodando (sinal confiavel neste Wine).
+
+    O criterio antigo (Pausa em (551,32)) falhava: ali o botao so fica vermelho em outro estado (pausado)."""
+    return _cor_em(img, BTN_STOP[0], 32, RED) >= 5
+
+
+def vista_maximizada(img):
+    """True se a filha MDI esta maximizada: sem a barra de titulo AZUL da filha em TITULO_FILHA."""
+    a = np.asarray(img.convert("RGB"))
+    y, x = TITULO_FILHA[1], TITULO_FILHA[0]
+    if a.shape[0] <= y or a.shape[1] <= x:
+        return True
+    r, g, b = (int(v) for v in a[y, x])
+    azul = b > 160 and r < 90 and 70 < g < 170        # barra de titulo ativa do Windows (0,120,215)
+    cinza = (r, g, b) == (128, 128, 128)               # fundo do MDI (filha inativa/pequena)
+    return not (azul or cinza)
 
 
 # --------------------------------------------------------------------------- app (Wine)
@@ -584,11 +615,15 @@ class AppSim:
         time.sleep(espera)
 
     def zoom_todo(self):
-        """Ver > Zoom Todo: enquadra a folha inteira (escala 1 px/unidade, tudo visivel). Idempotente."""
-        self._clica_win(*MENU_VER)
-        time.sleep(0.5)
-        self._clica_win(*ITEM_ZOOM_TODO)
-        time.sleep(0.9)
+        """Maximiza a filha MDI (duplo-clique na barra de titulo): folha em escala 4 sem scroll. Idempotente."""
+        _xdo("windowsize", self.win, "1918", "1052")      # janela alta o bastante p/ a folha inteira (WM pode ignorar)
+        time.sleep(0.8)
+        img, _ = self.screenshot("_probe.png")
+        if not vista_maximizada(img):
+            self._clica_win(*TITULO_FILHA)
+            self._clica_win(*TITULO_FILHA)
+            time.sleep(1.5)
+        return self
 
     def reiniciar(self):
         """stop + play: zera bobinas/memoria/disjuntores (estado de repouso)."""
@@ -598,7 +633,9 @@ class AppSim:
 
     def _alvo(self, rotulo_ou_coord, aliases=None):
         """-> (wx, wy, entrada|None) em pixels da janela, com calibracao fresca."""
-        img, _, cal = self._snap_calibra("_cal.png")
+        cal = self.cal                           # vista fixa (sem scroll): reaproveita a calibracao (FFT custa ~1,5 s)
+        if cal is None:
+            img, _, cal = self._snap_calibra("_cal.png")
         if cal is None:
             raise AppSimErro("calibracao falhou (fios do .cad nao casam com a imagem)")
         if isinstance(rotulo_ou_coord, (tuple, list)):
@@ -812,6 +849,104 @@ def _slug(s):
     return "".join(c if c.isalnum() else "_" for c in s)[:40]
 
 
+# --------------------------------------------------------------------------- roteiro (evidencias por tempo)
+
+def _ligados(d):
+    return sorted(k for k, v in d.items() if v)
+
+
+def executar_roteiro(cad, roteiro, saida=None, verbose=False, manter=False):
+    """Roda um ROTEIRO no app e confere o estado em cada foto (CLP + ladder + lampadas). Retorna dict.
+
+    roteiro = [passo...]; passo = {"op": ..., ...}:
+      {"op":"alternar","alvo":"DJ1"}                     clique que alterna (disjuntor/termico). DJ1 ANTES de testar.
+      {"op":"pressionar","alvo":"B1","segurar_s":0.6}    botoeira (mousedown, espera, mouseup)
+      {"op":"segurar","alvo":"B1"} / {"op":"soltar"}
+      {"op":"marca"}                                      zera o cronometro (t=0 das fotos)
+      {"op":"esperar","s":1.0}
+      {"op":"foto","nome":"t2","ate_s":2.0,"esperado":{"bobinas":["C1"],"lampadas":["H1"],"saidas_clp":["Q0.1"],
+                                                       "bobinas_ladder":["Q0.1"]}}
+          ate_s = espera ate esse instante do cronometro (se ainda nao passou); cada chave de `esperado` e comparada
+          como CONJUNTO EXATO de ativos (so as chaves citadas).
+    Sempre faz `down` do Wine ao final (a menos de manter=True)."""
+    t0 = time.time()
+    out = {"ok": False, "cad": str(cad), "passos": [], "fotos": [], "avisos": []}
+    app = AppSim(cad, saida=saida, verbose=verbose)
+    out["screenshots"] = str(app.saida)
+    try:
+        app.abrir()
+        app.play()
+        app.zoom_todo()
+        app.estado("_calibra.png")
+        marca = time.time()
+        todos = True
+        for i, p in enumerate(roteiro):
+            op = p["op"]
+            if op == "alternar":
+                app.alternar(p["alvo"], espera=p.get("espera_s", 0.6))
+            elif op == "pressionar":
+                app.pressionar(p["alvo"], segurar_s=p.get("segurar_s", 0.6))
+            elif op == "segurar":
+                app.pressionar(p["alvo"], segurar_s=None)
+            elif op == "soltar":
+                app.soltar()
+            elif op == "marca":
+                marca = time.time()
+            elif op == "esperar":
+                time.sleep(float(p["s"]))
+            elif op == "aguardar":
+                # espera o estado (conjuntos exatos das chaves citadas) ou estoura timeout_s; registra o instante
+                alvo, lim, ti = p["estado"], float(p.get("timeout_s", 8)), time.time()
+                alcancou, obs = False, {}
+                while time.time() - ti < lim:
+                    img, _ = app.screenshot("_poll.png")
+                    est = ler_estado(img, app.cad, app.cal)
+                    obs = {"bobinas": _ligados(est["bobinas"]), "lampadas": _ligados(est["lampadas"]),
+                           "saidas_clp": _ligados(est["saidas_clp"]), "bobinas_ladder": _ligados(est["bobinas_ladder"])}
+                    if all(sorted(v) == obs.get(k) for k, v in alvo.items()):
+                        alcancou = True
+                        break
+                reg = {"nome": p.get("nome", f"aguardar{i}"), "tipo": "aguardar", "alcancou": alcancou,
+                       "t_s": round(time.time() - marca, 2), "espera_s": round(time.time() - ti, 2), "obtido": obs,
+                       "esperado": alvo, "ok": alcancou, "falhas": [] if alcancou else [f"timeout; obtido {obs}"]}
+                if verbose:
+                    print(f"[roteiro] aguardar {reg['nome']}: {'ok' if alcancou else 'TIMEOUT'} t={reg['t_s']}s", flush=True)
+                out["fotos"].append(reg)
+                todos = todos and alcancou
+            elif op == "foto":
+                if p.get("ate_s") is not None:
+                    falta = float(p["ate_s"]) - (time.time() - marca)
+                    if falta > 0:
+                        time.sleep(falta)
+                t_ini = time.time() - marca
+                img, caminho = app.screenshot(f"{p['nome']}.png")
+                t_cap = time.time() - marca
+                est = ler_estado(img, app.cad, app.cal or calibrar(img, app.cad)) if (app.cal or True) else None
+                obs = {"bobinas": _ligados(est["bobinas"]), "lampadas": _ligados(est["lampadas"]),
+                       "saidas_clp": _ligados(est["saidas_clp"]), "bobinas_ladder": _ligados(est["bobinas_ladder"])}
+                falhas = []
+                for k, v in (p.get("esperado") or {}).items():
+                    if sorted(v) != obs.get(k):
+                        falhas.append(f"{k}: obtido {obs.get(k)} esperado {sorted(v)}")
+                f = {"nome": p["nome"], "t_s": round(t_cap, 2), "obtido": obs, "esperado": p.get("esperado"),
+                     "ok": not falhas, "falhas": falhas, "screenshot": str(caminho)}
+                if verbose:
+                    print(f"[roteiro] {f['nome']} t={f['t_s']}s {obs} {'OK' if not falhas else 'FALHA ' + str(falhas)}", flush=True)
+                out["fotos"].append(f)
+                todos = todos and not falhas
+            else:
+                raise AppSimErro(f"op desconhecida: {op}")
+            out["passos"].append({"i": i, **{k: v for k, v in p.items() if k != "esperado"}, "t_s": round(time.time() - marca, 2)})
+        out["ok"] = todos
+    except AppSimErro as e:
+        out["erro"] = str(e)
+    finally:
+        if not manter:
+            app.fechar()
+    out["tempo_s"] = round(time.time() - t0, 1)
+    return out
+
+
 # --------------------------------------------------------------------------- CLI
 
 def _casos_de(path):
@@ -826,6 +961,7 @@ def main(argv):
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("cad")
     ap.add_argument("--layout", help="spec/layout/casos .json com a chave 'testes'")
+    ap.add_argument("--roteiro", help="roteiro .json (lista de passos, veja executar_roteiro): fotos por instante")
     ap.add_argument("--saida", help="diretorio dos screenshots (default out/app_sim/<nome>)")
     ap.add_argument("--json", action="store_true")
     ap.add_argument("--alias", action="append", default=[], metavar="ENTRADA=ROTULO",
@@ -833,6 +969,11 @@ def main(argv):
     ap.add_argument("--manter", action="store_true", help="nao dar down no fim")
     ap.add_argument("-v", "--verbose", action="store_true")
     a = ap.parse_args(argv)
+    if a.roteiro:
+        ro = json.loads(Path(a.roteiro).read_text(encoding="utf-8"))
+        r = executar_roteiro(a.cad, ro["passos"] if isinstance(ro, dict) else ro, saida=a.saida, verbose=True, manter=a.manter)
+        print(json.dumps(r, ensure_ascii=False, indent=1))
+        return 0 if r["ok"] else 1
     casos = _casos_de(a.layout) if a.layout else []
     aliases = dict(x.split("=", 1) for x in a.alias)
     r = executar_casos(a.cad, casos, saida=a.saida, verbose=a.verbose, manter=a.manter, aliases=aliases)

@@ -108,3 +108,52 @@ def test_e2e_partida_direta_no_app(tmp_path):
     assert r["ok"]
     assert not A.W.pids_cade(), "o verificador deve sempre dar down"
     assert (tmp_path / "shots" / "repouso.png").is_file()
+
+
+# --- deteccao de Play / vista (correcao: Stop vermelho, nao a Pausa) ----------------------------
+
+def _barra(stop=None, pausa=None, size=(956, 523)):
+    im = Image.new("RGB", size, (255, 255, 255))
+    d = ImageDraw.Draw(im)
+    if stop:
+        d.rectangle([A.BTN_STOP[0] - 5, 28, A.BTN_STOP[0] + 5, 36], fill=stop)
+    if pausa:
+        d.rectangle([551 - 5, 28, 551 + 5, 36], fill=pausa)
+    return im
+
+
+def test_em_simulacao_usa_o_botao_stop():
+    assert A.em_simulacao(_barra(stop=(255, 0, 0)))
+    assert A.em_simulacao(_barra(stop=(255, 0, 0), pausa=(255, 0, 0)))
+    assert not A.em_simulacao(_barra())
+    assert not A.em_simulacao(_barra(pausa=(255, 0, 0)))          # o criterio antigo (551,32) nao vale mais
+
+
+def test_vista_maximizada_pela_barra_de_titulo_da_filha():
+    im = Image.new("RGB", (956, 1052), (255, 255, 255))
+    assert A.vista_maximizada(im)
+    ImageDraw.Draw(im).rectangle([100, 70, 900, 100], fill=(0, 120, 215))
+    assert not A.vista_maximizada(im)
+
+
+def test_disjuntor_dj1_e_saida_clp_sao_reconhecidos():
+    assert A.tipo_simbolo("6002") == "disjuntor" and A.tipo_simbolo("6003") == "disjuntor"
+    assert A.tipo_simbolo("10205") == "saida_clp" and A.tipo_simbolo("10060") == "bobina_ladder"
+
+
+def test_ler_estado_le_saidas_clp_e_bobinas_ladder(tmp_path):
+    import ladder_dsl as L
+    spec = json.loads((EX / "partida_sequencial_3.ladder.json").read_text(encoding="utf-8"))
+    d, _ = L.compilar(spec, "x.cad")
+    p = tmp_path / "x.cad"
+    d.cad.salvar(p)
+    cad = A.Cad(p)
+    s, ox, oy = 2.0, 30.0, 110.0
+    im = _tela(cad, s, ox, oy, size=(1000, 800))
+    cal = A.calibrar(im, cad)
+    assert cal is not None
+    out = [x for x in cad.simbolos if x["classe"] == "10205" and x["rotulo"] == "Q0.3"][0]
+    x0, y0, x1, y1 = cad.regiao(out)
+    ImageDraw.Draw(im).rectangle([ox + s * x0 + 3, oy + s * y0 + 3, ox + s * x0 + 8, oy + s * y0 + 8], fill=(255, 0, 0))
+    est = A.ler_estado(im, cad, A.Calib(s, ox, oy, 1, 1))
+    assert est["saidas_clp"]["Q0.3"] and not est["saidas_clp"]["Q0.1"]

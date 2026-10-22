@@ -6300,7 +6300,7 @@
    "pins": {
     "p1": [
      0,
-     27
+     24
     ]
    }
   },
@@ -6324,7 +6324,7 @@
      0
     ],
     "p5": [
-     11,
+     12,
      0
     ]
    }
@@ -6389,5 +6389,10 @@
     ]
    }
   }
+ },
+ "_correcoes": {
+  "10205.p1": "(0,27) -> (0,24): pino de baixo, medido no AULA14-10.cad (fio 30,93 com 10205 em 30,69)",
+  "10206.p5": "(11,0) -> (12,0): PE, fio 4010 em x=36 com CPU em x=24 (AULA14-10.cad)",
+  "fonte": "docs/ladder.md §1 'Correcoes de dados de pinos'"
  }
 }

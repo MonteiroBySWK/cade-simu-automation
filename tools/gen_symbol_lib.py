@@ -28,7 +28,9 @@ for f in fontes:
         continue
     for e in ents:
         p = parse_ent(e)
-        if p and p["id"] not in lib and int(p["id"]) > 0 and len(p["nums"]) >= 23:
+        # rotulo com '*' = entidade mal separada (texto com fonte/estilo grudado): nao serve de prototipo
+        if p and p["id"] not in lib and int(p["id"]) > 0 and len(p["nums"]) >= 23 \
+                and not any("*" in x for x in p["labels"]):
             lib[p["id"]] = {"labels": p["labels"], "nums": p["nums"]}
 (T / "symbol_lib.json").write_text(json.dumps(lib, sort_keys=True, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
 print(f"{len(lib)} classes -> tools/symbol_lib.json")

@@ -154,7 +154,7 @@ def conferir_vinculos(path):
     _, ents, _ = split_all(Path(path).read_bytes().decode("latin1"))
     ps = [p for p in map(parse_ent, ents) if p]
     rot = lambda p: ((p["labels"] or [""])[0]).strip()
-    termicos = {rot(p) for p in ps if p["id"] == "6007"}
+    termicos = {rot(p) for p in ps if p["id"] in ("6007", "6002", "6003", "6009", "6010")}   # termico OU disjuntor (DJ1)
     bobinas = {rot(p) for p in ps if p["id"] in ("9000", "9001", "9002", "9004", "9005", "9006", "9007",
                                                   "9014", "9015", "10060")}
     erros, avisos = [], []
@@ -177,6 +177,12 @@ def gate(path, testes, r=None):
     import wires_check
     if r is None:
         r = {"testes": {}, "geo": {}, "fios": {}, "avisos": [], "erros": [], "_teste_raw": ""}
+    import clp_sim
+    if clp_sim.tem_clp(str(path)):               # arquivo com CLP/ladder: modelo geometrico por ticks
+        import ladder_dsl
+        ladder_dsl.gate_clp(path, {"testes": testes}, r)
+        r["fios"] = {"ok": True, "n": 0, "atravessam": []}
+        return r
     out = path
     res_geo = geo_check.analisar(str(out))      # (curtos, soltos[, ...]) — tolera campos extras
     curtos, soltos = res_geo[0], res_geo[1]
@@ -223,6 +229,9 @@ def construir(spec, out):
                    geo:{curtos,soltos,curtos_msg,soltos_msg}, fios:{ok,n,atravessam},
                    avisos:[...], erros:[...], n_simbolos, _build_raw, _teste_raw}.
     `ok` = build ok E testes passam E sem curto/pino solto (fios = aviso estetico, nao bloqueia)."""
+    if isinstance(spec, dict) and (spec.get("dsl") == "ladder/1" or ((spec.get("layout") or {}).get("clp"))):
+        import ladder_dsl                          # CLP + ladder: gerador/gate proprio
+        return ladder_dsl.construir(spec, out)
     import cade_mcp
     r = {"ok": False, "path": str(out), "titulo": None,
          "build": {"ok": False, "mensagem": ""},
