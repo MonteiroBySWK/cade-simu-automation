@@ -502,8 +502,10 @@ fn compilar_interno(spec: &Value) -> R<Low> {
     }
 
     // ---- potencia: grupos de N colunas por fase, alinhados ----
+    // (`_src_x` do Python: x dos pinos de saida do estagio anterior; vive entre grupos)
+    let mut src_x: Vec<i64> = Vec::new();
     for pw in lista(spec.get("potencia")) {
-        cursor = potencia::potencia(&mut m.l, pw, cursor, top0)? + GAP;
+        cursor = potencia::potencia(&mut m.l, pw, cursor, top0, &mut src_x)? + GAP;
     }
 
     // ---- terra ----

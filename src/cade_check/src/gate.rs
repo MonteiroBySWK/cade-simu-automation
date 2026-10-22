@@ -10,7 +10,7 @@
 
 use crate::acionavel::{acionavel_curto, acionavel_solto};
 use crate::geom::Conectividade;
-use crate::{fios, geo, lint, vinculos};
+use crate::{fios, geo, lint, sem_modelo, vinculos};
 use cade_layout::LayoutError;
 use cade_model::latin1;
 use serde_json::{json, Map, Value};
@@ -103,6 +103,9 @@ pub struct Relatorio {
     pub fios: FiosRel,
     pub avisos: Vec<String>,
     pub erros: Vec<String>,
+    /// Classes sem modelo recusadas pela A11 (`conferir_classes_sem_modelo` / `conferir_classes_em_spec`).
+    /// Reprova o gate (`ok` exige lista vazia); nao aparece no JSON (como no `cad_gate` do Python).
+    pub sem_modelo: Vec<String>,
     /// So `ok`, `path`, `erros` (e `proximo_fixo`) no JSON (arquivo inexistente / entrada invalida).
     pub minimo: bool,
     /// `proximo_passo` fixo do relatorio minimo (JSON malformado no `cad_design`).
@@ -327,6 +330,11 @@ fn resultado(saida: &str) -> (Option<u64>, Option<u64>) {
 pub fn gate_em(cad: &[u8], casos: &[Value], exec: &dyn ExecutorTestes, r: &mut Relatorio) -> Result<(), String> {
     let texto = latin1::decodificar(cad);
     let ents = crate::geom::entidades_do_cad(&texto)?;
+    // A11 primeiro (como o Python): recusa classe sem modelo antes de geo/vinculos.
+    let (evm, avm) = sem_modelo::conferir_entidades(&ents);
+    r.erros.extend(evm.iter().cloned());
+    r.avisos.extend(avm.iter().cloned());
+    r.sem_modelo = evm;
     let clp = crate::geom::tem_clp(&ents);
     let g = geo::analisar_entidades(&Conectividade::de_entidades(&ents));
     let soltos: Vec<String> = g.soltos.into_iter().filter(|s| !(clp && solto_permitido(s))).collect();
@@ -439,7 +447,7 @@ pub fn gate_bytes(cad: &[u8], path: &str, casos: &[Value], exec: &dyn ExecutorTe
         }
     }
     gate_em(cad, casos, exec, &mut r)?;
-    r.ok = r.testes.ok && r.geo.curtos.is_empty() && r.geo.soltos.is_empty();
+    r.ok = r.testes.ok && r.geo.curtos.is_empty() && r.geo.soltos.is_empty() && r.sem_modelo.is_empty();
     Ok(r)
 }
 
@@ -456,6 +464,17 @@ pub fn mensagem_layout(e: &LayoutError) -> String {
 /// (fios = aviso estetico, nao bloqueia).
 pub fn construir(spec: &Value, out: &str, exec: &dyn ExecutorTestes) -> Relatorio {
     let mut r = Relatorio::vazio(out);
+    // A11 sobre a spec ainda nao compilada (como o Python): barra antes de compilar.
+    if spec.is_object() {
+        let (evs, avs) = sem_modelo::conferir_em_spec(spec);
+        r.erros.extend(evs.iter().cloned());
+        r.avisos.extend(avs.iter().cloned());
+        r.sem_modelo = evs;
+        if !r.sem_modelo.is_empty() {
+            r.ok = false;
+            return r;
+        }
+    }
     let norm = match cade_layout::normalizar(spec) {
         Ok(n) => n,
         Err(e) => {
@@ -514,7 +533,11 @@ pub fn construir(spec: &Value, out: &str, exec: &dyn ExecutorTestes) -> Relatori
         r.erros.push(format!("layout invalido: {e}"));
         return r;
     }
-    r.ok = r.build.ok && r.testes.ok && r.geo.curtos.is_empty() && r.geo.soltos.is_empty();
+    r.ok = r.build.ok
+        && r.testes.ok
+        && r.geo.curtos.is_empty()
+        && r.geo.soltos.is_empty()
+        && r.sem_modelo.is_empty();
     r
 }
 

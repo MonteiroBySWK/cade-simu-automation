@@ -20,15 +20,14 @@ pub fn conferir_entidades(ps: &[Entidade]) -> (Vec<String>, Vec<String>) {
     // (arquivo de aula usa `8016 DJ1` com `6003 DJ1`) — igual a `build_spec.conferir_vinculos`.
     let termicos: BTreeSet<String> = ps
         .iter()
-        .filter(|p| ["6007", "6002", "6003", "6009", "6010"].contains(&p.id.as_str()))
+        .filter(|p| ["6007", "6002", "6003", "6004", "6009", "6010"].contains(&p.id.as_str()))
         .map(rot)
         .collect();
     let bobinas: BTreeSet<String> = ps.iter().filter(|p| BOBINAS.contains(&p.id.as_str())).map(rot).collect();
     let (mut erros, mut avisos) = (Vec::new(), Vec::new());
     for p in ps {
         let r = rot(p);
-        if ["8016", "8017", "8018", "8019"].contains(&p.id.as_str()) && !termicos.contains(&r) {
-            let lista: Vec<&String> = termicos.iter().collect();
+        if ["8016", "8017", "8018", "8019"].contains(&p.id.as_str()) && !termicos.contains(&r) {            let lista: Vec<&String> = termicos.iter().collect();
             let lista = if lista.is_empty() { "nenhum".to_string() } else { repr_lista(&lista) };
             erros.push(format!(
                 "contato termico {} ({}) nao segue nenhum rele termico 6007 de mesmo rotulo (6007: {}): no app o \
@@ -38,7 +37,7 @@ pub fn conferir_entidades(ps: &[Entidade]) -> (Vec<String>, Vec<String>) {
                 lista
             ));
         }
-        if ["7000", "7001", "2001"].contains(&p.id.as_str()) && !r.is_empty() && !bobinas.contains(&r) {
+        if ["7000", "7001", "2001", "2002"].contains(&p.id.as_str()) && !r.is_empty() && !bobinas.contains(&r) {
             avisos.push(format!("{} {}: nenhuma bobina de mesmo rotulo (contato nunca e comandado)", p.id, r));
         }
     }

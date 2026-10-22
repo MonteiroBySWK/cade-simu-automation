@@ -125,10 +125,13 @@ pub fn assign_nets(ents: &mut [Ent], pins: &HashMap<String, ClassePins>) -> Resu
 }
 
 /// Simbolos com o mesmo net em A e B (curto). Retorna os rotulos (ou ids).
+///
+/// 2002/6004 (`_SEM_PAR_AB` do Python): A/B do binario sao dois pinos vizinhos do TOPO (p1/p2),
+/// nao um polo; com entradas em paralelo (reversao mono/4 polos) vao ao mesmo trilho por desenho.
 pub fn shorts(ents: &[Ent]) -> Vec<String> {
     let mut bad = vec![];
     for e in ents {
-        if ["4000", "4018", "4009", "4001"].contains(&e.id.as_str()) {
+        if ["4000", "4018", "4009", "4001", "2002", "6004"].contains(&e.id.as_str()) {
             continue;
         }
         let n = &e.nums;
