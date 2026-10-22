@@ -1,0 +1,263 @@
+{
+  "testes": [
+    {
+      "entradas": {},
+      "esperado": [],
+      "esperado_lampadas": [],
+      "nome": "repouso desligado",
+      "status": "OK"
+    },
+    {
+      "entradas": {
+        "S1": true
+      },
+      "esperado": [
+        "KM1"
+      ],
+      "esperado_lampadas": [],
+      "nome": "S1 liga KM1 (e nao KM2)",
+      "status": "OK"
+    },
+    {
+      "entradas": {},
+      "esperado": [
+        "KM1"
+      ],
+      "esperado_lampadas": [],
+      "inicial": [
+        "KM1"
+      ],
+      "nome": "selo mantem KM1",
+      "status": "OK"
+    },
+    {
+      "entradas": {},
+      "esperado": [
+        "KM2"
+      ],
+      "esperado_lampadas": [],
+      "inicial": [
+        "KM2"
+      ],
+      "nome": "selo mantem KM2",
+      "status": "OK"
+    },
+    {
+      "entradas": {
+        "S2": true
+      },
+      "esperado": [
+        "KM1"
+      ],
+      "esperado_lampadas": [],
+      "inicial": [
+        "KM1"
+      ],
+      "nome": "intertravamento: S2 nao liga KM2 com KM1 ligado",
+      "status": "OK"
+    },
+    {
+      "entradas": {
+        "S1": true
+      },
+      "esperado": [
+        "KM2"
+      ],
+      "esperado_lampadas": [],
+      "inicial": [
+        "KM2"
+      ],
+      "nome": "intertravamento: S1 nao liga KM1 com KM2 ligado",
+      "status": "OK"
+    },
+    {
+      "entradas": {
+        "S0": true
+      },
+      "esperado": [],
+      "esperado_lampadas": [],
+      "inicial": [
+        "KM1"
+      ],
+      "nome": "S0 desliga KM1",
+      "status": "OK"
+    },
+    {
+      "entradas": {
+        "S0": true
+      },
+      "esperado": [],
+      "esperado_lampadas": [],
+      "inicial": [
+        "KM2"
+      ],
+      "nome": "S0 desliga KM2",
+      "status": "OK"
+    },
+    {
+      "esperado": [
+        "KM2"
+      ],
+      "esperado_lampadas": [],
+      "nome": "S2 liga KM2 apos soltar",
+      "passos": [
+        {
+          "entradas": {
+            "S1": true
+          },
+          "esperado": [
+            "KM1"
+          ],
+          "esperado_lampadas": [],
+          "status": "OK"
+        },
+        {
+          "entradas": {
+            "S0": true
+          },
+          "esperado": [],
+          "esperado_lampadas": [],
+          "status": "OK"
+        },
+        {
+          "entradas": {
+            "S2": true
+          },
+          "esperado": [
+            "KM2"
+          ],
+          "esperado_lampadas": [],
+          "status": "OK"
+        }
+      ],
+      "status": "OK"
+    },
+    {
+      "entradas": {},
+      "esperado": [],
+      "esperado_lampadas": [],
+      "nome": "sem auto-religamento",
+      "status": "OK"
+    }
+  ],
+  "titulo": "PARTIDA COM REVERSAO MONOFASICA",
+  "layout": {
+    "comando": [
+      {
+        "de": "L1",
+        "id": "m1",
+        "para": "N",
+        "ramos": [
+          {
+            "carga": [
+              "KM1",
+              "9000",
+              "-KM1"
+            ],
+            "selo": [
+              "selo1",
+              "7000",
+              "-KM1"
+            ],
+            "serie": [
+              [
+                "nkm2",
+                "7001",
+                "-KM2"
+              ]
+            ],
+            "via": [
+              "S1",
+              "8000",
+              "-S1"
+            ]
+          },
+          {
+            "carga": [
+              "KM2",
+              "9000",
+              "-KM2"
+            ],
+            "selo": [
+              "selo2",
+              "7000",
+              "-KM2"
+            ],
+            "serie": [
+              [
+                "nkm1",
+                "7001",
+                "-KM1"
+              ]
+            ],
+            "via": [
+              "S2",
+              "8000",
+              "-S2"
+            ]
+          }
+        ],
+        "serie": [
+          [
+            "S0",
+            "8001",
+            "-S0"
+          ]
+        ]
+      }
+    ],
+    "fontes": [
+      {
+        "classe": "3003",
+        "id": "X1",
+        "pinos": {
+          "L": "L1",
+          "N": "N"
+        },
+        "rotulo": "-X"
+      }
+    ],
+    "potencia": [
+      {
+        "colunas": [
+          [
+            "Q1",
+            "6002",
+            "-Q1"
+          ],
+          {
+            "paralelo": [
+              [
+                "KM1p",
+                "2002",
+                "-KM1"
+              ],
+              [
+                "KM2p",
+                "2002",
+                "-KM2"
+              ]
+            ]
+          },
+          [
+            "M1",
+            "1008",
+            "-M1"
+          ]
+        ],
+        "fase": "L1",
+        "id": "m1",
+        "neutro": "N",
+        "pe": "PE",
+        "tipo": "monofasico"
+      }
+    ],
+    "trilhos": {
+      "L1": 14,
+      "N": 282,
+      "PE": 291,
+      "x0": 25,
+      "x1": 395
+    }
+  }
+}
