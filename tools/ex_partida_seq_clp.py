@@ -9,9 +9,9 @@ Precisa de CADE_ACERVO (biblioteca de simbolos; ver README).
 
 Ladder (enderecos casam por rotulo, como bobina<->contato):
   R1  I0.1 I0.3 I0.4 I0.5 (I0.2 || B3:1) -> B3:1        selo geral
-  R2  B3:1 -> Q0.3 (KM3)  e  T1(2 s) -> T4:0
-  R3  T4:0 -> Q0.2 (KM2)  e  T2(2 s) -> T4:1
-  R4  T4:1 -> Q0.1 (KM1)
+  R2  B3:1 -> Q0.3 (CM3)  e  T1(2 s) -> T4:0
+  R3  T4:0 Q0.3 -> Q0.2 (CM2)  e  T2(2 s) -> T4:1
+  R4  T4:1 Q0.2 -> Q0.1 (CM1)
 """
 import json
 import sys
@@ -20,7 +20,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import cade_mcp  # noqa: E402
 
-TEMPO = "12"   # unidade '3': medido no app via Wine, 12 -> ~2,1 s por estagio (20 deu ~3,3 s); ajuste no dialogo do temporizador
+TEMPO = "20"   # unidade '3' = x0,1 s no dialogo do temporizador -> 2,0 s (no Wine roda ~1,5x mais lento)
 
 S, W = [], []   # simbolos, fios
 
@@ -56,7 +56,7 @@ for end, cls, rot, x in ENT:
     sym(cls, x, 66, rot)
     poly((x, 60), (x, 66))
     poly((x, 78), (x, 87))
-SAI = [("Q0.1", "-KM1", 42), ("Q0.2", "-KM2", 66), ("Q0.3", "-KM3", 90)]
+SAI = [("Q0.1", "-CM1", 42), ("Q0.2", "-CM2", 66), ("Q0.3", "-CM3", 90)]
 for end, km, x in SAI:
     sym("10205", x, 111, end)
     sym("9000", x, 144, km)
@@ -100,20 +100,24 @@ sym("10060", 87, 246, "T4:0")
 # trilho B (R3, R4)
 sym("3008", 252, 177, "24V")
 poly((252, 177), (252, 189), (252, 240))
-# R3: T4:0 -> Q0.2 e T2 -> T4:1
+# R3: T4:0 Q0.3 -> Q0.2 e T2 -> T4:1   (M2 so parte com M3 ligado)
 sym("10050", 261, 189, "T4:0")
+sym("10050", 279, 189, "Q0.3")
 poly((252, 189), (261, 189))
-poly((273, 189), (282, 189), (288, 189))
-sym("10060", 288, 189, "Q0.2")
-poly((282, 189), (282, 201), (288, 201))
-tempo("T2", 288, 201)
-poly((303, 207), (309, 207))
-sym("10060", 309, 207, "T4:1")
-# R4: T4:1 -> Q0.1
+poly((273, 189), (279, 189))
+poly((291, 189), (300, 189), (306, 189))
+sym("10060", 306, 189, "Q0.2")
+poly((300, 189), (300, 201), (306, 201))
+tempo("T2", 306, 201)
+poly((321, 207), (327, 207))
+sym("10060", 327, 207, "T4:1")
+# R4: T4:1 Q0.2 -> Q0.1   (M1 so parte com M2 ligado)
 sym("10050", 261, 240, "T4:1")
+sym("10050", 279, 240, "Q0.2")
 poly((252, 240), (261, 240))
-poly((273, 240), (288, 240))
-sym("10060", 288, 240, "Q0.1")
+poly((273, 240), (279, 240))
+poly((291, 240), (306, 240))
+sym("10060", 306, 240, "Q0.1")
 
 # ---- potencia: termico + contator + motor por coluna, direto nos trilhos --------------------
 RAILS = [{"nome": "L1", "y": 14, "x0": 246, "x1": 432}, {"nome": "L2", "y": 20, "x0": 246, "x1": 432},
@@ -123,13 +127,16 @@ CON = [{"de": ["X1", f], "para": [f, "rail"]} for f in ("L1", "L2", "L3", "PE")]
 for n, x in ((1, 300), (2, 348), (3, 396)):
     f, k, m = f"F{n}", f"K{n}", f"M{n}"
     sym("6007", x, 40, f"-RT{n}", id=f)
-    sym("2001", x, 75, f"-KM{n}", id=k)
+    sym("2001", x, 75, f"-CM{n}", id=k)
     sym("1000", x, 110, f"-M{n}", id=m)
     for fase, a, b in (("L1", "1", "2"), ("L2", "3", "4"), ("L3", "5", "6")):
         CON.append({"de": [fase, "rail"], "para": [f, a]})
         CON.append({"de": [f, b], "para": [k, a]})
         CON.append({"de": [k, b], "para": [m, {"1": "U1", "3": "V1", "5": "W1"}[a]]})
     CON.append({"de": [m, "PE"], "para": ["PE", "rail"]})
+
+
+TXT = [{"texto": "Aluno: Sérgio Murilo de Andrade Castelhano Filho", "x": 30, "y": 268, "altura": 8}]
 
 
 def juncoes():
@@ -144,7 +151,7 @@ def juncoes():
 def main(out):
     W.extend(juncoes())
     msg = cade_mcp.cad_build("PARTIDA SEQUENCIAL 3 MOTORES - CLP", json.dumps(S), json.dumps(W), out,
-                             auto_net=True, conexoes_json=json.dumps(CON), rails_json=json.dumps(RAILS))
+                             auto_net=True, conexoes_json=json.dumps(CON), rails_json=json.dumps(RAILS), textos_json=json.dumps(TXT))
     print(msg)
 
 

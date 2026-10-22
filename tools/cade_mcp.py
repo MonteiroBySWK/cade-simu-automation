@@ -425,12 +425,14 @@ def cad_gate(path: str, testes_json: str = "[]") -> str:
 
 @mcp.tool()
 def cad_build(titulo: str, simbolos_json: str, fios_json: str = "[]", out_path: str = "/tmp/novo.cad",
-              auto_net: bool = True, conexoes_json: str = "[]", rails_json: str = "[]") -> str:
+              auto_net: bool = True, conexoes_json: str = "[]", rails_json: str = "[]",
+              textos_json: str = "[]") -> str:
     """CRIA UM .CAD DO ZERO (sem reusar arquivo).
     simbolos_json: [{"classe","x","y","rotulo"?,"id"?}]
     conexoes_json: [{"de":["<id>","A|B"],"para":["<id>","A|B"]}] — liga pinos por NOME
       (recomendado; o build roteia o fio e calcula os NETs automaticamente).
     fios_json: [{"x1","y1","x2","y2"}] — segmentos manuais (opcional).
+    textos_json: [{"texto","x","y","altura"?}] — texto livre na folha (classe 8; altura em unidades, padrao 4).
     Com auto_net=True os NETs saem calculados por geometria (pinos×fios).
     Ex.: conexoes_json='[{"de":["B1","B"],"para":["K1","A"]}]'."""
     header, protos, footer, wire = _lib()
@@ -439,6 +441,7 @@ def cad_build(titulo: str, simbolos_json: str, fios_json: str = "[]", out_path: 
         fios = json.loads(fios_json)
         conexoes = json.loads(conexoes_json)
         rails = json.loads(rails_json)
+        textos = json.loads(textos_json)
     except json.JSONDecodeError as e:
         return f"ERRO json: {e}"
     if not isinstance(simbolos, list):
@@ -472,11 +475,18 @@ def cad_build(titulo: str, simbolos_json: str, fios_json: str = "[]", out_path: 
     if auto_net:
         _assign_nets(ents)
     avisos = _shorts(ents)
+    for t in textos:   # depois dos nets (n21 e altura aqui, net nos simbolos); texto = classe 8: caixa em n8..n11, altura LOGFONT (negativa) em n21, string no '#%s' final
+        x, y, h = int(t["x"]), int(t["y"]), int(t.get("altura", 4))
+        n = ["0"] * 23
+        n[8], n[9], n[10], n[11] = str(x), str(y), str(x + len(t["texto"]) * h // 2), str(y + h)
+        n[20], n[21] = "400", str(-round(h * 21 / 4))   # 400 = peso normal; -21 <-> altura 4 (medido no acervo)
+        ents.append({"id": "8", "labels": ["", ""] + [" 0"] * 7, "nums": n, "texto": t["texto"]})
     # A entidade 0 vive colada ao "CADe_SIMU" (seq 0). NAO reaproveite a do doador: ela era
     # uma fonte 3004 solta em (93,45) em todo arquivo gerado (lixo). A 1a entidade nossa e a 0.
-    body = "#".join(f"*{i}*{e['id']}#" + "#".join(e["labels"]) + "#*" + "*".join(e["nums"])
-                    for i, e in enumerate(ents))
-    cad = "CADe_SIMU" + body + "#" + footer
+    # texto (classe 8) traz um campo ' 0' sem '*' entre os rotulos e os numeros: '...# 0# 0*0*0...'
+    body = "".join(f"*{i}*{e['id']}#" + "#".join(e["labels"]) + ("# 0*" if "texto" in e else "#*")
+                   + "*".join(e["nums"]) + "#" + e.get("texto", "") for i, e in enumerate(ents))
+    cad = "CADe_SIMU" + body + footer
     Path(out_path).write_bytes(cad.encode("latin1"))
     code, out = _run("validate", out_path)
     msg = (f"{len(ents)} entidades -> {out_path} | {out}" if code == 0
