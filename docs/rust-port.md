@@ -28,7 +28,7 @@ nenhum além do que o usuário passa.
 | `cade_layout` | `layout.py`: `compilar` (spec topológica → spec baixa: rede série-paralelo, rungs, serpentina, faixas, `trilhos_comando`, fontes, terra, `potencia` com paralelo/`ordem`) e `build_spec.normalizar` | pronto, byte-idêntico |
 | `cade_cli` | binário `cade`: `validate|parse|emit|new-from-json|build|layout|gate|design` | pronto |
 | `cade_check` | `geo_check`, `wires_check`, vínculos por rótulo, `lint_layout`, mensagens acionáveis, `gate`/`construir` (relatório idêntico ao MCP); **testes funcionais via trait** | **pronto (parte estática)** |
-| `cade_sim` | `netlist_sim` (+temporizadores), `ladder_sim`, `teste_casos` | **esqueleto** |
+| `cade_sim` | motor de simulação (`netlist_sim` + temporizadores + papéis do RE), casos de teste, `conformidade`, executor do gate; **ladder/CLP: só o trait `ModeloLadder`** | **pronto** (ladder pendente) |
 | `cade_render` | `cad_render` (preview PNG) | **esqueleto** |
 | `cade_mcp` | servidor MCP stdio (`cade mcp`) | **esqueleto** |
 | `cade_app` | Wine/CADe_SIMU real (`app_sim`, `wine_mgr`, `cade_open`, `cade_config`) | **esqueleto** |
@@ -50,10 +50,11 @@ JSON define a ordem de conexões/fios e portanto os bytes do `.cad`) e `clap`.
 | `build_spec.normalizar` | `cade_layout::normalizar` | feito |
 | mensagens de erro do `ValueError` do layout | `LayoutError` | idênticas (8 casos de erro) |
 | `build_spec.lint_layout`, `conferir_vinculos`, `acionavel_*` | `cade_check::{lint,vinculos,acionavel}` | **idêntico** (goldens `tests/golden/check`) |
-| `build_spec.gate/construir`, `cad_gate`/`cad_design` (relatório JSON) | `cade_check::{gate_arquivo,construir}` + `cade gate/design` | **idêntico na parte estática**; testes funcionais = `nao_portado` até o `cade_sim` |
-| `build_spec.conferir_chaves_de_teste`, `_parse_testes` | `cade_check::gate` (`parse_testes`; chaves vêm do executor) | parse portado; chaves dependem do `cade_sim` |
+| `build_spec.gate/construir`, `cad_gate`/`cad_design` (relatório JSON) | `cade_check::{gate_arquivo,construir}` + `cade gate/design` | **idêntico na parte estática**; testes funcionais executados pelo `cade_sim::ExecutorSim` |
+| `build_spec.conferir_chaves_de_teste`, `_parse_testes` | `cade_check::gate` (`parse_testes`; chaves vêm do executor) | parse portado; chaves: `cade_sim::executor::mensagens_chaves` |
 | `geo_check.py`, `wires_check.py` | `cade_check::{geo,fios}` (+ `geom`, geometria compartilhada) | **idêntico** |
-| `netlist_sim.py`, `ladder_sim.py`, `cad_test`/`cad_simulate` | `cade_sim` | pendente |
+| `netlist_sim.py`, `cad_test`/`cad_simulate` | `cade_sim` (`cade simulate`, `cade test`, executor do gate) | **feito** (estado idêntico ao Python em 11 exemplos × ~1000 combinações + temporizadores) |
+| `ladder_sim.py` | `cade_sim::ladder` (`ModeloLadder`) | pendente (outro agente) |
 | `cad_render.py`, `cad_preview.py` | `cade_render` | pendente |
 | `cade_mcp.py` (tools MCP), `mcp_call.py` | `cade_mcp` + `cade mcp` | pendente (`cad_build`/`cad_design` já têm núcleo) |
 | `app_sim.py`, `wine_mgr.py`, `cade_open.py`, `cade_config.py` | `cade_app` | pendente |
@@ -97,15 +98,38 @@ separado de `tests/golden/gerar.py` (que apaga tudo em `tests/golden/*`; ele pre
 
 **Testes funcionais:** `cade_check` define `trait ExecutorTestes { fn executar(&self, cad, casos) -> Option<SaidaTestes> }`
 (`SaidaTestes` = texto do `cad_test` + mensagens de `conferir_chaves_de_teste`; o gate interpreta como o Python:
-`PASSOU`/`SEM_TESTES`/`[FALHA]`/`RESULTADO: n/m`). O padrão do binário é `NaoPortado` → `testes.status = "nao_portado"`,
-`ok = false`, erro `testes: funcionais nao executados ...` e `proximo_passo` dizendo que a parte estática está verde mas a
-funcional não rodou — **nunca** verde falso. Para ligar o simulador: implemente o trait em `cade_sim` e troque
-`executor()` em `src/cade_cli/src/check.rs` (único ponto). `Relatorio::estatico_ok()` expõe só o veredito estático.
+`PASSOU`/`SEM_TESTES`/`[FALHA]`/`RESULTADO: n/m`). O `cade_sim::ExecutorSim` implementa o trait e é o executor do binário
+(`executor()` em `src/cade_cli/src/check.rs`): `cade gate`/`cade design` rodam os testes funcionais de verdade. `NaoPortado`
+continua em `cade_check` para quem precisar do gate só estático. Sem casos = `SEM_TESTES` = gate reprovado; chave inexistente
+= teste vacuo = reprovado.
 
 **Geometria compartilhada (`cade_check::geom`)**: `pinos_da_classe` (binário primeiro, depois `symbol_pins.json` **na ordem do
 arquivo** — a ordem define a dos pinos soltos), `rotacionar`, `entidades_do_cad`, `Conectividade::de_entidades` (união de nets
 por extremo/junta 4001, `pinos` em coordenada absoluta, `rede_do_ponto`, `e_extremo`) e `geo::analisar_entidades`. O `cade_sim`
-deve construir o `Circuito` em cima disso em vez de reimplementar a conectividade.
+constrói o `Circuito` em cima disso (não reimplementa a conectividade).
+
+### Simulação (`cade_sim`)
+
+`cade simulate|test|conformidade|gate|design`. Detalhes de conformidade, formato dos goldens do app, Docker e licença:
+**`docs/conformidade.md`**.
+
+- **Paridade com `tools/netlist_sim.py`** (o oráculo): `tests/golden/sim/gerar.py` grava, para os 11 exemplos, os casos
+  declarados + uma varredura (entradas vazias, cada uma, pares, todas × bobinas iniciais nenhuma/cada/todas) com o `estado()`
+  completo do Python, e `timers.sim.json` (ON/OFF-delay por `contato_temp`). O teste `tests/paridade/tests/simulacao.rs`
+  compara status, bobinas, lâmpadas, curtos, temporizadores (tipo/tempo/decorrido/saída), entradas, bobinas e pinos soltos.
+  Rode `python3 tests/golden/sim/gerar.py` só quando o oráculo mudar de propósito.
+- **Modelo em duas camadas** (`papeis.rs`): (1) tabela embutida idêntica à do Python (contatos NA/NC `8000/8001/8016/8017/7000/7001/
+  10050/10051`, bobinas `9000/10060`, lâmpada `9008`, polos `2001`, passam-sempre `6007/6009/6010`); (2) derivada de
+  `docs/classes-papeis.json` para o resto, **por `contatos[].fecha_quando`**: NA-NC/comutados (`7002/7003/8002/8003/8018/8019`),
+  botões/fins de curso/sensores, interruptores e disjuntores (iniciam **abertos**, `estado==1`), fusíveis (`estado==0`), seletor,
+  contatos temporizados `7004..7015` (ligam ao temporizador de **mesmo rótulo**), temporizadores-carga `9004/9005/9006`
+  (tempo = rótulo 6, unidade = rótulo 5, tick 100 ms) e motores (`gira` com dois pinos de fase de estampas diferentes). A
+  camada 1 prevalece. O Rust é **superconjunto** do Python (o Python ignora a camada 2 quase inteira).
+- **Ainda sem modelo** (ignorados, não inventados): temporizador intermitente `9007`, gerador de pulsos `9015`, sensores
+  eletrônicos de 3 fios, lógica/GRAFCET/pneumática, e todo o **ladder/CLP** (`10050..10083`, `10204..10206`: o contato ladder
+  10050/10051 hoje cai no modelo legado do Python — contato NA/NC bidirecional sem fonte).
+- Diferenças deliberadas vs Python: entradas aceitam inteiro (seletor 0..2); `esperado_motores`; tempo contínuo (não quantizado
+  em ticks); `tonof`.
 
 ### Armadilhas de paridade (já resolvidas, não reintroduza)
 
@@ -156,8 +180,7 @@ Regras comuns:
 Por fase:
 
 - **cade_check**: FEITO (ver "Paridade do gate"). Falta só ligar o executor de testes do `cade_sim`.
-- **cade_sim**: `Circuito` (nets por geometria, entradas/bobinas/lâmpadas), `estado`, temporizadores, `teste_casos`.
-  Golden: `tools/eval/casos/*.json` e os casos `testes` dos exemplos (`RESULTADO: n/n OK`).
+- **cade_sim**: FEITO (ver "Simulação"). Falta o ladder/CLP (`cade_sim::ladder::ModeloLadder`).
 - **cade_render**: `renderizar(path, scale)` → PNG; golden por hash de pixels ou comparação com tolerância.
 - **cade_mcp**: JSON-RPC stdio; reaproveite `cade_layout::normalizar` + `cade_build::construir` para
   `cad_design`/`cad_build`; `tools/mcp_call.py`/`test_mcp.py` descrevem o contrato.

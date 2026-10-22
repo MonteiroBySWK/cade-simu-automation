@@ -1,0 +1,8 @@
+target/
+.git/
+.claude/
+out/
+logs/
+pratica5/
+**/__pycache__/
+tools/.venv-mcp/
