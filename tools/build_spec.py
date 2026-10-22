@@ -20,6 +20,134 @@ _FALHA = re.compile(r"\[FALHA\]\s*(?P<nome>.*?):\s*KM=(?P<obtido>\[.*?\])\s*stat
 _PINO_SOLTO = re.compile(r"^(?P<rot>.*)\((?P<classe>\d+)\)\.(?P<pino>[^@]+)@\((?P<x>-?\d+), (?P<y>-?\d+)\)$")
 _FONTES = {"3000", "3001", "3003", "3004", "3005", "3006", "3007", "3011"}
 
+# --- A11: classes sem modelo de simulacao (recusa com erro claro, nao falso verde) ------
+_LADDER_SEM_MODELO = {"10052", "10053", "10063", "10064", "10065",
+                       "10067", "10068", "10069", "10075", "10081"}
+_TEMP_SEM_MODELO = {"9007", "9015"}
+_PROT_SEM_MODELO = {"6015", "6017"}
+_PLC_MODELADO = {"10204", "10205", "10206"}
+_FIOS_SEM_AVISO = {"4000", "4001", "4009", "4010", "4018", "4019"}  # fio/juncao: geometria pura
+_SUPORTADOS = ("contatos 8000/8001/8016/8017, auxiliares 7000/7001, bobinas 9000/9001/9002/9014, "
+               "sinalizacao 9008/9009..9013/8101/8103, polos 2000/2001/2002/2006/2008, "
+               "protecao 6007/6009/6010, temporizadores 9004/9005/9006 + contatos 7004..7015, "
+               "motores, ladder 10050/10051/10060/10061/10062/10066, CLP 10204/10205/10206, "
+               "fontes 3000..3012")
+_CATALOGO = None
+
+
+def _catalogo():
+    """docs/classes-papeis.json (nome/papel/pinos por classe), com cache."""
+    global _CATALOGO
+    if _CATALOGO is None:
+        try:
+            _CATALOGO = json.loads((TOOLS.parent / "docs" / "classes-papeis.json").read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            _CATALOGO = {}
+    return _CATALOGO
+
+
+def _motivo_sem_modelo(cid, cat):
+    """(nivel, motivo) da classe: nivel em {"erro", "aviso", None}."""
+    try:
+        n = int(cid)
+    except (TypeError, ValueError):
+        return None, ""
+    papel = str((cat.get("papel") or ""))
+    pinos = cat.get("pinos") or []
+    if 10500 <= n <= 10599:
+        return "erro", "pneumatica (faixa 10500-10599) nao tem modelo (sem pinos no binario)"
+    if 10100 <= n <= 10199:
+        return "erro", "GRAFCET (faixa 10100-10199) nao tem modelo (sem pinos no binario)"
+    if cid in _TEMP_SEM_MODELO:
+        return "erro", "temporizador " + cid + " ainda sem modelo (use 9004/9005/9006 + contatos 7004..7015)"
+    if cid in _LADDER_SEM_MODELO:
+        return "erro", ("instrucao ladder " + cid + " ainda sem modelo "
+                        "(use 10050/10051, 10060/10061/10062 ou TON 10066)")
+    if papel.startswith("sensor") and len(pinos) >= 3:
+        return "erro", ("sensor 3 fios (PNP/NPN) ainda sem modelo: precisa de alimentacao + saida "
+                        "(use botoeira 8000/8001 como placeholder da deteccao)")
+    if (papel == "plc" or 10200 <= n <= 10299) and cid not in _PLC_MODELADO:
+        return "erro", ("CLP com imagem sem modelo: so CPU 10206 + I/O 10204/10205 sao simulados "
+                        "(troque por eles ou desenhe a logica em rele)")
+    if cid in _PROT_SEM_MODELO:
+        return "erro", ("protecao sem modelo "
+                        "(use disjuntor 6002/6003/6009/6010, termico 6007 ou fusivel 5000..5004)")
+    if papel == "outro" and cid not in _FIOS_SEM_AVISO:
+        return "aviso", "sem modelo: ignorada nos testes; confira o comportamento no app (Play) antes de entregar"
+    return None, ""
+
+
+def _msg_sem_modelo(cid, nome, motivo):
+    return (f"classe {cid} ({nome}) sem modelo de simulacao: {motivo}. "
+            f"O gate simula: {_SUPORTADOS}. "
+            f"Alternativas: simplificar para componentes suportados, montar com cad_build "
+            f"validando por fora, ou pedir suporte a classe")
+
+
+def conferir_classes_sem_modelo(path):
+    """Classes do .cad sem modelo funcional (A11). Erro no conjunto curado, aviso no resto.
+    Retorna (erros, avisos)."""
+    from dissect import parse_ent, split_all
+    try:
+        _, ents, _ = split_all(Path(path).read_bytes().decode("latin1"))
+    except (OSError, ValueError):
+        return [], []
+    cat = _catalogo()
+    vistos, erros, avisos = [], [], []
+    for p in map(parse_ent, ents):
+        if not p:
+            continue
+        cid = str(p["id"])
+        if cid in vistos:
+            continue
+        vistos.append(cid)
+        info = cat.get(cid) or {}
+        nivel, motivo = _motivo_sem_modelo(cid, info)
+        if not nivel:
+            continue
+        nome = info.get("nome") or "sem nome no catalogo"
+        (erros if nivel == "erro" else avisos).append(_msg_sem_modelo(cid, nome, motivo))
+    return erros, avisos
+
+
+def _classes_da_spec(spec):
+    """Todas as classes citadas numa spec (layout topologico OU spec baixa), sem repetir."""
+    achadas = []
+
+    def ver(cid):
+        cid = str(cid)
+        if cid.isdigit() and cid not in achadas:
+            achadas.append(cid)
+
+    def varrer(o):
+        if isinstance(o, dict):
+            for k, v in o.items():
+                if k == "classe" and isinstance(v, str) and v.isdigit():
+                    ver(v)
+                else:
+                    varrer(v)
+        elif isinstance(o, list):
+            if len(o) >= 2 and isinstance(o[0], str) and isinstance(o[1], str) and o[1].isdigit():
+                ver(o[1])  # item [id, classe, rotulo?] de serie/coluna/ramo
+            for v in o:
+                varrer(v)
+
+    varrer(spec)
+    return achadas
+
+
+def conferir_classes_em_spec(spec):
+    """A11 sobre a spec ainda nao compilada (pega 10500 etc. mesmo sem geometria)."""
+    cat = _catalogo()
+    erros, avisos = [], []
+    for cid in _classes_da_spec(spec if isinstance(spec, dict) else {}):
+        nivel, motivo = _motivo_sem_modelo(cid, cat.get(cid) or {})
+        if not nivel:
+            continue
+        nome = (cat.get(cid) or {}).get("nome") or "sem nome no catalogo"
+        (erros if nivel == "erro" else avisos).append(_msg_sem_modelo(cid, nome, motivo))
+    return erros, avisos
+
 
 def normalizar(spec):
     """spec (layout topologico OU spec baixa, com/sem chave "layout") -> (baixa, testes, layout|None)."""
@@ -177,6 +305,11 @@ def gate(path, testes, r=None):
     import wires_check
     if r is None:
         r = {"testes": {}, "geo": {}, "fios": {}, "avisos": [], "erros": [], "_teste_raw": ""}
+    r.setdefault("sem_modelo", [])
+    evm, avm = conferir_classes_sem_modelo(str(path))   # A11: recusa classe sem modelo
+    r["erros"] += evm
+    r["avisos"] += avm
+    r["sem_modelo"] = list(evm)
     import clp_sim
     if clp_sim.tem_clp(str(path)):               # arquivo com CLP/ladder: modelo geometrico por ticks
         import ladder_dsl
@@ -238,7 +371,15 @@ def construir(spec, out):
          "testes": {"ok": False, "passaram": None, "total": None, "falhas": [], "saida": ""},
          "geo": {"curtos": [], "soltos": [], "curtos_msg": [], "soltos_msg": []},
          "fios": {"ok": None, "n": 0, "atravessam": []},
-         "avisos": [], "erros": [], "_build_raw": "", "_teste_raw": ""}
+         "avisos": [], "erros": [], "_build_raw": "", "_teste_raw": "", "sem_modelo": []}
+    if isinstance(spec, dict):
+        evs, avs = conferir_classes_em_spec(spec)   # A11: barra antes de compilar
+        r["erros"] += evs
+        r["avisos"] += avs
+        r["sem_modelo"] = list(evs)
+        if evs:
+            r["ok"] = False
+            return r
     try:
         low, testes, layout_d = normalizar(spec)
     except (ValueError, KeyError, TypeError) as e:
@@ -267,7 +408,8 @@ def construir(spec, out):
         return r
 
     g = gate(str(out), testes, r)
-    r["ok"] = bool(r["build"]["ok"] and g["testes"]["ok"] and not r["geo"]["curtos"] and not r["geo"]["soltos"])
+    r["ok"] = bool(r["build"]["ok"] and g["testes"]["ok"] and not r["geo"]["curtos"]
+                   and not r["geo"]["soltos"] and not r.get("sem_modelo"))
     return r
 
 
@@ -290,7 +432,7 @@ def main(argv):
     for sl in r["geo"]["soltos"]:
         print("SOLTO:", sl)
     for e in r["erros"]:
-        if e.startswith("teste ") or e.startswith("sem testes"):
+        if e.startswith("teste ") or e.startswith("sem testes") or e.startswith("classe "):
             print("ERRO:", e)
     if not r["ok"]:
         print("GATE: REPROVADO (corrija antes de seguir)")
