@@ -294,6 +294,31 @@ def _area_desenho(a):
     return y0, max(y0, y1), x0, max(x0, x1)
 
 
+def _confere_simbolos(a, cad, cal, min_frac=0.6):
+    """Fracao dos simbolos cujo corpo tem tinta na posicao prevista pela calibracao.
+
+    A correlacao de fios sozinha acha alinhamentos falsos em circuitos com poucos fios
+    (ex.: 9004+7004+lampada, score 1.114 e offset errado). Os simbolos existem sempre, entao
+    servem de ancora: se o alinhamento for falso, os corpos caem em area branca.
+    """
+    tinta = _tinta(a)
+    H, W = tinta.shape[:2]
+    ok = n = 0
+    for s in cad.simbolos:
+        if s["tipo"] == "fonte" and not s.get("pinos"):
+            continue
+        px, py = (int(round(v)) for v in cal.px(s["x"], s["y"]))
+        r = max(5, int(round(7 * cal.s)))
+        x0, x1 = max(0, px - r), min(W, px + r)
+        y0, y1 = max(0, py - r), min(H, py + r)
+        if x1 <= x0 or y1 <= y0:
+            continue
+        n += 1
+        if int(tinta[y0:y1, x0:x1].sum()) >= 4:
+            ok += 1
+    return (ok / n) if n else 1.0
+
+
 def calibrar(img, cad, hint=None, min_cobertura=0.85):
     """Casa os fios do .cad com a imagem. Devolve Calib ou None. `hint`=escala anterior (caminho rapido)."""
     if not cad.fios:
@@ -339,8 +364,14 @@ def calibrar(img, cad, hint=None, min_cobertura=0.85):
             ys, xs = ya + dy, xa + dx
             dens = td[ys:ys + (yb - ya), xs:xs + (xb - xa)].mean()
             sc = cob - dens
-            if melhor is None or sc > melhor[0]:
-                melhor = (sc, cob, s, dx, dy)
+            if cob > 1.05:
+                continue                      # acertos > pixels da mascara: alinhamento impossivel
+            if melhor is not None and sc <= melhor[0]:
+                continue
+            cal = Calib(s, dx - s * cad.xmin, dy - s * cad.ymin, sc, cob)
+            if _confere_simbolos(a, cad, cal) < 0.6:
+                continue                      # alinhamento falso (fios coincidiram, simbolos nao)
+            melhor = (sc, cob, s, dx, dy)
         if melhor and melhor[1] >= 0.95 and melhor[0] > 0.6:
             break                                   # bom o bastante: nao testa os outros zooms
     if not melhor or melhor[1] < min_cobertura:
