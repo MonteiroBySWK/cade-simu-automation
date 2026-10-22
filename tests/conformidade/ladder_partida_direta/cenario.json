@@ -1,0 +1,109 @@
+{
+ "versao": 1,
+ "tempo": "parede",
+ "descricao": "ladder: partida, selo, timer/sequencia, parada, 2a partida, termico e rearme (S1 / S0)",
+ "acoes": [
+  {
+   "acao": "reiniciar"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "pressionar",
+   "alvo": "S1"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "soltar",
+   "alvo": "S1"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "esperar",
+   "ms": 1500
+  },
+  {
+   "acao": "pressionar",
+   "alvo": "S0"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "soltar",
+   "alvo": "S0"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "pressionar",
+   "alvo": "S1"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "soltar",
+   "alvo": "S1"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "alternar",
+   "alvo": "RT1"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "alternar",
+   "alvo": "RT1"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "pressionar",
+   "alvo": "S1"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "soltar",
+   "alvo": "S1"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "reiniciar"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  }
+ ]
+}

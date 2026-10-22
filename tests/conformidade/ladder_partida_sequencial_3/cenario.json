@@ -1,0 +1,93 @@
+{
+ "versao": 1,
+ "tempo": "parede",
+ "descricao": "ladder: partida, selo, timer/sequencia, parada, 2a partida, termico e rearme (B1 / B0)",
+ "acoes": [
+  {
+   "acao": "reiniciar"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "pressionar",
+   "alvo": "B1"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "soltar",
+   "alvo": "B1"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "esperar",
+   "ms": 1500
+  },
+  {
+   "acao": "pressionar",
+   "alvo": "B0"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "soltar",
+   "alvo": "B0"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "pressionar",
+   "alvo": "B1"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "soltar",
+   "alvo": "B1"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "pressionar",
+   "alvo": "B1"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "soltar",
+   "alvo": "B1"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "reiniciar"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  }
+ ]
+}

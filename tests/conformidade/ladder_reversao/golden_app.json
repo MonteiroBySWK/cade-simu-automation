@@ -1,0 +1,332 @@
+{
+ "versao": 1,
+ "fonte": "app",
+ "caso": "ladder_reversao",
+ "descricao": "ladder: partida, selo, timer/sequencia, parada, 2a partida, termico e rearme (S1, S2 / S0)",
+ "gravado_em": "2026-10-22T14:13:20-03:00",
+ "passos": [
+  {
+   "i": 0,
+   "t_ms": 0,
+   "t_parede_ms": 5517,
+   "bobinas": [],
+   "lampadas": [],
+   "saidas_clp": []
+  },
+  {
+   "i": 1,
+   "t_ms": 300,
+   "t_parede_ms": 8739,
+   "bobinas": [],
+   "lampadas": [],
+   "saidas_clp": []
+  },
+  {
+   "i": 2,
+   "t_ms": 300,
+   "t_parede_ms": 12122,
+   "bobinas": [
+    "KM1"
+   ],
+   "lampadas": [],
+   "saidas_clp": [
+    "Q0.0"
+   ]
+  },
+  {
+   "i": 3,
+   "t_ms": 600,
+   "t_parede_ms": 15293,
+   "bobinas": [
+    "KM1"
+   ],
+   "lampadas": [],
+   "saidas_clp": [
+    "Q0.0"
+   ]
+  },
+  {
+   "i": 4,
+   "t_ms": 600,
+   "t_parede_ms": 18718,
+   "bobinas": [
+    "KM1"
+   ],
+   "lampadas": [],
+   "saidas_clp": [
+    "Q0.0"
+   ]
+  },
+  {
+   "i": 5,
+   "t_ms": 900,
+   "t_parede_ms": 21894,
+   "bobinas": [
+    "KM1"
+   ],
+   "lampadas": [],
+   "saidas_clp": [
+    "Q0.0"
+   ]
+  },
+  {
+   "i": 6,
+   "t_ms": 2400,
+   "t_parede_ms": 26262,
+   "bobinas": [
+    "KM1"
+   ],
+   "lampadas": [],
+   "saidas_clp": [
+    "Q0.0"
+   ]
+  },
+  {
+   "i": 7,
+   "t_ms": 2400,
+   "t_parede_ms": 29639,
+   "bobinas": [
+    "KM1"
+   ],
+   "lampadas": [],
+   "saidas_clp": [
+    "Q0.0"
+   ]
+  },
+  {
+   "i": 8,
+   "t_ms": 2700,
+   "t_parede_ms": 32807,
+   "bobinas": [
+    "KM1"
+   ],
+   "lampadas": [],
+   "saidas_clp": [
+    "Q0.0"
+   ]
+  },
+  {
+   "i": 9,
+   "t_ms": 2700,
+   "t_parede_ms": 36192,
+   "bobinas": [
+    "KM1"
+   ],
+   "lampadas": [],
+   "saidas_clp": [
+    "Q0.0"
+   ]
+  },
+  {
+   "i": 10,
+   "t_ms": 3000,
+   "t_parede_ms": 39362,
+   "bobinas": [
+    "KM1"
+   ],
+   "lampadas": [],
+   "saidas_clp": [
+    "Q0.0"
+   ]
+  },
+  {
+   "i": 11,
+   "t_ms": 3300,
+   "t_parede_ms": 42526,
+   "bobinas": [
+    "KM1"
+   ],
+   "lampadas": [],
+   "saidas_clp": [
+    "Q0.0"
+   ]
+  },
+  {
+   "i": 12,
+   "t_ms": 3300,
+   "t_parede_ms": 46110,
+   "bobinas": [],
+   "lampadas": [],
+   "saidas_clp": []
+  },
+  {
+   "i": 13,
+   "t_ms": 3600,
+   "t_parede_ms": 49583,
+   "bobinas": [],
+   "lampadas": [],
+   "saidas_clp": []
+  },
+  {
+   "i": 14,
+   "t_ms": 3600,
+   "t_parede_ms": 53144,
+   "bobinas": [],
+   "lampadas": [],
+   "saidas_clp": []
+  },
+  {
+   "i": 15,
+   "t_ms": 3900,
+   "t_parede_ms": 56427,
+   "bobinas": [],
+   "lampadas": [],
+   "saidas_clp": []
+  },
+  {
+   "i": 16,
+   "t_ms": 4200,
+   "t_parede_ms": 59675,
+   "bobinas": [],
+   "lampadas": [],
+   "saidas_clp": []
+  },
+  {
+   "i": 17,
+   "t_ms": 4200,
+   "t_parede_ms": 63091,
+   "bobinas": [
+    "KM2"
+   ],
+   "lampadas": [],
+   "saidas_clp": [
+    "Q0.1"
+   ]
+  },
+  {
+   "i": 18,
+   "t_ms": 4500,
+   "t_parede_ms": 66273,
+   "bobinas": [
+    "KM2"
+   ],
+   "lampadas": [],
+   "saidas_clp": [
+    "Q0.1"
+   ]
+  },
+  {
+   "i": 19,
+   "t_ms": 4500,
+   "t_parede_ms": 69657,
+   "bobinas": [
+    "KM2"
+   ],
+   "lampadas": [],
+   "saidas_clp": [
+    "Q0.1"
+   ]
+  },
+  {
+   "i": 20,
+   "t_ms": 4800,
+   "t_parede_ms": 74667,
+   "bobinas": [
+    "KM2"
+   ],
+   "lampadas": [],
+   "saidas_clp": [
+    "Q0.1"
+   ]
+  },
+  {
+   "i": 21,
+   "t_ms": 4800,
+   "t_parede_ms": 78163,
+   "bobinas": [],
+   "lampadas": [],
+   "saidas_clp": []
+  },
+  {
+   "i": 22,
+   "t_ms": 5100,
+   "t_parede_ms": 81353,
+   "bobinas": [],
+   "lampadas": [],
+   "saidas_clp": []
+  },
+  {
+   "i": 23,
+   "t_ms": 5100,
+   "t_parede_ms": 84840,
+   "bobinas": [],
+   "lampadas": [],
+   "saidas_clp": []
+  },
+  {
+   "i": 24,
+   "t_ms": 5400,
+   "t_parede_ms": 88023,
+   "bobinas": [],
+   "lampadas": [],
+   "saidas_clp": []
+  },
+  {
+   "i": 25,
+   "t_ms": 5400,
+   "t_parede_ms": 91399,
+   "bobinas": [
+    "KM1"
+   ],
+   "lampadas": [],
+   "saidas_clp": [
+    "Q0.0"
+   ]
+  },
+  {
+   "i": 26,
+   "t_ms": 5700,
+   "t_parede_ms": 94573,
+   "bobinas": [
+    "KM1"
+   ],
+   "lampadas": [],
+   "saidas_clp": [
+    "Q0.0"
+   ]
+  },
+  {
+   "i": 27,
+   "t_ms": 5700,
+   "t_parede_ms": 97948,
+   "bobinas": [
+    "KM1"
+   ],
+   "lampadas": [],
+   "saidas_clp": [
+    "Q0.0"
+   ]
+  },
+  {
+   "i": 28,
+   "t_ms": 6000,
+   "t_parede_ms": 101110,
+   "bobinas": [
+    "KM1"
+   ],
+   "lampadas": [],
+   "saidas_clp": [
+    "Q0.0"
+   ]
+  },
+  {
+   "i": 29,
+   "t_ms": 0,
+   "t_parede_ms": 3291,
+   "bobinas": [],
+   "lampadas": [],
+   "saidas_clp": []
+  },
+  {
+   "i": 30,
+   "t_ms": 300,
+   "t_parede_ms": 6457,
+   "bobinas": [],
+   "lampadas": [],
+   "saidas_clp": []
+  }
+ ],
+ "disjuntores_fechados": [
+  "Q1"
+ ]
+}
