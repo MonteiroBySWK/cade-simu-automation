@@ -86,6 +86,8 @@ Atualizado: 2026-10-22 ~10h (horário de Brasília). Repo: `~/dev/codes/personal
   revisado nesta sessão. Sobrepõe a Entrega B; pergunte ao usuário antes de mergear/fechar.
 
 ## Próximos passos (ordem)
+> Checklist completo, com critérios de aceite e mapa das lacunas de RE: **`docs/TODO.md`**
+> (dois eixos: 100% funcional para as entregas e ≥80% para um agente resolver sozinho).
 1. ~~Fechar entregas A e B~~ — feito (validadas no Wine); arquivos seguem sem commit no repo da UEMA.
 2. ~~Mergear `feat/rust-sim`~~ — feito (PR #9).
 3. ~~Gravar goldens do app~~ — feito: 11 casos `"fonte":"app"`, `cade conformidade` 11/11.

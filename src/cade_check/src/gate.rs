@@ -9,6 +9,7 @@
 //! (build, geo, fios, vinculos, lint) e sempre calculada e vem em [`Relatorio::estatico_ok`].
 
 use crate::acionavel::{acionavel_curto, acionavel_solto};
+use crate::geom::Conectividade;
 use crate::{fios, geo, lint, vinculos};
 use cade_layout::LayoutError;
 use cade_model::latin1;
@@ -319,14 +320,21 @@ fn resultado(saida: &str) -> (Option<u64>, Option<u64>) {
 
 /// `build_spec.gate(path, testes, r)` sobre um `.cad` ja gerado (nao reconstroi o arquivo).
 /// Preenche vinculos, geo, fios e testes em `r`. `Err` se o conteudo nao e decomponivel em entidades.
+///
+/// Circuito com CLP segue o gate do ladder (`gate_clp` de `tools/ladder_dsl.py`): o pino B das
+/// bobinas ladder (trilho direito aberto, `docs/ladder.md` §4) nao e pino solto, e nao ha
+/// `wires_check` (o Python zera `r["fios"]` nesse ramo).
 pub fn gate_em(cad: &[u8], casos: &[Value], exec: &dyn ExecutorTestes, r: &mut Relatorio) -> Result<(), String> {
     let texto = latin1::decodificar(cad);
-    let g = geo::analisar_texto(&texto)?;
+    let ents = crate::geom::entidades_do_cad(&texto)?;
+    let clp = crate::geom::tem_clp(&ents);
+    let g = geo::analisar_entidades(&Conectividade::de_entidades(&ents));
+    let soltos: Vec<String> = g.soltos.into_iter().filter(|s| !(clp && solto_permitido(s))).collect();
     r.geo = GeoRel {
         curtos_msg: g.curtos.iter().map(|c| acionavel_curto(c)).collect(),
-        soltos_msg: g.soltos.iter().map(|s| acionavel_solto(s)).collect(),
+        soltos_msg: soltos.iter().map(|s| acionavel_solto(s)).collect(),
         curtos: g.curtos,
-        soltos: g.soltos,
+        soltos,
     };
     r.erros.extend(r.geo.curtos_msg.clone());
     r.erros.extend(r.geo.soltos_msg.clone());
@@ -370,8 +378,13 @@ pub fn gate_em(cad: &[u8], casos: &[Value], exec: &dyn ExecutorTestes, r: &mut R
     }
 
     let w = fios::analisar_texto(&texto)?;
-    r.fios = FiosRel { ok: Some(w.ruins.is_empty()), n: Some(w.n), atravessam: w.mensagens() };
-    if !w.ruins.is_empty() {
+    if clp {
+        // gate do ladder nao roda `wires_check` (o Python zera `r["fios"]`)
+        r.fios = FiosRel { ok: Some(true), n: Some(0), atravessam: vec![] };
+    } else {
+        r.fios = FiosRel { ok: Some(w.ruins.is_empty()), n: Some(w.n), atravessam: w.mensagens() };
+    }
+    if !w.ruins.is_empty() && !clp {
         let primeiros: Vec<&str> = r.fios.atravessam.iter().take(3).map(|s| s.as_str()).collect();
         r.avisos.push(format!(
             "{} trecho(s) de fio atravessam simbolo (estetico): {}",
@@ -380,6 +393,12 @@ pub fn gate_em(cad: &[u8], casos: &[Value], exec: &dyn ExecutorTestes, r: &mut R
         ));
     }
     Ok(())
+}
+
+/// `_solto_permitido` de `tools/ladder_dsl.py`: pino B de bobina ladder (trilho direito
+/// aberto, `docs/ladder.md` §4) e por desenho, nao pino solto.
+fn solto_permitido(s: &str) -> bool {
+    ["10060", "10061", "10062"].iter().any(|c| s.contains(&format!("({c}).p2@")) || s.contains(&format!("({c}).B@")))
 }
 
 fn descreve_falha(f: &Value) -> String {

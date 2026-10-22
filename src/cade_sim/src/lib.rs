@@ -9,7 +9,7 @@
 //! - [`circuito`] netlist + relaxacao (OK/RACE/INSTAVEL/CURTO) + temporizadores;
 //! - [`casos`] casos declarativos (`entradas`/`inicial`/`esperado`/`passos`/`avanca`);
 //! - [`conformidade`] cenario temporal x golden do app;
-//! - [`ladder`] ponto de extensao do ladder/CLP (ainda nao implementado).
+//! - [`ladder`] CLP modular + ladder por ticks de 100 ms (paridade com `tools/clp_sim.py`).
 
 pub mod casos;
 pub mod circuito;

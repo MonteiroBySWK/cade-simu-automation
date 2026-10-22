@@ -28,7 +28,7 @@ nenhum além do que o usuário passa.
 | `cade_layout` | `layout.py`: `compilar` (spec topológica → spec baixa: rede série-paralelo, rungs, serpentina, faixas, `trilhos_comando`, fontes, terra, `potencia` com paralelo/`ordem`) e `build_spec.normalizar` | pronto, byte-idêntico |
 | `cade_cli` | binário `cade`: `validate|parse|emit|new-from-json|build|layout|gate|design` | pronto |
 | `cade_check` | `geo_check`, `wires_check`, vínculos por rótulo, `lint_layout`, mensagens acionáveis, `gate`/`construir` (relatório idêntico ao MCP); **testes funcionais via trait** | **pronto (parte estática)** |
-| `cade_sim` | motor de simulação (`netlist_sim` + temporizadores + papéis do RE), casos de teste, `conformidade`, executor do gate; **ladder/CLP: só o trait `ModeloLadder`** | **pronto** (ladder pendente) |
+| `cade_sim` | motor de simulação (`netlist_sim` + temporizadores + papéis do RE), casos de teste, `conformidade`, executor do gate, ladder/CLP por ticks (`clp_sim`) | **pronto** |
 | `cade_render` | `cad_render` (preview PNG) | **esqueleto** |
 | `cade_mcp` | servidor MCP stdio (`cade mcp`) | **esqueleto** |
 | `cade_app` | Wine/CADe_SIMU real (`app_sim`, `wine_mgr`, `cade_open`, `cade_config`) | **esqueleto** |
@@ -54,7 +54,7 @@ JSON define a ordem de conexões/fios e portanto os bytes do `.cad`) e `clap`.
 | `build_spec.conferir_chaves_de_teste`, `_parse_testes` | `cade_check::gate` (`parse_testes`; chaves vêm do executor) | parse portado; chaves: `cade_sim::executor::mensagens_chaves` |
 | `geo_check.py`, `wires_check.py` | `cade_check::{geo,fios}` (+ `geom`, geometria compartilhada) | **idêntico** |
 | `netlist_sim.py`, `cad_test`/`cad_simulate` | `cade_sim` (`cade simulate`, `cade test`, executor do gate) | **feito** (estado idêntico ao Python em 11 exemplos × ~1000 combinações + temporizadores) |
-| `ladder_sim.py` | `cade_sim::ladder` (`ModeloLadder`) | pendente (outro agente) |
+| `clp_sim.py` (+ `gate_clp` de `ladder_dsl.py`) | `cade_sim::ladder` (`CircuitoClp`, `tem_clp`, `teste_casos` idêntico) + gate CLP em `cade_check::gate` | **feito** (paridade string a string nos 5 exemplos ladder) |
 | `cad_render.py`, `cad_preview.py` | `cade_render` | pendente |
 | `cade_mcp.py` (tools MCP), `mcp_call.py` | `cade_mcp` + `cade mcp` | pendente (`cad_build`/`cad_design` já têm núcleo) |
 | `app_sim.py`, `wine_mgr.py`, `cade_open.py`, `cade_config.py` | `cade_app` | pendente |
@@ -179,8 +179,9 @@ Regras comuns:
 
 Por fase:
 
-- **cade_check**: FEITO (ver "Paridade do gate"). Falta só ligar o executor de testes do `cade_sim`.
-- **cade_sim**: FEITO (ver "Simulação"). Falta o ladder/CLP (`cade_sim::ladder::ModeloLadder`).
+- **cade_check**: FEITO (ver "Paridade do gate"), com o executor de testes do `cade_sim` ligado
+  (inclui o ramo CLP: filtro de soltos do ladder + sem `wires_check`, como `gate_clp`).
+- **cade_sim**: FEITO (ver "Simulação"), incluindo o ladder/CLP (`cade_sim::ladder`).
 - **cade_render**: `renderizar(path, scale)` → PNG; golden por hash de pixels ou comparação com tolerância.
 - **cade_mcp**: JSON-RPC stdio; reaproveite `cade_layout::normalizar` + `cade_build::construir` para
   `cad_design`/`cad_build`; `tools/mcp_call.py`/`test_mcp.py` descrevem o contrato.
