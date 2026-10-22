@@ -184,6 +184,20 @@ def test_sem_entidade_orfa_do_doador():
         assert not [p for p in ps if p["nums"][8:10] == ["93", "45"]]
 
 
+def test_motor_monofasico_da_erro_explicito():
+    """Reversao monofasica (1008) nao e suportada pela DSL `potencia` — o erro tem que dizer isso."""
+    import pytest
+    spec = {
+        "trilhos": {"L1": 14, "L2": 20, "L3": 26, "N": 282, "PE": 291, "x0": 25, "x1": 395},
+        "fontes": [{"id": "X1", "classe": "3007", "rotulo": "-X",
+                    "pinos": {"L1": "L1", "L2": "L2", "L3": "L3", "N": "N", "PE": "PE"}}],
+        "potencia": [{"id": "m1", "fases": ["L1", "L2", "L3"], "neutro": "N", "pe": "PE",
+                      "colunas": [["Q1", "6009", "-Q1"], ["M1", "1008", "-M1"]]}],
+    }
+    with pytest.raises(ValueError, match="MONOFASICO"):
+        layout.compilar(spec)
+
+
 if __name__ == "__main__":
     import pytest
     raise SystemExit(pytest.main([__file__, "-q"]))

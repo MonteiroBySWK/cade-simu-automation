@@ -1073,6 +1073,12 @@ def _potencia(L, pw, x, y0):
         for mi, (sid, cl, rot, ordem) in enumerate(est):
             top, bot, pe = _tops_bots(cl)
             if len(top) < nf:
+                if cl in ("1002", "1008", "1010"):
+                    raise ValueError(
+                        f"{sid} ({cl}) e motor MONOFASICO (U1/V1/U2/V2): a DSL `potencia` so monta 3 fases. "
+                        f"Reversao monofasica inverte o enrolamento auxiliar (U2/V2) com contatores de 4 polos "
+                        f"(2002) e disjuntor 6004 — nao e suportada; use `cad_build` (baixo nivel) ou "
+                        f"peca um circuito trifasico. Ver docs/bibliografia/automacao-industrial.md")
                 raise ValueError(f"{sid} ({cl}) tem {len(top)} pinos de topo < {nf} fases")
             L.sym(sid, cl, rot, xs_m[mi], y)
             for pi in range(nf):

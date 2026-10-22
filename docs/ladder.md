@@ -152,9 +152,29 @@ Convenção do gerador (o app aceita qualquer string; acervo usa também `B3:L`,
 - `clp.saidas[].carga` pode ser lista (cargas em paralelo, ex.: bobina + lâmpada). `textos`: classe 8.
 - Medido no app: bobina ladder, TON em linha, SET/RST e entrada/saída 10204/10205 funcionam; tick ≈ 100 ms.
 
-## 3. Simulação (contrato do `cad_test`/netlist em Rust)
+### 2.6 Roadmap do `ladder/1` — o que o CADe_SIMU tem e a DSL ainda não
 
+O catálogo (`docs/classes-papeis.json`) e o livro do Miyagi (LD/IEC — `docs/bibliografia/`) listam
+o conjunto completo; hoje a DSL cobre só uma parte:
+
+| elemento | classe | na DSL? | nota |
+|---|---|---|---|
+| contato NA / NF | 10050 / 10051 | sim | |
+| bobina OUT / SET / RST | 10060 / 10061 / 10062 | sim | |
+| TON em linha | 10066 | sim | `["TON","T1",{"tempo":1,"base":"1s"}]` |
+| **contato de borda** (subida/descida) | 10052 / 10053 | **não** | livro §3.2.1: detector de variação, ON por 1 ciclo |
+| **TOF / intermitente / pulso** | 10067 / 10068 / 10069 / 10081 | **não** | no lado elétrico, 9005/9006 já estão no `cade_sim`; 9007/9015 ainda não |
+| **contador de pulsos / up-down** | 10063 / 10075 | **não** | livro §3.2 (contadores) |
+| **biestável RS** | 10064 | **não** | SET/RST cobrem o caso simples |
+| **funções lógicas INV / EXOR** | 10040 / 10041 | **não** | |
+| **GRAFCET (etapas)** | 10100+ | **não** | livro Apêndice SFC; futuro front-end `grafcet/1` |
+
+Ordem sugerida (custo × uso): borda (10052/10053) → TOF (10067) → contador (10063) → GRAFCET.
+Cada um exige layout (pinos/geometria), modelo lógico (`clp_sim`), modelo geométrico e caso no app.
+
+## 3. Simulação (contrato do `cad_test`/netlist em Rust)
 ### 3.1 Modelo lógico (direto da DSL) — o "esperado"
+
 Estado: bits (todos 0 no início, salvo `inicial`), acumuladores de TON/CTU, estado físico dos
 contatores/lâmpadas. **Um tick** (100 ms):
 1. **Hardware de entrada**: CPU alimentada ⇔ a alimentação (fonte/trilhos e `protecao`, que

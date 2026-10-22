@@ -27,6 +27,11 @@ coordenadas x/y à mão.
 Sem MCP nativo: `python3 tools/mcp_call.py cad_design '{"layout_json":"<json>","out_path":"out/x.cad"}'`
 ou `python3 tools/build_spec.py meu.layout.json out/x.cad` (imprime `GATE: OK`/`REPROVADO`).
 
+**Antes do layout (ladder/CLP)**: liste as **funções de controle** e a **tabela de I/O** (entrada →
+endereço `I0.x` → dispositivo; saída → `Q0.x` → carga), como no método de projeto do Miyagi §6
+(necessidades → funções → interfaces/I-O → estrutura do programa → testes). Sem isso o degrau
+"esquece" entrada e o gate acusa operando não produzido (V1–V8).
+
 ## A DSL em 1 minuto (`docs/dsl-layout.md` tem o detalhe)
 
 ```jsonc
@@ -76,6 +81,19 @@ ou `python3 tools/build_spec.py meu.layout.json out/x.cad` (imprime `GATE: OK`/`
 Regra de ouro do comando: `trilho_L → [proteções NF em série] → [liga ∥ selo] → [intertravamentos NF] → bobina → trilho_N`.
 Série só passa se fechada; paralelo liga se *qualquer* ramo fechar.
 
+### Reversão: trifásica × monofásica × inversor
+
+- **Trifásica** (1 motor, 2 sentidos): `potencia.paralelo` com dois contatores e `ordem` invertida no
+  segundo (L1↔L3) + NF cruzado no comando (`7001`). Exemplo pronto: `reversao`.
+- **Monofásica** (enrolamento principal + auxiliar): a reversão inverte a **ligação relativa de um
+  enrolamento** (na prática U2/V2 do auxiliar), **não** troca fase/neutro. Classes do CADe_SIMU:
+  motor `1008` (`U1 V1 PE U2 V2`), contatores de **4 polos** `2002`, disjuntor `6004`. A DSL
+  `potencia` **não** monta esse cruzamento hoje: diga o limite (ou use `cad_build`, baixo nível);
+  nunca entregue "troca de fase e neutro" como se fosse reversão monofásica.
+- **Inversor de frequência**: **não existe** classe no CADe_SIMU. Fora de escopo — explique
+  `n_s = 120 f / P` (30/45/60 Hz → 900/1350/1800 rpm em 4 polos) e não desenhe.
+- Fonte: `docs/bibliografia/automacao-industrial.md` (material da disciplina + livro Miyagi).
+
 ## Erros comuns (e o que o gate diz)
 
 | Erro | Sintoma no relatório | Correção |
@@ -112,6 +130,8 @@ gate (`cad_example`): `partida_direta.ladder`, `reversao.ladder`, `intercalada.l
   em todo passo (disjuntor ligado). O gate roda o modelo **geométrico** (`clp_sim`, a partir do .cad) e o **lógico** da DSL e exige igualdade.
 - **No app**: `python3 tools/app_sim.py x.cad --roteiro roteiro.json` (alternar `DJ1` antes; `pressionar`, `aguardar`, `foto` por
   instante; lê bobinas 9000, lâmpadas 9008, saídas 10205 e bobinas ladder). Um Wine por vez.
+  **Disjuntores iniciam ABERTOS em cada Play**: sem o clique o motor não gira. **Um ponteiro só**: não
+  dá para segurar S1 e apertar S0 ao mesmo tempo — solte antes (ver `docs/conformidade.md`).
 
 ## Quando pedir esclarecimento (pontos de parada)
 
@@ -134,9 +154,11 @@ Nunca: declarar pronto com `ok:false`; desligar testes para passar; ignorar pino
 ## O que o gate prova — e o que não prova
 
 - **Prova**: arquivo válido (abre), lógica de comando pelos testes (selo, intertravamento, térmico, emergência,
-  sem auto-religamento), **geometria** sem curto de fase e sem pino solto, fios sem atravessar símbolo.
-- **Não prova**: lâmpadas/sinalização (o simulador de netlist só observa bobinas — verifique pela topologia e preview),
-  temporizadores, e a simulação **real** no app (validada em amostra via Wine: `tools/cade_open.py`).
+  sem auto-religamento), **bobinas e lâmpadas** (o executor Rust roda os testes funcionais de verdade),
+  **geometria** sem curto de fase e sem pino solto, fios sem atravessar símbolo.
+- **Não prova**: transitórios e temporizadores fora do TON; o **estado inicial do disjuntor** (o modelo assume
+  fechado; no app ele inicia aberto — clique antes de testar); e não substitui a simulação **real** no app
+  (`cade conformidade` compara os casos com goldens gravados no Wine).
 - A folha tem área segura ~960×750 (`tools/sheet.json`); layouts típicos ficam bem dentro.
 
 ## Ferramentas MCP
