@@ -29,21 +29,18 @@ Atualizado: 2026-10-22 ~10h (horário de Brasília). Repo: `~/dev/codes/personal
   `docs/re-engenharia.md` (§9 geometria, §11 papéis, §13 ladder), `docs/app-sim.md`, `docs/integracao.md`.
 
 ## Trabalho em andamento quando esta sessão acabou
-### Ladder + entregas A/B (agente Sonnet, no checkout principal)
-- Implementando a DSL `ladder/1` em Python (`cad_design`), correções de pinos do CLP (10050/10051/10060/
-  10066/10204/10205/10206, catálogo via `tools/gen_symbol_lib.py`), `tools/dissect.py` (string final `#%s`),
-  `tools/app_sim.py` (detecção de Play pelo **Stop (528,32) vermelho** ou status "Simulación"; MENU_VER/
-  ITEM_ZOOM_TODO; ler saídas do CLP 10205 e bobinas ladder; alternar DJ1 antes dos testes).
-- Ele foi autorizado a commitar/push no main em passos pequenos e a atualizar esta seção.
-- **Entrega A** (base intacta: `~/docs/uema/.claude/worktrees/cade-simu-atividade-5f2849/disciplinas/automacao-industrial/atividade-partidas-intercalares/cad/Pratica5_Part_Intercalada.base.cad`):
-  corrigir R2 → `Q0.2` (bug confirmado no app), H1/H2, RT1/RT2 (6007 + 8017/8016 de MESMO rótulo) em entradas
-  livres, H3/H4 em saídas livres, PERMISSAO = RT1_OK·RT2_OK nos dois degraus, legenda + tabela de I/O,
-  relatório T1–T7 + screenshots em `../evidencias/`. Saída: `Pratica5_Complementar_<Aluno>.cad`.
-- **Entrega B**: `.../automacao-industrial/partida-sequencial-3-motores/` (README.md, cad/, evidencias/):
-  M3 → 2 s → M2 → 2 s → M1, CLP -CLP, DJ1, B0/B1, TON em linha; screenshots t=0/2/4 s.
-- **3ª tarefa ladder**: enunciado ainda não informado — só deixar a infraestrutura pronta.
-- **Como retomar:** `git -C ~/dev/codes/personal/cade-automation status` / `git log`; ver o que falta pelos
-  testes (`python3 scripts/dev.py test`, exemplos `tools/examples/*.ladder.json`, `tools/eval/casos/ladder/`).
+### Ladder + entregas A/B — CONCLUÍDO (main `836dc4a`)
+- DSL `ladder/1` em Python: `tools/ladder_dsl.py` (V1–V8, modelo lógico 100 ms = geométrico `tools/clp_sim.py`),
+  `tools/cadfile.py` (round-trip .cad), pinos do CLP corrigidos, `app_sim` (Play via Stop vermelho, DJ1, saídas
+  10205/bobinas ladder, `--roteiro`), SKILL/docs. 173 testes; gate: 5 `.ladder.json` OK.
+- **Entrega A**: `~/docs/uema/.../atividade-partidas-intercalares/cad/Pratica5_Complementar_Monteiro.cad`
+  (+ `.ladder.json`); R2 → Q0.2 corrigida (bug provado no app), RT1/RT2 em I0.4–I0.7, H3/H4 em Q0.4/Q0.5;
+  T1–T7 aprovados no app — `../evidencias/relatorio_T1_T7.md` + `evidencias/app/*.png`.
+- **Entrega B**: `.../partida-sequencial-3-motores/` (README, cad/, evidencias/): M3 ~0,6 s, M2 2,4 s, M1 4,4 s
+  no app. B0: M1 cai ~0,7 s depois (cascata do ladder sugerido; documentado).
+- Pendências: ladder no Rust; `potencia` em lista + `dj_comum`; casos `tools/eval/casos/ladder/` fora do
+  `run_eval`; H1–H3/térmicos da B (opcional). Arquivos das entregas NÃO commitados no repo da UEMA.
+- Observação: tempos no app variam com carga da máquina (atrasos chegaram a ~3,9 s sob compilação Rust).
 
 ### Rust `cade_sim` + conformidade + Docker (agente Sonnet, worktree, branch `feat/rust-sim`)
 - Motor de simulação próprio com paridade com `tools/netlist_sim.py`; `cade simulate`, `cade test`,
