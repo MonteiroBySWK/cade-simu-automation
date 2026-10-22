@@ -1,6 +1,6 @@
 [package]
 name = "cade_sim"
-description = "Simulador sem GUI: netlist por geometria, temporizadores, ladder"
+description = "Motor de simulacao sem GUI (reimplementacao propria): geometria, papeis, relaxacao, temporizadores, conformidade"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
@@ -10,3 +10,6 @@ publish.workspace = true
 cade_model.workspace = true
 cade_check.workspace = true
 serde_json.workspace = true
+
+[dev-dependencies]
+cade_build.workspace = true

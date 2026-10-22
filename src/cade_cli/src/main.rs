@@ -9,6 +9,9 @@
 //! - `layout <in> [-o out.spec.json]`     layout topologico -> spec baixa (motor de layout)
 //! - `gate <cad> [--testes t.json] [--json]`   gate estatico de um .cad (geo, fios, vinculos; testes: ver docs/rust-port.md)
 //! - `design <layout.json> -o x.cad [--json]`  layout -> .cad + gate (equivale ao `cad_design` do MCP)
+//! - `simulate <a.cad> --entradas '{"S1":true}' [--inicial '["KM1"]'] [--avanca s] [--json]`  motor de simulacao
+//! - `test <a.cad> --testes casos.json [--json]`  casos declarativos (entradas/inicial/esperado/passos/avanca)
+//! - `conformidade <dir> [--json]`  motor x goldens do app (`tests/conformidade/<caso>/`)
 //!
 //! Fases futuras (crates em `src/`): check, sim, render, mcp, app, vision, maint (ver docs/rust-port.md).
 
@@ -77,6 +80,37 @@ enum Cmd {
         #[arg(short, long)]
         output: String,
         /// relatorio JSON identico ao `cad_design` do MCP
+        #[arg(long)]
+        json: bool,
+    },
+    /// simula o circuito (sem GUI): bobinas, lampadas, motores, temporizadores, curtos
+    Simulate {
+        arquivo: String,
+        /// entradas acionadas, JSON: {"S1": true}
+        #[arg(long, default_value = "{}")]
+        entradas: String,
+        /// bobinas/temporizadores ja energizados: JSON ["KM1"] ou lista "KM1,KM2"
+        #[arg(long, default_value = "[]")]
+        inicial: String,
+        /// segundos de simulacao com as entradas constantes (temporizadores)
+        #[arg(long, default_value_t = 0.0)]
+        avanca: f64,
+        #[arg(long)]
+        json: bool,
+    },
+    /// roda casos de teste declarativos (formato de `testes` das specs)
+    Test {
+        arquivo: String,
+        /// JSON com a lista de casos (ou {"testes": [...]})
+        #[arg(long)]
+        testes: String,
+        #[arg(long)]
+        json: bool,
+    },
+    /// teste diferencial: roda os cenarios de <dir> no motor e compara com golden_app.json
+    Conformidade {
+        #[arg(default_value = "tests/conformidade")]
+        dir: String,
         #[arg(long)]
         json: bool,
     },
@@ -309,6 +343,128 @@ fn cmd_layout(path: &str, out: Option<&str>) -> i32 {
     0
 }
 
+/// Lista de nomes: JSON `["A","B"]` ou `A,B`.
+fn lista_de(txt: &str) -> Result<Vec<String>, String> {
+    let t = txt.trim();
+    if t.starts_with('[') {
+        let v: Value = serde_json::from_str(t).map_err(|e| format!("json invalido em --inicial: {e}"))?;
+        return Ok(v.as_array().map(|a| a.iter().filter_map(|x| x.as_str().map(String::from)).collect()).unwrap_or_default());
+    }
+    Ok(t.split(',').map(|s| s.trim().to_string()).filter(|s| !s.is_empty()).collect())
+}
+
+fn abre_circuito(path: &str) -> Result<cade_sim::Circuito, i32> {
+    cade_sim::Circuito::abrir(path).map_err(|e| {
+        eprintln!("{e}");
+        2
+    })
+}
+
+fn cmd_simulate(path: &str, entradas: &str, inicial: &str, avanca: f64, json: bool) -> i32 {
+    let c = match abre_circuito(path) {
+        Ok(c) => c,
+        Err(k) => return k,
+    };
+    let ent: Value = match serde_json::from_str(entradas) {
+        Ok(v) => v,
+        Err(e) => {
+            eprintln!("json invalido em --entradas: {e}");
+            return 2;
+        }
+    };
+    let ini = match lista_de(inicial) {
+        Ok(l) => l,
+        Err(e) => {
+            eprintln!("{e}");
+            return 2;
+        }
+    };
+    let e = c.estado(&cade_sim::entradas_de_json(&ent), &ini, avanca, None);
+    if json {
+        let mut v = e.to_json();
+        v["entradas"] = serde_json::json!(c.entradas);
+        v["bobinas_do_circuito"] = serde_json::json!(c.bobinas.keys().collect::<Vec<_>>());
+        v["pinos_soltos"] = serde_json::json!(c.soltos);
+        println!("{}", serde_json::to_string_pretty(&v).unwrap());
+    } else {
+        println!("status: {}", e.status.as_str());
+        println!("bobinas energizadas: {:?}", e.bobinas);
+        println!("lampadas acesas: {:?}", e.lampadas);
+        if !e.motores.is_empty() {
+            println!("motores girando: {:?}", e.motores);
+        }
+        for t in &e.temporizadores {
+            println!("temporizador {}: {} {}s decorrido={}s saida={}", t.id, t.tipo, t.tempo, t.decorrido, t.saida);
+        }
+        if !e.curtos.is_empty() {
+            println!("curtos: {:?}", e.curtos);
+        }
+        if !c.soltos.is_empty() {
+            println!("pinos soltos: {:?}", c.soltos);
+        }
+    }
+    0
+}
+
+fn cmd_test(path: &str, testes: &str, json: bool) -> i32 {
+    let c = match abre_circuito(path) {
+        Ok(c) => c,
+        Err(k) => return k,
+    };
+    let v = match le_json(testes) {
+        Ok(v) => v,
+        Err(e) => {
+            eprintln!("{e}");
+            return 2;
+        }
+    };
+    let Some(casos) = v.get("testes").unwrap_or(&v).as_array().cloned() else {
+        eprintln!("{testes}: esperado uma lista de casos (ou um objeto com a chave \"testes\")");
+        return 2;
+    };
+    if casos.is_empty() {
+        eprintln!("SEM_TESTES: declare casos");
+        return 1;
+    }
+    let ruins: Vec<(String, String)> = casos.iter().flat_map(|cs| cade_sim::casos::chaves_invalidas(&c, cs)).collect();
+    let r = cade_sim::casos::teste_casos(&c, &casos);
+    let ok = r.aprovado() && ruins.is_empty();
+    if json {
+        let linhas: Vec<Value> = r
+            .linhas
+            .iter()
+            .map(|l| serde_json::json!({"nome": l.nome, "aprovado": l.aprovado, "estado": l.estado.to_json()}))
+            .collect();
+        let v = serde_json::json!({
+            "aprovado": ok, "ok": r.ok, "total": r.linhas.len(), "casos": linhas,
+            "chaves_invalidas": ruins.iter().map(|(c, k)| serde_json::json!({"campo": c, "chave": k})).collect::<Vec<_>>(),
+        });
+        println!("{}", serde_json::to_string_pretty(&v).unwrap());
+    } else {
+        print!("{}", r.texto());
+        for (campo, k) in &ruins {
+            println!("  CHAVE INVALIDA em {campo}: {k:?} (nao existe no circuito)");
+        }
+    }
+    i32::from(!ok)
+}
+
+fn cmd_conformidade(dir: &str, json: bool) -> i32 {
+    let rel = match cade_sim::conformidade::rodar(std::path::Path::new(dir)) {
+        Ok(r) => r,
+        Err(e) => {
+            eprintln!("{e}");
+            return 2;
+        }
+    };
+    if json {
+        println!("{}", serde_json::to_string_pretty(&rel.to_json()).unwrap());
+    } else {
+        print!("{}", rel.texto());
+    }
+    i32::from(!rel.aprovado())
+}
+
 fn main() -> ExitCode {
     let cli = Cli::parse();
     let code = match &cli.cmd {
@@ -319,6 +475,9 @@ fn main() -> ExitCode {
         Cmd::Layout { arquivo, output } => cmd_layout(arquivo, output.as_deref()),
         Cmd::Gate { arquivo, testes, json } => check::cmd_gate(arquivo, testes.as_deref(), *json),
         Cmd::Design { arquivo, output, json } => check::cmd_design(arquivo, output, *json),
+        Cmd::Simulate { arquivo, entradas, inicial, avanca, json } => cmd_simulate(arquivo, entradas, inicial, *avanca, *json),
+        Cmd::Test { arquivo, testes, json } => cmd_test(arquivo, testes, *json),
+        Cmd::Conformidade { dir, json } => cmd_conformidade(dir, *json),
     };
     ExitCode::from(code as u8)
 }
