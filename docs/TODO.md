@@ -68,13 +68,20 @@ Consequência: A7 (estrela-triângulo) e A10 (GRAFCET/pneumática) saem do camin
   (liga apos 1 s) e `out/timer_pisca_9007.cad` (pisca 0,5 s), gerados por `tools/demo_timers.py`.
   **Pendente**: 9015 gerador de pulsos (sem protótipo em `symbol_lib.json`, RE §11.4 pouco
   documentado) + caso no app com 9007 (pisca) e 9015 (pulso), lido por imagem. Custo M.
-  **App (22/10/2026)**: o demo **nao disparou** no app (H1 nao ligou com 9004 nem piscou com 9007),
-  embora o modelo Python/Rust passe; nao ha doador 9004/9007 no acervo (grep vazio). Antes de
-  declarar funcional, isolar: fiacao/rotulos do demo x comportamento real do app (Ghidra/experimento).
-- [bloqueado] **A5. Sensores** (`recomendado`) — **2 fios (7500/7506) modelado** no Python/Rust
-  (contato NA/NC) e exemplo DSL com GATE OK; **app NAO acionou** (H1 apagado no repouso/click/solta) —
-  falta doador/prototipo com os campos que o app usa. **3 fios (7501/7502)**: sem prototipo/geometria no
-  `symbol_lib` e sem doador (grep vazio) — exige Ghidra/desenho no app. — 56 classes do catálogo (`7501/7502/7504/7505`…); hoje só
+  **App (22/10/2026, Ghidra 2ª sessão, ver §11.6)**: o `.cad` do demo está **correto**
+  (unidade=label4 @+0x4a464, tempo=label5 @+0x4c3a4, ×1/×10/×100/×1000, cópia a 7004..7007 por
+  label0 — `~/cade-ghidra/f9004.c`). O não-disparo é procedural: S1 é momentâneo, precisa
+  **segurar o clique** por todo o retardo, e sob Wine o app roda ~0,41× o tempo de parede
+  (1 s de sim ≈ 2,4 s segurando). Repetir o teste segurando S1 ≥3 s de parede.
+- [bloqueado] **A5. Sensores** (`recomendado`) — **2 fios (7500/7506)**: conduz com `estado==1`
+  (igual a botão; clique põe estado=1 p/ classes 7500..7637 + propaga a mesmo label0 — Ghidra
+  §11.6, `~/cade-ghidra/f7500.c`). **Momentâneo**: H1 só acende enquanto segurado; "apagado no
+  repouso/click/solta" após click rápido é o esperado — repetir segurando e capturando durante.
+  **3 fios (7501/7502)**: **exige alimentação** — pin1=='+' e pin2=='-' (p.ex. 3008/3009 ou p3/p4
+  da CPU 10206) + clique; estampa '+' (PNP-ímpar: 7501/7507/7513/7571/7577…) ou '-' (NPN-par)
+  na net do pino S (9,6) — `~/cade-ghidra/f7501.c`, §11.6. Sem protótipo em `symbol_lib.json`
+  (null) e sem doador (grep vazio) — criar protótipo `["-B","","+","-","S",...]` + caso no app
+  com fonte +/− antes de declarar funcional. — 56 classes do catálogo (`7501/7502/7504/7505`…); hoje só
   contato de 2 fios.
   - Aceite: modelo de sensor alimentado (pino de alimentação + saída), caso no app com objeto
     detectado, exemplo de partida com sensor. Custo M.
