@@ -80,9 +80,8 @@ fn compara(nome: &str, rust: &Value, py: &Value, falhas: &mut Vec<String>) {
 }
 
 /// Casos cujo oraculo Python ja tem features que o port Rust ainda nao cobre.
-/// - `reversao_monofasica`/`reversao_4polos`: layout 1008/2002/6004 (A8/A9, Python-only).
-/// - `CADe_S1`/`Arranque_1`: mensagens de "classe sem modelo" (A11, Python-only).
-const NAO_PORTADO: [&str; 4] = ["reversao_monofasica", "reversao_4polos", "CADe_S1", "Arranque_1"];
+/// (Lista vazia hoje: A8/A9 — layout 1008/2002/6004 — e A11 — "classe sem modelo" — ja portados.)
+const NAO_PORTADO: [&str; 0] = [];
 
 #[test]
 fn design_estatico_identico_ao_python() {

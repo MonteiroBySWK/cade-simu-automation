@@ -63,7 +63,8 @@ pub fn lint_layout(layout: Option<&Value>) -> Vec<String> {
                 .unwrap_or_default();
             let tem_pe = classes
                 .iter()
-                .any(|cl| dados::symbol_pins().get(cl).map(|c| c.pins.contains_key("PE")).unwrap_or(false));
+                .any(|cl| dados::symbol_pins().get(cl).map(|c| c.pins.contains_key("PE")).unwrap_or(false)
+                    || ["1002", "1008", "1010"].contains(&cl.as_str()));
             if tem_pe {
                 let pe = g.get("pe");
                 let id = g.get("id").map(str_de).unwrap_or_else(|| "None".into());

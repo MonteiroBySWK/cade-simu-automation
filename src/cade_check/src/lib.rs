@@ -8,6 +8,7 @@
 //! | [`fios`] | `wires_check.analisar` | fio atravessando o corpo de simbolo |
 //! | [`vinculos`] | `build_spec.conferir_vinculos` | termico/bobina por rotulo |
 //! | [`lint`] | `build_spec.lint_layout` | avisos de autoria do layout |
+//! | [`sem_modelo`] | `build_spec.conferir_classes_sem_modelo` / `conferir_classes_em_spec` | recusa A11 |
 //! | [`acionavel`] | `acionavel_solto/curto` | mensagens que dizem o que fazer |
 //! | [`gate`] | `build_spec.gate/construir`, `cad_gate/cad_design` | relatorio JSON identico ao do MCP |
 //!
@@ -21,6 +22,7 @@ pub mod gate;
 pub mod geo;
 pub mod geom;
 pub mod lint;
+pub mod sem_modelo;
 pub mod vinculos;
 
 pub use gate::{

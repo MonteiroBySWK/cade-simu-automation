@@ -29,10 +29,6 @@ fn build_e_layout_batem_com_os_goldens() {
     for e in fs::read_dir(&g).unwrap().filter_map(|e| e.ok()) {
         let nome = e.file_name().into_string().unwrap();
         let Some(base) = nome.strip_suffix(".layout.json") else { continue };
-        // A8/A9 (1008/2002/6004) ainda nao portados no layout Rust
-        if base == "reversao_monofasica" || base == "reversao_4polos" {
-            continue;
-        }
         if !g.join(format!("{base}.spec.json")).is_file() {
             continue; // caso de erro
         }
