@@ -114,6 +114,8 @@ enum Cmd {
         #[arg(long)]
         json: bool,
     },
+    /// servidor MCP (stdio, JSON-RPC): initialize + tools/list + tools/call (cade-simu, sem Python)
+    Mcp,
 }
 
 /// Extrai titulo do campo versao (texto apos primeiro `#` ate `#`s).
@@ -478,6 +480,7 @@ fn main() -> ExitCode {
         Cmd::Simulate { arquivo, entradas, inicial, avanca, json } => cmd_simulate(arquivo, entradas, inicial, *avanca, *json),
         Cmd::Test { arquivo, testes, json } => cmd_test(arquivo, testes, *json),
         Cmd::Conformidade { dir, json } => cmd_conformidade(dir, *json),
+        Cmd::Mcp => cade_mcp::servir(),
     };
     ExitCode::from(code as u8)
 }
