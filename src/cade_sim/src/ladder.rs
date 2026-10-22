@@ -10,7 +10,8 @@
 //!   saida 10205 com bit 1 -> '+';
 //! - contatos eletricos conduzem nos dois sentidos; contatos ladder (10050 NA / 10051 NF) so de A para B;
 //! - um tick: rede fisica (com os contatores do tick anterior e as entradas do caso) + ladder com os
-//!   bits do tick anterior; bobinas 10060/10061/10062, TON 10066; disjuntores/termico alternam,
+//!   bits do tick anterior; bobinas 10060/10061/10062, TON 10066, TOF 10067, CTU 10063,
+//!   bordas 10052/10053; disjuntores/termico alternam,
 //!   botoeiras sao momentaneas (soltas quando nao citadas).
 //!
 //! Textos de `teste_casos`/`executar_caso`/`chaves_invalidas` sao IDENTICOS aos do Python
@@ -26,17 +27,22 @@ use serde_json::Value;
 use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
 
 // Classes do `tem_clp` do Python (`tools/clp_sim.py`): CPU/entradas/saidas, fonte do trilho,
-// bobinas ladder, TON e contatos ladder. Qualquer uma delas escolhe este simulador.
-pub const CLASSES_CLP: [&str; 10] = [
-    "10206", "10204", "10205", "3008", "10060", "10061", "10062", "10066", "10050", "10051",
+// bobinas ladder, TON/TOF/CTU, contatos ladder e bordas. Qualquer uma delas escolhe este simulador.
+pub const CLASSES_CLP: [&str; 14] = [
+    "10206", "10204", "10205", "3008", "10060", "10061", "10062", "10066", "10067", "10063", "10050",
+    "10051", "10052", "10053",
 ];
 
 const LADDER_NA: &str = "10050";
 const LADDER_NF: &str = "10051";
+const LADDER_SUBIDA: &str = "10052";
+const LADDER_DESCIDA: &str = "10053";
 const OUT_C: &str = "10060";
 const SET_C: &str = "10061";
 const RST_C: &str = "10062";
 const TON_C: &str = "10066";
+const TOF_C: &str = "10067";
+const CTU_C: &str = "10063";
 const CPU: &str = "10206";
 const ENTRADA: &str = "10204";
 const SAIDA: &str = "10205";
@@ -72,7 +78,20 @@ fn nome_fisico(rot: &str) -> String {
     rot.trim_start_matches('-').trim().to_string()
 }
 
-// Preset do TON em ticks a partir dos labels gravados ([op,'','IN','Q',base,tempo]).
+// Preset do contador em pulsos a partir dos labels gravados ([op,'','R','C','D','Q',preset,preset]).
+fn ctu_preset(labels: &[String]) -> i64 {
+    let mut lab: Vec<String> = labels.to_vec();
+    while lab.len() < 8 {
+        lab.push(String::new());
+    }
+    lab[6]
+        .replace(',', ".")
+        .trim()
+        .parse::<f64>()
+        .unwrap_or(0.0)
+        .max(1.0) as i64
+}
+// Preset do TON/TOF em ticks a partir dos labels gravados ([op,'','IN','Q',base,tempo]).
 fn ton_ticks(labels: &[String]) -> i64 {
     let mut lab: Vec<String> = labels.to_vec();
     while lab.len() < 6 {
@@ -116,7 +135,14 @@ fn contato_nc(cid: &str) -> Option<bool> {
 }
 
 /// Assinatura de um estado para detectar regime/ciclo (`_assin` do Python).
-type Assinatura = (Vec<(String, bool)>, Vec<(String, bool)>, Vec<i64>);
+type Assinatura = (
+    Vec<(String, bool)>,
+    Vec<(String, bool)>,
+    Vec<i64>,
+    Vec<(String, bool)>,
+    Vec<i64>,
+    Vec<bool>,
+);
 
 /// Um passo do historico: (nome, falhas, resultado).
 type PassoHist = (String, Vec<String>, Resumo);
@@ -164,6 +190,8 @@ struct Cpu {
 #[derive(Clone, Debug)]
 struct ContatoLadder {
     na: bool,
+    /// None = por nivel; Some(true) = borda de subida, Some(false) = borda de descida.
+    flanco: Option<bool>,
     op: String,
     a: u32,
     b: u32,
@@ -185,6 +213,18 @@ struct Ton {
     b: u32,
     t: i64,
     idx: usize,
+    /// 'O' = TON (retardo na ligacao), 'F' = TOF (retardo no desligamento).
+    kind: char,
+}
+
+#[derive(Clone, Debug)]
+struct Contador {
+    op: String,
+    c: u32, // CU (conta na borda de subida)
+    r: u32, // reset (nivel: '+' zera)
+    q: u32, // Q (estampa '+' com contagem >= preset)
+    preset: i64,
+    idx: usize,
 }
 
 #[derive(Clone, Debug)]
@@ -203,12 +243,16 @@ struct Polo {
     pares: Vec<(u32, u32)>,
 }
 
-/// Estado do simulador: bits (por operando), fisicos (bobinas 9000) e acumuladores dos TONs.
+/// Estado do simulador: bits (por operando), fisicos (bobinas 9000), acumuladores dos
+/// temporizadores, imagem anterior dos bits (bordas), contagens e CUs anteriores (contadores).
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Estado {
     pub bits: BTreeMap<String, bool>,
+    pub prev: BTreeMap<String, bool>,
     pub fis: BTreeMap<String, bool>,
     pub acc: Vec<i64>,
+    pub cnt: Vec<i64>,
+    pub cnt_v: Vec<bool>,
 }
 
 /// Info de um tick (lampadas, curtos, CPU alimentada, SET+RST juntos).
@@ -240,6 +284,7 @@ pub struct CircuitoClp {
     ladder: Vec<ContatoLadder>,
     bob_ladder: Vec<BobLadder>,
     tons: Vec<Ton>,
+    contadores: Vec<Contador>,
     contatos: Vec<Contato>,
     polos: Vec<Polo>,
     bobinas: BTreeMap<String, Vec<(u32, u32)>>,
@@ -330,6 +375,7 @@ impl CircuitoClp {
         let mut ladder = Vec::new();
         let mut bob_ladder = Vec::new();
         let mut tons = Vec::new();
+        let mut contadores = Vec::new();
         let mut contatos = Vec::new();
         let mut polos = Vec::new();
         let mut bobinas: BTreeMap<String, Vec<(u32, u32)>> = BTreeMap::new();
@@ -379,9 +425,16 @@ impl CircuitoClp {
                 ent_clp.push((rot.trim().to_string(), n["p1"]));
             } else if cid == SAIDA {
                 sai_clp.push((rot.trim().to_string(), n["p1"]));
-            } else if cid == LADDER_NA || cid == LADDER_NF {
+            } else if cid == LADDER_NA || cid == LADDER_NF || cid == LADDER_SUBIDA || cid == LADDER_DESCIDA {
                 ladder.push(ContatoLadder {
                     na: cid == LADDER_NA,
+                    flanco: if cid == LADDER_SUBIDA {
+                        Some(true)
+                    } else if cid == LADDER_DESCIDA {
+                        Some(false)
+                    } else {
+                        None
+                    },
                     op: rot.trim().to_string(),
                     a: n["p1"],
                     b: n["p2"],
@@ -401,13 +454,24 @@ impl CircuitoClp {
                     b: n["p2"],
                     b_ligado: pin["p2"].1,
                 });
-            } else if cid == TON_C {
+            } else if cid == TON_C || cid == TOF_C {
                 let idx = tons.len();
                 tons.push(Ton {
                     op: rot.trim().to_string(),
                     a: n["p1"],
                     b: n["p2"],
                     t: ton_ticks(labels),
+                    idx,
+                    kind: if cid == TOF_C { 'F' } else { 'O' },
+                });
+            } else if cid == CTU_C {
+                let idx = contadores.len();
+                contadores.push(Contador {
+                    op: rot.trim().to_string(),
+                    c: n["p2"],
+                    r: n["p1"],
+                    q: n["p4"],
+                    preset: ctu_preset(labels),
                     idx,
                 });
             } else if cid == BOBINA || cid == LAMPADA {
@@ -476,6 +540,7 @@ impl CircuitoClp {
         operandos.extend(ladder.iter().map(|c| c.op.clone()));
         operandos.extend(bob_ladder.iter().map(|b| b.op.clone()));
         operandos.extend(tons.iter().map(|t| t.op.clone()));
+        operandos.extend(contadores.iter().map(|t| t.op.clone()));
         Ok(CircuitoClp {
             fixos,
             cpus,
@@ -484,6 +549,7 @@ impl CircuitoClp {
             ladder,
             bob_ladder,
             tons,
+            contadores,
             contatos,
             polos,
             bobinas,
@@ -507,18 +573,22 @@ impl CircuitoClp {
 
     pub fn estado_zero(&self, inicial: &[String]) -> Estado {
         let ini: HashSet<&str> = inicial.iter().map(|s| s.as_str()).collect();
+        let bits: BTreeMap<String, bool> = self
+            .operandos
+            .iter()
+            .map(|o| (o.clone(), ini.contains(o.as_str())))
+            .collect();
         Estado {
-            bits: self
-                .operandos
-                .iter()
-                .map(|o| (o.clone(), ini.contains(o.as_str())))
-                .collect(),
+            prev: bits.clone(),
+            bits,
             fis: self
                 .bobinas
                 .keys()
                 .map(|k| (k.clone(), ini.contains(k.as_str())))
                 .collect(),
             acc: vec![0; self.tons.len()],
+            cnt: vec![0; self.contadores.len()],
+            cnt_v: vec![false; self.contadores.len()],
         }
     }
 
@@ -662,15 +732,43 @@ impl CircuitoClp {
             let mut mudou = false;
             for c in &self.ladder {
                 let bit = est.bits.get(&c.op).copied().unwrap_or(false);
-                let fech = if c.na { bit } else { !bit };
+                let anterior = est.prev.get(&c.op).copied().unwrap_or(false);
+                let fech = match c.flanco {
+                    None => {
+                        if c.na {
+                            bit
+                        } else {
+                            !bit
+                        }
+                    }
+                    Some(sobe) => (bit == sobe) && (anterior != sobe),
+                };
                 if fech && mais.contains(&uf.raiz(c.a)) && !mais.contains(&uf.raiz(c.b)) {
                     mais.insert(uf.raiz(c.b));
                     mudou = true;
                 }
             }
             for t in &self.tons {
-                if est.acc[t.idx] >= t.t && !mais.contains(&uf.raiz(t.b)) {
+                let ligado = if t.kind == 'F' {
+                    mais.contains(&uf.raiz(t.a)) || est.acc[t.idx] > 0
+                } else {
+                    est.acc[t.idx] >= t.t
+                };
+                if ligado && !mais.contains(&uf.raiz(t.b)) {
                     mais.insert(uf.raiz(t.b));
+                    mudou = true;
+                }
+            }
+            for t in &self.contadores {
+                let cu = mais.contains(&uf.raiz(t.c));
+                let prev_cu = est.cnt_v.get(t.idx).copied().unwrap_or(false);
+                let novo = if mais.contains(&uf.raiz(t.r)) {
+                    0
+                } else {
+                    (est.cnt[t.idx] + i64::from(cu && !prev_cu)).min(99999)
+                };
+                if novo >= t.preset && !mais.contains(&uf.raiz(t.q)) {
+                    mais.insert(uf.raiz(t.q));
                     mudou = true;
                 }
             }
@@ -706,7 +804,9 @@ impl CircuitoClp {
         let mut nacc = est.acc.clone();
         for t in &self.tons {
             nacc[t.idx] = if mais.contains(&uf.raiz(t.a)) {
-                (est.acc[t.idx] + 1).min(t.t)
+                if t.kind == 'F' { t.t } else { (est.acc[t.idx] + 1).min(t.t) }
+            } else if t.kind == 'F' {
+                (est.acc[t.idx] - 1).max(0)
             } else {
                 0
             };
@@ -715,16 +815,39 @@ impl CircuitoClp {
             nb.insert(t.op.clone(), false);
         }
         for t in &self.tons {
-            // bit do TON = acc >= T (mesmo label em varios: OU)
-            if nacc[t.idx] >= t.t {
+            // bit do timer: TON acc >= T; TOF IN ou acc > 0 (mesmo label em varios: OU)
+            let ligado = if t.kind == 'F' {
+                mais.contains(&uf.raiz(t.a)) || est.acc[t.idx] > 0
+            } else {
+                nacc[t.idx] >= t.t
+            };
+            if ligado {
                 nb.insert(t.op.clone(), true);
             }
+        }
+        let mut ncnt = est.cnt.clone();
+        let mut ncnt_v = est.cnt_v.clone();
+        ncnt.resize(self.contadores.len(), 0);
+        ncnt_v.resize(self.contadores.len(), false);
+        for t in &self.contadores {
+            let cu = mais.contains(&uf.raiz(t.c));
+            let anterior = est.cnt_v.get(t.idx).copied().unwrap_or(false);
+            ncnt[t.idx] = if mais.contains(&uf.raiz(t.r)) {
+                0
+            } else {
+                (est.cnt.get(t.idx).copied().unwrap_or(0) + i64::from(cu && !anterior)).min(99999)
+            };
+            ncnt_v[t.idx] = cu;
+            nb.insert(t.op.clone(), ncnt[t.idx] >= t.preset);
         }
         (
             Estado {
                 bits: nb,
+                prev: est.bits.clone(),
                 fis: novo_fis,
                 acc: nacc,
+                cnt: ncnt,
+                cnt_v: ncnt_v,
             },
             InfoTick {
                 lampadas: lamp,
@@ -740,6 +863,9 @@ impl CircuitoClp {
             est.bits.iter().map(|(k, v)| (k.clone(), *v)).collect(),
             est.fis.iter().map(|(k, v)| (k.clone(), *v)).collect(),
             est.acc.clone(),
+            est.prev.iter().map(|(k, v)| (k.clone(), *v)).collect(),
+            est.cnt.clone(),
+            est.cnt_v.clone(),
         )
     }
 
@@ -869,9 +995,17 @@ impl CircuitoClp {
             let v = ini.contains(&k) || e2.fis.get(&k).copied().unwrap_or(false);
             est.fis.insert(k, v);
         }
+        est.prev = est.bits.clone();
         for t in &self.tons {
             if ini.contains(&t.op) {
                 est.acc[t.idx] = t.t;
+            }
+        }
+        for t in &self.contadores {
+            if ini.contains(&t.op) {
+                if let Some(c) = est.cnt.get_mut(t.idx) {
+                    *c = t.preset;
+                }
             }
         }
         est

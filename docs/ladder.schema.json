@@ -95,31 +95,38 @@
     },
     "contato": {
       "type": "array", "minItems": 2, "maxItems": 2,
-      "prefixItems": [{"enum": ["NA", "NF", "P", "N"]}, {"$ref": "#/$defs/operando"}]
+      "prefixItems": [{"enum": ["NA", "NF", "SUBIDA", "DESCIDA", "P", "N"]}, {"$ref": "#/$defs/operando"}]
+    },
+    "temporizador_inline": {
+      "type": "array", "minItems": 2, "maxItems": 3,
+      "prefixItems": [{"enum": ["TON", "TOF"]}, {"$ref": "#/$defs/operando"},
+        {"type": "object", "properties": {
+          "tempo": {"type": "number", "minimum": 0},
+          "base": {"enum": ["0.1s", "1s", "10s", "100s"], "default": "1s"}}}]
     },
     "expr": {
       "oneOf": [
         {"$ref": "#/$defs/contato"},
+        {"$ref": "#/$defs/temporizador_inline"},
         {"type": "object", "required": ["serie"], "properties": {"serie": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/expr"}}}, "additionalProperties": false},
         {"type": "object", "required": ["paralelo"], "properties": {"paralelo": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/expr"}}}, "additionalProperties": false},
-        {"type": "array", "minItems": 1, "items": {"anyOf": [{"type": "array", "prefixItems": [{"type": "array"}]}, {"type": "object"}, {"$ref": "#/$defs/contato"}]}}
+        {"type": "array", "minItems": 1, "items": {"anyOf": [{"type": "array", "prefixItems": [{"type": "array"}]}, {"type": "object"}, {"$ref": "#/$defs/contato"}, {"$ref": "#/$defs/temporizador_inline"}]}}
       ]
     },
     "saida": {
       "oneOf": [
         {"type": "array", "minItems": 2, "maxItems": 2, "prefixItems": [{"enum": ["OUT", "SET", "RST"]}, {"$ref": "#/$defs/operando"}]},
         {"type": "array", "minItems": 3, "maxItems": 3,
-         "prefixItems": [{"enum": ["TON", "TOF", "TP"]}, {"$ref": "#/$defs/operando"},
+         "prefixItems": [{"enum": ["TON", "TOF"]}, {"$ref": "#/$defs/operando"},
            {"type": "object", "required": ["tempo"], "properties": {
-             "tempo": {"type": "integer", "minimum": 0},
-             "base": {"enum": ["0.1s", "1s", "10s", "100s"], "default": "0.1s"},
+             "tempo": {"type": "number", "minimum": 0},
+             "base": {"enum": ["0.1s", "1s", "10s", "100s"], "default": "1s"},
              "q": {"$ref": "#/$defs/operando"}}}]},
         {"type": "array", "minItems": 3, "maxItems": 3,
          "prefixItems": [{"const": "CTU"}, {"$ref": "#/$defs/operando"},
-           {"type": "object", "required": ["preset", "reset"], "properties": {
-             "preset": {"type": "integer", "minimum": 0, "maximum": 99999},
-             "reset": {"$ref": "#/$defs/expr"},
-             "desce": {"$ref": "#/$defs/expr"},
+           {"type": "object", "required": ["preset"], "properties": {
+             "preset": {"type": "integer", "minimum": 1, "maximum": 99999},
+             "reset": {"$ref": "#/$defs/operando"},
              "q": {"$ref": "#/$defs/operando"}}}]}
       ]
     },

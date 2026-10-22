@@ -52,15 +52,29 @@ def norm(e):
             if len(e) != 2:
                 raise DslErro(f"contato {e!r}: use [\"NA\"|\"NF\", operando]")
             return ("c", t, str(e[1]))
+        if t in ("SUBIDA", "P"):
+            if len(e) != 2:
+                raise DslErro(f"contato {e!r}: use [\"SUBIDA\", operando]")
+            return ("borda", "subida", str(e[1]))
+        if t in ("DESCIDA", "N"):
+            if len(e) != 2:
+                raise DslErro(f"contato {e!r}: use [\"DESCIDA\", operando]")
+            return ("borda", "descida", str(e[1]))
         if t == "TON":
             o = (e[2] if len(e) > 2 else {}) or {}
             base = str(o.get("base", "1s"))
             if base not in BASES:
                 raise DslErro(f"TON {e[1]}: base {base!r} invalida (use {sorted(BASES)})")
             return ("ton", str(e[1]), float(o.get("tempo", 1)), base)
-        if t in ("P", "N"):
-            raise DslErro(f"contato de flanco {t!r} e reservado em ladder/1")
-        raise DslErro(f"tipo de elemento {e[0]!r} desconhecido (NA, NF, TON)")
+        if t == "TOF":
+            o = (e[2] if len(e) > 2 else {}) or {}
+            base = str(o.get("base", "1s"))
+            if base not in BASES:
+                raise DslErro(f"TOF {e[1]}: base {base!r} invalida (use {sorted(BASES)})")
+            return ("tof", str(e[1]), float(o.get("tempo", 1)), base)
+        if t == "CTU":
+            raise DslErro("CTU e saida de degrau ([\"CTU\", op, {...}] em \"saida\"), nao elemento de logica")
+        raise DslErro(f"tipo de elemento {e[0]!r} desconhecido (NA, NF, SUBIDA, DESCIDA, TON, TOF)")
     if isinstance(e, dict):
         ks = [k for k in ("serie", "paralelo") if k in e]
         if len(ks) != 1:
@@ -82,22 +96,51 @@ def norm(e):
 def operandos_lidos(n):
     if n[0] == "c":
         return {n[2]}
-    if n[0] == "ton":
+    if n[0] == "borda":
+        return {n[2]}
+    if n[0] in ("ton", "tof"):
         return set()
+    if n[0] == "ctu":
+        return {n[3]} if n[3] else set()
     return set().union(*(operandos_lidos(k) for k in n[1]))
 
 
 def tons_de(n):
     if n[0] == "ton":
         return [n]
-    if n[0] == "c":
+    if n[0] in ("c", "borda", "tof", "ctu"):
         return []
     return [t for k in n[1] for t in tons_de(k)]
 
 
+def tofs_de(n):
+    if n[0] == "tof":
+        return [n]
+    if n[0] in ("c", "borda", "ton", "ctu"):
+        return []
+    return [t for k in n[1] for t in tofs_de(k)]
+
+
+def timers_de(n):
+    """Nos TON e TOF em ordem de avaliacao (um so indice por tick)."""
+    if n[0] in ("ton", "tof"):
+        return [n]
+    if n[0] in ("c", "borda", "ctu"):
+        return []
+    return [t for k in n[1] for t in timers_de(k)]
+
+
+def ctus_de(n):
+    if n[0] == "ctu":
+        return [n]
+    if n[0] in ("c", "borda", "ton", "tof"):
+        return []
+    return [t for k in n[1] for t in ctus_de(k)]
+
+
 def linhas(n):
     """Numero de linhas (ramos) ocupadas pelo no."""
-    if n[0] in ("c", "ton"):
+    if n[0] in ("c", "borda", "ton", "tof", "ctu"):
         return 1
     if n[0] == "serie":
         return max(linhas(k) for k in n[1])
@@ -108,25 +151,47 @@ def _saida(s):
     if isinstance(s, dict):
         raise DslErro("saida {\"paralelo\":[..]} (varias bobinas no mesmo no) e reservada: use um degrau por bobina")
     t = str(s[0]).upper()
-    if t == "TON":
+    if t in ("TON", "TOF"):
         o = (s[2] if len(s) > 2 else {}) or {}
-        return ("ton", str(s[1]), o)
+        base = str(o.get("base", "1s"))
+        if base not in BASES:
+            raise DslErro(f"{t} {s[1]}: base {base!r} invalida (use {sorted(BASES)})")
+        return (t.lower(), str(s[1]), o)
+    if t == "CTU":
+        o = (s[2] if len(s) > 2 else {}) or {}
+        try:
+            preset = int(o.get("preset", 1))
+        except (TypeError, ValueError):
+            raise DslErro(f"CTU {s[1]}: preset {o.get('preset')!r} invalido (use inteiro >= 1)")
+        if preset < 1:
+            raise DslErro(f"CTU {s[1]}: preset {preset} invalido (use inteiro >= 1)")
+        reset = o.get("reset")
+        if reset is not None:
+            reset = str(reset)
+            if not OPERANDO.match(reset):
+                raise DslErro(f"CTU {s[1]}: reset {reset!r} invalido (1-15 chars, sem '#' ou '*')")
+        return ("ctu", str(s[1]), {"preset": preset, "reset": reset, "q": o.get("q")})
     if t not in TIPOS_SAIDA:
-        raise DslErro(f"saida {s!r}: use OUT, SET, RST (ou TON com q)")
+        raise DslErro(f"saida {s!r}: use OUT, SET, RST, CTU (ou TON/TOF com q)")
     return (t, str(s[1]))
 
 
 def rungs_normalizados(spec):
-    """-> [{id, logica(no), saida(tipo, op), comentario}]. TON como saida vira TON inline + OUT(q)."""
+    """-> [{id, logica(no), saida(tipo, op), comentario}]. TON/TOF/CTU como saida viram no inline + OUT(q)."""
     L = (spec.get("layout") or {}).get("ladder") or {}
     out = []
     for i, r in enumerate(L.get("rungs") or L.get("degraus") or []):
         lg = norm(r["logica"])
         sa = _saida(r["saida"])
-        if sa[0] == "ton":
+        if sa[0] in ("ton", "tof"):
             o = sa[2]
-            ton = ("ton", sa[1], float(o.get("tempo", 1)), str(o.get("base", "1s")))
-            lg = ("serie", (lg[1] if lg[0] == "serie" else [lg]) + [ton])
+            tno = (sa[0], sa[1], float(o.get("tempo", 1)), str(o.get("base", "1s")))
+            lg = ("serie", (lg[1] if lg[0] == "serie" else [lg]) + [tno])
+            sa = ("OUT", str(o.get("q") or sa[1] + ".Q"))
+        elif sa[0] == "ctu":
+            o = sa[2]
+            ctu = ("ctu", sa[1], int(o["preset"]), o["reset"])
+            lg = ("serie", (lg[1] if lg[0] == "serie" else [lg]) + [ctu])
             sa = ("OUT", str(o.get("q") or sa[1] + ".Q"))
         out.append({"id": r.get("id", f"r{i + 1}"), "logica": lg, "saida": sa, "comentario": r.get("comentario", "")})
     return out
@@ -193,12 +258,18 @@ def validar(spec):
         t, op = r["saida"]
         saidas_por_op.setdefault(op, []).append(t)
         produzidos.add(op)
-        for ton in tons_de(r["logica"]):
-            produzidos.add(ton[1])
+        for tno in timers_de(r["logica"]):
+            produzidos.add(tno[1])
+            if tno[3] not in BASES:
+                erros.append(f"degrau {r['id']}: base {tno[3]!r} invalida (use {sorted(BASES)})")
+        for ctu in ctus_de(r["logica"]):
+            produzidos.add(ctu[1])
+            if not isinstance(ctu[2], int) or ctu[2] < 1:
+                erros.append(f"degrau {r['id']}: CTU {ctu[1]} com preset invalido (use inteiro >= 1)")
         if t == "OUT" and not OPERANDO.match(op):
             erros.append(f"degrau {r['id']}: operando de saida {op!r} invalido")
-        if len(tons_de(r["logica"])) != len(_tons_topo(r["logica"])):
-            erros.append(f"degrau {r['id']}: TON so pode estar na serie principal do degrau (nao dentro de ramo paralelo)")
+        if len(timers_de(r["logica"])) != len(_tons_topo(r["logica"])):
+            erros.append(f"degrau {r['id']}: TON/TOF so pode estar na serie principal do degrau (nao dentro de ramo paralelo)")
     for op, ts in saidas_por_op.items():
         if ts.count("OUT") > 1:
             erros.append(f"operando {op}: mais de um OUT (V2)")
@@ -215,12 +286,12 @@ def validar(spec):
     for op in escritos:
         if op.startswith("Q") and op not in sai_ops and op[1:2].isdigit():
             avisos.append(f"bobina {op} sem saida fisica no clp.saidas (V3)")
-    for op in produzidos | set(ent_ops) | set(sai_ops):
+    lidos = set()
+    for r in rungs:
+        lidos |= operandos_lidos(r["logica"])
+    for op in produzidos | lidos:
         if _chave(op) in rot_fis:
             erros.append(f"operando {op} igual a um rotulo fisico (V4): o app tambem comanda o polo de mesmo rotulo")
-    for r in rungs:
-        for k in operandos_lidos(r["logica"]):
-            pass
     nr = {op for op in ent_ops}
     for e in clp.get("entradas", []):
         d = e["dispositivo"]
@@ -239,17 +310,26 @@ def validar(spec):
 
 
 def _tons_topo(n):
-    if n[0] == "ton":
+    if n[0] in ("ton", "tof"):
         return [n]
     if n[0] == "serie":
-        return [k for k in n[1] if k[0] == "ton"]
+        return [k for k in n[1] if k[0] in ("ton", "tof")]
     return []
+
+
+def _tem_ctu_reset(n):
+    """True se o no tem CTU com reset (precisa de tap extra no trilho, em y-6)."""
+    if n[0] == "ctu":
+        return bool(n[3])
+    if n[0] in ("c", "borda", "ton", "tof"):
+        return False
+    return any(_tem_ctu_reset(k) for k in n[1])
 
 
 def _usa_nf(n, op):
     if n[0] == "c":
         return n[2] == op and n[1] == "NF"
-    if n[0] == "ton":
+    if n[0] in ("ton", "tof", "ctu", "borda"):
         return False
     return any(_usa_nf(k, op) for k in n[1])
 
@@ -291,10 +371,16 @@ class ModeloLogico:
         self.lampadas = {_chave(c[2]) for _, cargas, _ in self.saidas for c in cargas if c[1] == "9008"}
         self.tons = []
         for r in self.rungs:
-            for t in tons_de(r["logica"]):
-                self.tons.append({"op": t[1], "T": max(1, int(round(t[2] * BASES[t[3]][1])))})
+            for t in timers_de(r["logica"]):
+                self.tons.append({"op": t[1], "T": max(1, int(round(t[2] * BASES[t[3]][1]))),
+                                  "kind": "TOF" if t[0] == "tof" else "TON"})
+        self.ctus = []
+        for r in self.rungs:
+            for c in ctus_de(r["logica"]):
+                self.ctus.append({"op": c[1], "preset": c[2], "reset": c[3]})
         self.operandos = sorted({o for o, _ in self.entradas_clp} | {s[0] for s in self.saidas} |
                                 {r["saida"][1] for r in self.rungs} | {t["op"] for t in self.tons} |
+                                {c["op"] for c in self.ctus} |
                                 set().union(*(operandos_lidos(r["logica"]) for r in self.rungs)))
         self.entradas = sorted(self.botoes | self.disjuntores | self.termicos |
                                {_chave(e["dispositivo"][2]) for e in self.clp["entradas"]})
@@ -302,9 +388,13 @@ class ModeloLogico:
 
     def estado_zero(self, inicial=()):
         ini = set(inicial or ())
-        return {"bits": {o: (1 if o in ini else 0) for o in self.operandos},
+        bits = {o: (1 if o in ini else 0) for o in self.operandos}
+        return {"bits": bits,
                 "fis": {k: k in ini for k in self.bobinas},
-                "acc": [0] * len(self.tons)}
+                "acc": [0] * len(self.tons),
+                "prev": dict(bits),
+                "cnt": [0] * len(self.ctus),
+                "cnt_v": [False] * len(self.ctus)}
 
     # --- hardware
     def _cpu_on(self, ent):
@@ -316,33 +406,53 @@ class ModeloLogico:
         v = bool(ent.get(k, False))
         return (not v) if cls in ("8001", "8017", "7001") else v
 
-    def _eval(self, n, vin, bits, acc, ton_i, nacc):
+    def _eval(self, n, vin, bits, acc, ti, nacc, prev, ci, ncnt, ncnt_v, tvin):
         if n[0] == "c":
             b = bool(bits.get(n[2]))
             return vin and (b if n[1] == "NA" else not b)
-        if n[0] == "ton":
-            i = ton_i[0]
-            ton_i[0] += 1
-            q = acc[i] >= self.tons[i]["T"]
-            nacc[i] = min(acc[i] + 1, self.tons[i]["T"]) if vin else 0
-            return vin and q
+        if n[0] == "borda":
+            b, p = bool(bits.get(n[2])), bool(prev.get(n[2]))
+            return vin and ((b and not p) if n[1] == "subida" else ((not b) and p))
+        if n[0] in ("ton", "tof"):
+            i = ti[0]
+            ti[0] += 1
+            if n[0] == "ton":
+                q = acc[i] >= self.tons[i]["T"]
+                nacc[i] = min(acc[i] + 1, self.tons[i]["T"]) if vin else 0
+                return vin and q
+            tvin[i] = bool(vin)
+            q = vin or acc[i] > 0
+            nacc[i] = self.tons[i]["T"] if vin else max(0, acc[i] - 1)
+            return q
+        if n[0] == "ctu":
+            i = ci[0]
+            ci[0] += 1
+            cu = bool(vin)
+            rst = bool(bits.get(n[3])) if n[3] else False
+            ncnt[i] = 0 if rst else min(99999, ncnt[i] + (1 if (cu and not ncnt_v[i]) else 0))
+            ncnt_v[i] = cu
+            return vin and ncnt[i] >= self.ctus[i]["preset"]
         if n[0] == "serie":
             v = vin
             for k in n[1]:
-                v = self._eval(k, v, bits, acc, ton_i, nacc)
+                v = self._eval(k, v, bits, acc, ti, nacc, prev, ci, ncnt, ncnt_v, tvin)
             return v
-        return any([self._eval(k, vin, bits, acc, ton_i, nacc) for k in n[1]])
+        return any([self._eval(k, vin, bits, acc, ti, nacc, prev, ci, ncnt, ncnt_v, tvin) for k in n[1]])
 
     def tick(self, est, ent):
         bits, fis, acc = est["bits"], est["fis"], est["acc"]
+        prev = est.get("prev", bits)
+        cnt, cnt_v = est.get("cnt", [0] * len(self.ctus)), est.get("cnt_v", [False] * len(self.ctus))
         cpu = self._cpu_on(ent)
         nb = dict(bits)
         for op, d in self.entradas_clp:
             nb[op] = 1 if (cpu and self._conduz(d, ent)) else 0
-        nacc, ton_i = list(acc), [0]
+        nacc, ti = list(acc), [0]
+        ncnt, ci = list(cnt), [0]
+        ncnt_v, tvin = list(cnt_v), [False] * len(self.tons)
         sets, rsts, outs = set(), set(), {}
         for r in self.rungs:
-            v = self._eval(r["logica"], True, bits, acc, ton_i, nacc)
+            v = self._eval(r["logica"], True, bits, acc, ti, nacc, prev, ci, ncnt, ncnt_v, tvin)
             t, op = r["saida"]
             if t == "OUT":
                 outs[op] = outs.get(op, False) or v
@@ -354,11 +464,13 @@ class ModeloLogico:
             nb[op] = 1
         for op in rsts:
             nb[op] = 0
-        for t in self.tons:
-            nb[t["op"]] = 0
         for i, t in enumerate(self.tons):
-            if nacc[i] >= t["T"]:
-                nb[t["op"]] = 1
+            if t["kind"] == "TON":
+                nb[t["op"]] = 1 if nacc[i] >= t["T"] else 0
+            else:
+                nb[t["op"]] = 1 if (tvin[i] or acc[i] > 0) else 0
+        for i, c in enumerate(self.ctus):
+            nb[c["op"]] = 1 if ncnt[i] >= c["preset"] else 0
         novo_fis, lamp = {k: False for k in self.bobinas}, set()
         for op, cargas, serie in self.saidas:
             if not (cpu and bits.get(op)):
@@ -370,7 +482,8 @@ class ModeloLogico:
                     novo_fis[_chave(c[2])] = True
                 elif c[1] == "9008":
                     lamp.add(_chave(c[2]))
-        return ({"bits": nb, "fis": novo_fis, "acc": nacc},
+        return ({"bits": nb, "fis": novo_fis, "acc": nacc, "prev": dict(bits),
+                 "cnt": ncnt, "cnt_v": ncnt_v},
                 {"lampadas": sorted(lamp), "curtos": [], "cpu": cpu, "indefinido": sorted(sets & rsts)})
 
     def _conduz_serie(self, s, fis, ent):
@@ -389,7 +502,9 @@ class ModeloLogico:
         import clp_sim
         return clp_sim.CircuitoCLP.regime(self, ent, est, max_ticks)
 
-    _assin = staticmethod(lambda est: (tuple(sorted(est["bits"].items())), tuple(sorted(est["fis"].items())), tuple(est["acc"])))
+    _assin = staticmethod(lambda est: (tuple(sorted(est["bits"].items())), tuple(sorted(est["fis"].items())),
+                                        tuple(est["acc"]), tuple(sorted(est.get("prev", {}).items())),
+                                        tuple(est.get("cnt", [])), tuple(est.get("cnt_v", []))))
 
     @staticmethod
     def _resumo(est, info, status, ticks=None):
@@ -406,9 +521,13 @@ class ModeloLogico:
             est["bits"][op] = 1 if (op in ini or e1["bits"][op]) else 0
         e2, _ = self.tick(est, ent)
         est["fis"] = {k: (k in ini) or e2["fis"][k] for k in est["fis"]}
+        est["prev"] = dict(est["bits"])
         for i, t in enumerate(self.tons):
             if t["op"] in ini:
                 est["acc"][i] = t["T"]
+        for i, c in enumerate(self.ctus):
+            if c["op"] in ini:
+                est["cnt"][i] = c["preset"]
         return est
 
 
@@ -471,9 +590,9 @@ class Desenho:
 # --------------------------------------------------------------------------------------- ladder (zona C)
 def _larg(n):
     """Avanco horizontal do no a partir do cursor (inclui o fio de 9 antes de cada elemento)."""
-    if n[0] == "c":
+    if n[0] in ("c", "borda"):
         return PASSO
-    if n[0] == "ton":
+    if n[0] in ("ton", "tof", "ctu"):
         return 24
     if n[0] == "serie":
         return sum(_larg(k) for k in n[1])
@@ -486,12 +605,26 @@ def _desenha(d, n, x, y, ops):
         d.fio(x, y, x + 9, y)
         d.sym("10050" if n[1] == "NA" else "10051", x + 9, y, n[2])
         return x + PASSO, y
-    if n[0] == "ton":
+    if n[0] == "borda":
+        d.fio(x, y, x + 9, y)
+        d.sym("10052" if n[1] == "subida" else "10053", x + 9, y, n[2])
+        return x + PASSO, y
+    if n[0] in ("ton", "tof"):
         d.fio(x, y, x + 9, y)
         u, nn = BASES[n[3]][0], n[2]
         txt = str(int(nn)) if float(nn).is_integer() else str(nn)
-        d.sym("10066", x + 9, y, labels=[n[1], "", "IN", "Q", u, txt, "", "", ""])
+        d.sym("10066" if n[0] == "ton" else "10067", x + 9, y, labels=[n[1], "", "IN", "Q", u, txt, "", "", ""])
         return x + 24, y + 6
+    if n[0] == "ctu":
+        _, op, preset, reset = n
+        d.fio(x, y, x + 9, y)                       # serie -> pino C (0,6) do 10063
+        d.sym("10063", x + 9, y - 6, labels=[op, "", "R", "C", "D", "Q", str(preset), str(preset), ""])
+        if reset:                                   # trilho -> NA(reset) -> pino R (0,0): reset por bit
+            xL, ry = (ops or {}).get("xL", x), y - 6
+            d.fio(xL, ry, xL + 9, ry)
+            d.sym("10050", xL + 9, ry, reset)
+            d.fio(xL + PASSO, ry, x + 9, ry)
+        return x + 24, y + 6                        # cursor no pino Q (15,12)
     if n[0] == "serie":
         for k in n[1]:
             x, y = _desenha(d, k, x, y, ops)
@@ -522,7 +655,7 @@ def desenha_ladder(d, rungs, x0, y0, ymax=FOLHA_Y - 12):
     """Colunas de degraus com 3008 proprio; coluna nova se passa de ymax. -> [(xL, y_ini, y_fim)] por coluna."""
     cols, atual, y = [], [], y0 + 15
     for r in rungs:
-        h = RAMO * (linhas(r["logica"]) - 1) + 21 + (6 if tons_de(r["logica"]) else 0)
+        h = RAMO * (linhas(r["logica"]) - 1) + 21 + (6 if timers_de(r["logica"]) or ctus_de(r["logica"]) else 0)
         if atual and y + h > ymax:
             cols.append(atual)
             atual, y = [], y0 + 15
@@ -539,14 +672,14 @@ def desenha_ladder(d, rungs, x0, y0, ymax=FOLHA_Y - 12):
         xc = max(fim_x) + 9
         y_ini, y_ult = col[0][1], col[-1][1]
         d.sym("3008", xL, y_ini - 15, "+L" if ci == 0 else f"+L{ci + 1}")
-        taps = [y for _, y in col]
-        pts = [y_ini - 15] + taps
+        taps = [y for _, y in col] + [y - 6 for r, y in col if _tem_ctu_reset(r["logica"])]
+        pts = sorted(set([y_ini - 15] + taps))
         for a, b in zip(pts, pts[1:]):
             d.fio(xL, a, xL, b)
         for ty in taps:
             d.junc(xL, ty)
         for r, y in col:
-            xe, ye = _desenha(d, r["logica"], xL, y, None)
+            xe, ye = _desenha(d, r["logica"], xL, y, {"xL": xL})
             d.fio(xe, ye, xc, ye)
             t, op = r["saida"]
             d.sym(TIPOS_SAIDA[t], xc, ye, op)
@@ -817,8 +950,13 @@ def gate_clp(path, spec, r):
 
 
 def _solto_permitido(s):
-    """Pino B de bobina ladder (trilho direito aberto) e permitido (docs/ladder.md §4)."""
-    return bool(re.match(r"^.*\((10060|10061|10062)\)\.(p2|B)@", s)) or "(10206).p5" in s and False
+    """Pino B de bobina ladder (trilho direito aberto) e permitido (docs/ladder.md §4).
+    10063: pino D (contagem decrescente, fora do escopo da DSL) fica sem fio; o pino R sem
+    fio le reset 0 (o gerador desenha o fio do reset quando a DSL declara um)."""
+    if bool(re.match(r"^.*\((10060|10061|10062)\)\.(p2|B)@", s)) or "(10206).p5" in s and False:
+        return True
+    m = re.match(r"^.*\((10063)\)\.(p1|p3|B|D)@", s)
+    return bool(m)
 
 
 def executar_testes(path, testes, spec=None):

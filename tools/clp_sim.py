@@ -17,7 +17,10 @@ Um tick (estado anterior -> novo; tudo sincrono, como o commit da passada 7 do a
      PE) -> estado fisico novo; entradas 10204: bit = net com '+'.
   2. ladder com os bits do tick anterior: '+' do trilho (3008) avanca pelos contatos fechados; bobina
      10060 (OUT) = A com '+' e B sem fio ou com '-'; 10061 SET / 10062 RST; TON 10066: IN com '+' soma 1
-     no acumulador (senao zera), Q estampa '+' com acc >= T do tick anterior; bit do label0 = acc >= T.
+     no acumulador (senao zera), Q estampa '+' com acc >= T do tick anterior; TOF 10067: IN com '+'
+     recarrega o acumulador em T (senao decrementa), Q estampa '+' com IN ou acc > 0 do tick anterior;
+     borda 10052/10053: conduz no tick em que o bit do operando mudou (imagem anterior x anterior-1);
+     CTU 10063: borda de subida em C soma 1 (R com '+' zera), Q estampa '+' com contagem >= preset.
      T = tempo x base (labels[5] x {'3':1,'0':10,'1':100,'2':1000} ticks), minimo 1.
 Disjuntores (6002/6003/6009/6010) e termico 6007 sao entradas que ALTERNAM: `"DJ1": true` = disjuntor
 LIGADO (no app ele comeca desligado a cada Play), `"RT1": true` = termico DISPARADO. Contatos 8016/8017
@@ -44,7 +47,7 @@ import netlist_sim as NS  # noqa: E402
 from dissect import parse_ent, split_all  # noqa: E402
 
 LADDER_NA, LADDER_NF = {"10050"}, {"10051"}
-OUT, SET, RST, TON = "10060", "10061", "10062", "10066"
+OUT, SET, RST, TON, TOF, CTU = "10060", "10061", "10062", "10066", "10067", "10063"
 CPU, ENTRADA, SAIDA = "10206", "10204", "10205"
 FONTE_MAIS, FONTE_MENOS = "3008", "3009"
 BOTAO_NA, BOTAO_NF = {"8000"}, {"8001"}
@@ -53,7 +56,7 @@ DISJUNTOR = {"6002", "6003", "6009", "6010"}
 TERMICO = {"6007"}
 POLOS_CONTATOR = {"2001"}
 BOBINA, LAMPADA = {"9000"}, {"9008"}
-CLASSES_CLP = {CPU, ENTRADA, SAIDA, FONTE_MAIS, OUT, SET, RST, TON} | LADDER_NA | LADDER_NF
+CLASSES_CLP = {CPU, ENTRADA, SAIDA, FONTE_MAIS, OUT, SET, RST, TON, TOF, CTU} | LADDER_NA | LADDER_NF | {"10052", "10053"}
 BASE_TICKS = {"3": 1, "0": 10, "1": 100, "2": 1000}   # radio do dialogo do TON: 0,1 s / 1 s / 10 s / x60 s
 MAX_TICKS = 2000
 FASES = {"1", "2", "3", "N"}
@@ -70,13 +73,22 @@ def _nome(rot):
 
 
 def ton_ticks(labels):
-    """Preset do TON em ticks a partir dos labels gravados ([op,'','IN','Q',base,tempo])."""
+    """Preset do TON/TOF em ticks a partir dos labels gravados ([op,'','IN','Q',base,tempo])."""
     lab = list(labels) + [""] * 6
     try:
         n = float(str(lab[5]).replace(",", ".").strip() or 0)
     except ValueError:
         n = 0.0
     return max(1, int(round(n * BASE_TICKS.get(str(lab[4]).strip(), 10))))
+
+
+def ctu_preset(labels):
+    """Preset do contador em pulsos ([op,'','R','C','D','Q',preset,preset])."""
+    lab = list(labels) + [""] * 8
+    try:
+        return max(1, int(float(str(lab[6]).replace(",", ".").strip() or 0)))
+    except ValueError:
+        return 1
 
 
 class CircuitoCLP:
@@ -101,9 +113,10 @@ class CircuitoCLP:
         self.cpus = []           # {L,N,mais,menos}
         self.ent_clp = []        # (op, no)
         self.sai_clp = []        # (op, no)
-        self.ladder = []         # {tipo:'NA'|'NF', op, a, b}
+        self.ladder = []     # {tipo:'NA'|'NF'|'SUBIDA'|'DESCIDA', op, a, b}
         self.bob_ladder = []     # {tipo:'OUT'|'SET'|'RST', op, a, b, b_ligado}
-        self.tons = []           # {op, a(IN), b(Q), T, idx}
+        self.tons = []           # {op, a(IN), b(Q), T, kind:'TON'|'TOF', idx}
+        self.ctus = []           # {op, c(CU), r(reset), q(Q), preset, idx}
         self.contatos = []       # {modo:'NA'|'NC', chave, a, b, cid}
         self.polos = []          # {chave, tipo:'contator'|'disjuntor'|'passa', pares}
         self.bobinas = {}        # chave -> [(a,b)]
@@ -137,15 +150,18 @@ class CircuitoCLP:
                 self.ent_clp.append((rot.strip(), n["p1"]))
             elif cid == SAIDA:
                 self.sai_clp.append((rot.strip(), n["p1"]))
-            elif cid in LADDER_NA | LADDER_NF:
-                self.ladder.append({"tipo": "NA" if cid in LADDER_NA else "NF", "op": rot.strip(),
-                                    "a": n["p1"], "b": n["p2"]})
+            elif cid in LADDER_NA | LADDER_NF | {"10052", "10053"}:
+                self.ladder.append({"tipo": {"10050": "NA", "10051": "NF"}.get(cid, "SUBIDA" if cid == "10052" else "DESCIDA"),
+                                    "op": rot.strip(), "a": n["p1"], "b": n["p2"]})
             elif cid in (OUT, SET, RST):
                 self.bob_ladder.append({"tipo": {OUT: "OUT", SET: "SET", RST: "RST"}[cid], "op": rot.strip(),
                                         "a": n["p1"], "b": n["p2"], "b_ligado": pin["p2"][1]})
-            elif cid == TON:
+            elif cid == TON or cid == TOF:
                 self.tons.append({"op": rot.strip(), "a": n["p1"], "b": n["p2"], "T": ton_ticks(p["labels"]),
-                                  "idx": len(self.tons)})
+                                  "kind": "TOF" if cid == TOF else "TON", "idx": len(self.tons)})
+            elif cid == CTU:
+                self.ctus.append({"op": rot.strip(), "c": n["p2"], "r": n["p1"], "q": n["p4"],
+                                  "preset": ctu_preset(p["labels"]), "idx": len(self.ctus)})
             elif cid in BOBINA | LAMPADA:
                 (self.bobinas if cid in BOBINA else self.lampadas).setdefault(chave, []).append((n["p1"], n["p2"]))
             elif cid in DISJUNTOR | TERMICO | POLOS_CONTATOR:
@@ -167,15 +183,15 @@ class CircuitoCLP:
         self.alternaveis = (self.disjuntores | self.termicos) - self.botoes
         self.operandos = sorted({o for o, _ in self.ent_clp} | {o for o, _ in self.sai_clp} |
                                 {c["op"] for c in self.ladder} | {b["op"] for b in self.bob_ladder} |
-                                {t["op"] for t in self.tons})
+                                {t["op"] for t in self.tons} | {c["op"] for c in self.ctus})
         self._cache = {}
 
     # ------------------------------------------------------------------ estado
     def estado_zero(self, inicial=()):
         ini = set(inicial or ())
-        return {"bits": {o: (1 if o in ini else 0) for o in self.operandos},
-                "fis": {k: k in ini for k in self.bobinas},
-                "acc": [0] * len(self.tons)}
+        bits = {o: (1 if o in ini else 0) for o in self.operandos}
+        return {"bits": bits, "fis": {k: k in ini for k in self.bobinas}, "acc": [0] * len(self.tons),
+                "prev": dict(bits), "cnt": [0] * len(self.ctus), "cnt_v": [False] * len(self.ctus)}
 
     def _contato_fechado(self, c, ent, fis):
         k = c["chave"]
@@ -218,6 +234,8 @@ class CircuitoCLP:
     def tick(self, est, ent):
         """Um tick de 100 ms: est (bits, fis, acc do tick anterior) -> (novo, info)."""
         bits, fis, acc = est["bits"], est["fis"], est["acc"]
+        prev = est.get("prev", bits)
+        cnt, cnt_v = est.get("cnt", [0] * len(self.ctus)), est.get("cnt_v", [False] * len(self.ctus))
         find = self._rede(ent, fis)
         chars = {}
         for no, ch in self.fixos:
@@ -254,13 +272,25 @@ class CircuitoCLP:
         while mudou:
             mudou = False
             for c in self.ladder:
-                fech = bool(bits.get(c["op"])) if c["tipo"] == "NA" else not bits.get(c["op"])
+                b, p = bool(bits.get(c["op"])), bool(prev.get(c["op"]))
+                fech = (b if c["tipo"] == "NA" else not b) if c["tipo"] in ("NA", "NF") else \
+                       ((b and not p) if c["tipo"] == "SUBIDA" else ((not b) and p))
                 if fech and tem(c["a"]) and not tem(c["b"]):
                     mais.add(find(c["b"]))
                     mudou = True
             for t in self.tons:
-                if acc[t["idx"]] >= t["T"] and not tem(t["b"]):
+                if t["kind"] == "TON":
+                    ok = acc[t["idx"]] >= t["T"]
+                else:
+                    ok = tem(t["a"]) or acc[t["idx"]] > 0
+                if ok and not tem(t["b"]):
                     mais.add(find(t["b"]))
+                    mudou = True
+            for t in self.ctus:
+                cu = tem(t["c"])
+                novo = 0 if tem(t["r"]) else min(99999, cnt[t["idx"]] + (1 if (cu and not cnt_v[t["idx"]]) else 0))
+                if novo >= t["preset"] and not tem(t["q"]):
+                    mais.add(find(t["q"]))
                     mudou = True
         menos = {r for r, s in chars.items() if "-" in s}
         sets, rsts, outs = set(), set(), {}
@@ -278,18 +308,33 @@ class CircuitoCLP:
             nb[op] = 0
         nacc = list(acc)
         for t in self.tons:
-            nacc[t["idx"]] = min(acc[t["idx"]] + 1, t["T"]) if tem(t["a"]) else 0
+            if t["kind"] == "TON":
+                nacc[t["idx"]] = min(acc[t["idx"]] + 1, t["T"]) if tem(t["a"]) else 0
+            else:
+                nacc[t["idx"]] = t["T"] if tem(t["a"]) else max(0, acc[t["idx"]] - 1)
         for t in self.tons:
             nb[t["op"]] = 0
-        for t in self.tons:                       # bit do TON = acc >= T (mesmo label em varios: OU)
-            if nacc[t["idx"]] >= t["T"]:
+        for t in self.tons:                       # bit do timer: TON acc >= T; TOF IN ou acc > 0
+            if t["kind"] == "TON":
+                if nacc[t["idx"]] >= t["T"]:
+                    nb[t["op"]] = 1
+            elif tem(t["a"]) or acc[t["idx"]] > 0:
                 nb[t["op"]] = 1
-        return ({"bits": nb, "fis": novo_fis, "acc": nacc},
+        ncnt, ncnt_v = list(cnt), list(cnt_v)
+        for t in self.ctus:
+            cu = tem(t["c"])
+            ncnt[t["idx"]] = 0 if tem(t["r"]) else min(99999, cnt[t["idx"]] + (1 if (cu and not cnt_v[t["idx"]]) else 0))
+            ncnt_v[t["idx"]] = cu
+            nb[t["op"]] = 1 if ncnt[t["idx"]] >= t["preset"] else 0
+        return ({"bits": nb, "fis": novo_fis, "acc": nacc, "prev": dict(bits),
+                 "cnt": ncnt, "cnt_v": ncnt_v},
                 {"lampadas": lamp, "curtos": curtos, "cpu": cpu_on, "indefinido": sorted(sets & rsts)})
 
     @staticmethod
     def _assin(est):
-        return (tuple(sorted(est["bits"].items())), tuple(sorted(est["fis"].items())), tuple(est["acc"]))
+        return (tuple(sorted(est["bits"].items())), tuple(sorted(est["fis"].items())), tuple(est["acc"]),
+                tuple(sorted(est.get("prev", {}).items())), tuple(est.get("cnt", [])),
+                tuple(est.get("cnt_v", [])))
 
     def rodar(self, ent, ticks, est=None):
         """Exatamente `ticks` ticks (0 = so le o estado atual)."""
@@ -342,9 +387,13 @@ class CircuitoCLP:
             est["bits"][op] = 1 if (op in ini or e1["bits"][op]) else 0
         e2, _ = self.tick(est, ent)
         est["fis"] = {k: (k in ini) or e2["fis"][k] for k in est["fis"]}
+        est["prev"] = dict(est["bits"])
         for t in self.tons:
             if t["op"] in ini:
                 est["acc"][t["idx"]] = t["T"]
+        for t in self.ctus:
+            if t["op"] in ini:
+                est["cnt"][t["idx"]] = t["preset"]
         return est
 
 

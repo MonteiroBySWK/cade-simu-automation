@@ -21,8 +21,7 @@ _PINO_SOLTO = re.compile(r"^(?P<rot>.*)\((?P<classe>\d+)\)\.(?P<pino>[^@]+)@\((?
 _FONTES = {"3000", "3001", "3003", "3004", "3005", "3006", "3007", "3011"}
 
 # --- A11: classes sem modelo de simulacao (recusa com erro claro, nao falso verde) ------
-_LADDER_SEM_MODELO = {"10052", "10053", "10063", "10064", "10065",
-                       "10067", "10068", "10069", "10075", "10081"}
+_LADDER_SEM_MODELO = {"10064", "10065", "10068", "10069", "10075", "10081"}
 _TEMP_SEM_MODELO = {"9007", "9015"}
 _PROT_SEM_MODELO = {"6015", "6017"}
 _PLC_MODELADO = {"10204", "10205", "10206"}
@@ -30,8 +29,8 @@ _FIOS_SEM_AVISO = {"4000", "4001", "4009", "4010", "4018", "4019"}  # fio/juncao
 _SUPORTADOS = ("contatos 8000/8001/8016/8017, auxiliares 7000/7001, bobinas 9000/9001/9002/9014, "
                "sinalizacao 9008/9009..9013/8101/8103, polos 2000/2001/2002/2006/2008, "
                "protecao 6007/6009/6010, temporizadores 9004/9005/9006 + contatos 7004..7015, "
-               "motores, ladder 10050/10051/10060/10061/10062/10066, CLP 10204/10205/10206, "
-               "fontes 3000..3012")
+               "motores, ladder 10050/10051/10052/10053/10060/10061/10062/10066/10067, contador 10063, "
+               "CLP 10204/10205/10206, fontes 3000..3012")
 _CATALOGO = None
 
 
@@ -62,7 +61,7 @@ def _motivo_sem_modelo(cid, cat):
         return "erro", "temporizador " + cid + " ainda sem modelo (use 9004/9005/9006 + contatos 7004..7015)"
     if cid in _LADDER_SEM_MODELO:
         return "erro", ("instrucao ladder " + cid + " ainda sem modelo "
-                        "(use 10050/10051, 10060/10061/10062 ou TON 10066)")
+                        "(use 10050/10051/10052/10053, 10060/10061/10062, TON 10066, TOF 10067 ou CTU 10063)")
     if papel.startswith("sensor") and len(pinos) >= 3:
         return "erro", ("sensor 3 fios (PNP/NPN) ainda sem modelo: precisa de alimentacao + saida "
                         "(use botoeira 8000/8001 como placeholder da deteccao)")

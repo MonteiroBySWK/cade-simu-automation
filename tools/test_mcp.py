@@ -201,7 +201,7 @@ def test_cad_design_recusa_9007_e_sensor_7501(tmp_path):
 
 
 def test_cad_design_recusa_grafcet_ladder_plc_protecao(tmp_path):
-    for classe, trecho in (("10100", "GRAFCET"), ("10052", "ladder"),
+    for classe, trecho in (("10100", "GRAFCET"), ("10064", "ladder"),
                            ("10202", "CLP"), ("6015", "protecao")):
         r = _design(_spec_com_classe(classe), tmp_path / f"{classe}.cad")
         assert not r["ok"], classe

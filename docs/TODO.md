@@ -45,10 +45,15 @@ Consequência: A7 (estrela-triângulo) e A10 (GRAFCET/pneumática) saem do camin
 - [ ] **A2. Conformidade de ladder** — casos `tests/conformidade/ladder_*` com `cenario.json` derivado
   dos T1–T7; gravar `golden_app.json` no app (saídas 10205 + bobinas ladder + lâmpadas).
   - Aceite: `cade conformidade` verde nesses casos; evidência de `Q0.1`/`Q0.2` no app. Custo M.
-- [ ] **A3. Instruções de ladder que faltam** (`recomendado`) — borda 10052/10053, TOF 10067, contador 10063/10075,
-  RS 10064, INV/EXOR 10040/10041 (roadmap em `docs/ladder.md` §2.6).
+- [parcial] **A3. Instruções de ladder que faltam** (`recomendado`) — borda 10052/10053 (`SUBIDA`/`DESCIDA`),
+  TOF 10067 e contador 10063: DSL (`ladder/1`) + modelo lógico + modelo geométrico + port Rust
+  (`cade_sim::ladder`), 3 exemplos em `tools/examples` com testes por tick, paridade Rust×Python e
+  `GATE: OK` (Python e `cade gate`). Falta: caso no **app** por instrução (modelo segue o RE §13,
+  ainda não medido no app); RS 10064, INV/EXOR 10040/10041, TOF/TP 10068/10069/10081 e up-down 10075
+  continuam sem modelo (recusados com erro claro pela A11).
   - Aceite: DSL + modelo lógico + modelo geométrico + caso no app por instrução; teste unitário e
-    exemplo em `tools/examples`. Custo L.
+    exemplo em `tools/examples`. Custo M (era L; o layout de 4 pinos do 10063 saiu com o R ligado
+    via contato a partir do trilho e o D sem fio).
 - [ ] **A4. Temporizadores elétricos 9007/9015** (`recomendado`) (intermitente/pulso) + contatos associados.
   - Aceite: caso no app com 9007 (pisca) e 9015 (pulso), lido por imagem; exemplo no gate. Custo M.
 - [ ] **A5. Sensores 3 fios (PNP/NPN)** (`recomendado`) — 56 classes do catálogo (`7501/7502/7504/7505`…); hoje só
