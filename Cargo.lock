@@ -88,6 +88,7 @@ dependencies = [
  "cade_check",
  "cade_core",
  "cade_layout",
+ "cade_mcp",
  "cade_model",
  "cade_sim",
  "clap",
