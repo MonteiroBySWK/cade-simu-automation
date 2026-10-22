@@ -1,0 +1,157 @@
+{
+  "id": "h_sequencial_ton",
+  "dsl": "ladder/1",
+  "titulo": "Partida sequencial de 2 motores com TON",
+  "dificuldade": 3,
+  "enunciado": "Dois motores trifasicos partem em sequencia, comandados por CLP (ladder). Entradas: -S0 (NF) em I0.0 desliga, -S1 (NA) em I0.1 liga, NF do termico -RT1 em I0.2. Saidas: Q0.0 aciona -KM1 (-M1 parte na hora), Q0.1 aciona -KM2 (-M2 parte 3 s depois, por TON -T1 de 3 s). A memoria M0.0 indica RUN com selo e habilita a sequencia. Soltar -S1 mantem tudo ligado; -S0 ou o termico desligam tudo e zeram o temporizador.",
+  "restricoes": [
+    "Use o CLP modular: CPU 10206 alimentada por fonte 3011 propria, entradas 10204 e saidas 10205 (n16=1, 24 Vcc).",
+    "Botoes e contatos do termico ligam o +24V da CPU as entradas; as saidas ligam as bobinas, que voltam ao 0V da CPU.",
+    "Ladder com fonte 3008 no trilho esquerdo; bobinas ladder com pino direito sem fio (trilho_direito aberto).",
+    "Operandos I0.x/Q0.x/M0.x exatamente como no enunciado; nenhum operando igual a rotulo fisico (ex.: -KM1).",
+    "Use UMA fonte trifasica multi-terminal (3007) na potencia e trilho PE separado; termico 6007 com o mesmo rotulo do 8017.",
+    "Sem coordenadas no layout; tudo cabe na folha (455x305)."
+  ],
+  "obrigatorios": {
+    "classes": {
+      "1000": 2,
+      "10050": 6,
+      "10060": 3,
+      "10066": 1,
+      "10204": 3,
+      "10205": 2,
+      "10206": 1,
+      "2001": 2,
+      "3008": 1,
+      "6007": 2,
+      "6009": 2,
+      "8000": 1,
+      "8001": 1,
+      "8017": 1,
+      "9000": 2
+    },
+    "uma_de": [
+      [
+        "6009",
+        "6010"
+      ]
+    ],
+    "rotulos": [
+      "-S0",
+      "-S1",
+      "-RT1",
+      "-KM1",
+      "-KM2"
+    ],
+    "operandos": [
+      "I0.0",
+      "I0.1",
+      "I0.2",
+      "M0.0",
+      "Q0.0",
+      "Q0.1",
+      "T1"
+    ]
+  },
+  "testes": [
+    {
+      "nome": "repouso desligado",
+      "entradas": {},
+      "status": "OK",
+      "esperado": [],
+      "esperado_bits": {
+        "M0.0": 0,
+        "Q0.0": 0,
+        "Q0.1": 0
+      }
+    },
+    {
+      "nome": "sequencia M1 -> M2 (3 s) -> desliga",
+      "status": "OK",
+      "sequencia": [
+        {
+          "nome": "liga: M1",
+          "entradas": {
+            "S1": true
+          },
+          "ticks": 4,
+          "esperado": [
+            "KM1"
+          ],
+          "esperado_bits": {
+            "Q0.0": 1,
+            "Q0.1": 0
+          }
+        },
+        {
+          "nome": "solta: ainda so M1",
+          "entradas": {},
+          "ticks": 10,
+          "esperado": [
+            "KM1"
+          ],
+          "esperado_bits": {
+            "Q0.1": 0
+          }
+        },
+        {
+          "nome": "apos 3 s: M1+M2",
+          "entradas": {},
+          "ticks": 20,
+          "esperado": [
+            "KM1",
+            "KM2"
+          ],
+          "esperado_bits": {
+            "Q0.1": 1
+          }
+        },
+        {
+          "nome": "desliga",
+          "entradas": {
+            "S0": true
+          },
+          "ticks": 8,
+          "esperado": []
+        },
+        {
+          "nome": "solta: nao religa",
+          "entradas": {},
+          "ticks": 30,
+          "esperado": []
+        }
+      ]
+    },
+    {
+      "nome": "S0 desliga com tudo ligado",
+      "entradas": {
+        "S0": true
+      },
+      "inicial": [
+        "M0.0"
+      ],
+      "status": "OK",
+      "esperado": []
+    },
+    {
+      "nome": "RT1 bloqueia a partida",
+      "entradas": {
+        "RT1": true,
+        "S1": true
+      },
+      "status": "OK",
+      "esperado": []
+    },
+    {
+      "nome": "RT1 derruba em regime",
+      "entradas": {
+        "RT1": true
+      },
+      "inicial": [
+        "M0.0"
+      ],
+      "status": "OK",
+      "esperado": []
+    }
+  ]
+}

@@ -1,0 +1,127 @@
+{
+  "id": "h_emergencia",
+  "titulo": "Partida direta com emergencia e sinalizacao",
+  "dificuldade": 2,
+  "enunciado": "Partida direta de um motor trifasico -M1 (disjuntor -Q1, termico -RT1, contator -KM1, liga -S1, desliga -S0, selo, lampada -H1 em paralelo com a bobina) com BOTAO DE EMERGENCIA -E1 (NF, cogumelo): ao ser acionado derruba o contator mesmo com o selo fechado e impede nova partida enquanto estiver acionado. Soltar a emergencia NAO religa o motor.",
+  "restricoes": [
+    "Use UMA fonte trifasica multi-terminal (classe 3007) e trilho PE separado do neutro.",
+    "Ligue TODOS os terminais (nenhum pino solto).",
+    "Os rotulos dos simbolos devem ser exatamente os do enunciado (os testes usam esses nomes).",
+    "O NF da emergencia fica EM SERIE, como primeiro elemento do comando (antes do termico e do -S0)."
+  ],
+  "obrigatorios": {
+    "classes": {
+      "1000": 1,
+      "2001": 1,
+      "6007": 1,
+      "6009": 1,
+      "7000": 1,
+      "8000": 1,
+      "8001": 2,
+      "8017": 1,
+      "9000": 1,
+      "9008": 1
+    },
+    "uma_de": [
+      [
+        "6009",
+        "6010"
+      ]
+    ],
+    "rotulos": [
+      "-E1",
+      "-S0",
+      "-S1",
+      "-KM1",
+      "-RT1",
+      "-H1"
+    ]
+  },
+  "testes": [
+    {
+      "nome": "repouso desligado",
+      "entradas": {},
+      "status": "OK",
+      "esperado": [],
+      "esperado_lampadas": []
+    },
+    {
+      "nome": "S1 liga KM1",
+      "entradas": {
+        "S1": true
+      },
+      "status": "OK",
+      "esperado": [
+        "KM1"
+      ],
+      "esperado_lampadas": [
+        "H1"
+      ]
+    },
+    {
+      "nome": "selo mantem KM1",
+      "entradas": {},
+      "status": "OK",
+      "esperado": [
+        "KM1"
+      ],
+      "esperado_lampadas": [
+        "H1"
+      ],
+      "inicial": [
+        "KM1"
+      ]
+    },
+    {
+      "nome": "S0 desliga",
+      "entradas": {
+        "S0": true
+      },
+      "status": "OK",
+      "esperado": [],
+      "esperado_lampadas": [],
+      "inicial": [
+        "KM1"
+      ]
+    },
+    {
+      "nome": "emergencia derruba KM1 (selo nao segura)",
+      "entradas": {
+        "E1": true
+      },
+      "status": "OK",
+      "esperado": [],
+      "esperado_lampadas": [],
+      "inicial": [
+        "KM1"
+      ]
+    },
+    {
+      "nome": "emergencia impede partida",
+      "entradas": {
+        "E1": true,
+        "S1": true
+      },
+      "status": "OK",
+      "esperado": [],
+      "esperado_lampadas": []
+    },
+    {
+      "nome": "soltar emergencia nao religa",
+      "entradas": {},
+      "status": "OK",
+      "esperado": [],
+      "esperado_lampadas": []
+    },
+    {
+      "nome": "RT1 aberto bloqueia",
+      "entradas": {
+        "RT1": true,
+        "S1": true
+      },
+      "status": "OK",
+      "esperado": [],
+      "esperado_lampadas": []
+    }
+  ]
+}

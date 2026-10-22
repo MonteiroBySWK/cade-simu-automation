@@ -1,0 +1,132 @@
+{
+  "id": "h_sinalizacao",
+  "titulo": "Partida direta com 3 lampadas (liga/desliga/falha)",
+  "dificuldade": 2,
+  "enunciado": "Partida direta de um motor trifasico -M1 (disjuntor -Q1, termico -RT1, contator -KM1, liga -S1, desliga -S0, selo). Tres lampadas: -H1 em paralelo com a bobina -KM1 (motor ligado), -H2 atras de um contato NF do proprio -KM1 (motor desligado) e -H3 atras de um contato NA do termico -RT1 (falha termica). Com o motor parado e sem falha, so -H2 fica acesa; com falha, -H2 e -H3 ficam acesas.",
+  "restricoes": [
+    "Use UMA fonte trifasica multi-terminal (classe 3007) e trilho PE separado do neutro.",
+    "Ligue TODOS os terminais (nenhum pino solto).",
+    "Os rotulos dos simbolos devem ser exatamente os do enunciado (os testes usam esses nomes).",
+    "-H1 em paralelo com -KM1; -H2 em serie com o NF de -KM1; -H3 em serie com o NA de -RT1."
+  ],
+  "obrigatorios": {
+    "classes": {
+      "1000": 1,
+      "2001": 1,
+      "6007": 1,
+      "6009": 1,
+      "7000": 1,
+      "7001": 1,
+      "8000": 1,
+      "8001": 1,
+      "8016": 1,
+      "8017": 1,
+      "9000": 1,
+      "9008": 3
+    },
+    "uma_de": [
+      [
+        "6009",
+        "6010"
+      ]
+    ],
+    "rotulos": [
+      "-S0",
+      "-S1",
+      "-KM1",
+      "-RT1",
+      "-H1",
+      "-H2",
+      "-H3"
+    ]
+  },
+  "testes": [
+    {
+      "nome": "repouso: H2 acesa",
+      "entradas": {},
+      "status": "OK",
+      "esperado": [],
+      "esperado_lampadas": [
+        "H2"
+      ]
+    },
+    {
+      "nome": "S1 liga KM1 e H1",
+      "entradas": {
+        "S1": true
+      },
+      "status": "OK",
+      "esperado": [
+        "KM1"
+      ],
+      "esperado_lampadas": [
+        "H1"
+      ]
+    },
+    {
+      "nome": "selo mantem KM1",
+      "entradas": {},
+      "inicial": [
+        "KM1"
+      ],
+      "status": "OK",
+      "esperado": [
+        "KM1"
+      ],
+      "esperado_lampadas": [
+        "H1"
+      ]
+    },
+    {
+      "nome": "S0 desliga e H2 volta",
+      "entradas": {
+        "S0": true
+      },
+      "inicial": [
+        "KM1"
+      ],
+      "status": "OK",
+      "esperado": [],
+      "esperado_lampadas": [
+        "H2"
+      ]
+    },
+    {
+      "nome": "RT1 derruba: H2 e H3",
+      "entradas": {
+        "RT1": true
+      },
+      "inicial": [
+        "KM1"
+      ],
+      "status": "OK",
+      "esperado": [],
+      "esperado_lampadas": [
+        "H2",
+        "H3"
+      ]
+    },
+    {
+      "nome": "RT1 bloqueia: H2 e H3",
+      "entradas": {
+        "RT1": true,
+        "S1": true
+      },
+      "status": "OK",
+      "esperado": [],
+      "esperado_lampadas": [
+        "H2",
+        "H3"
+      ]
+    },
+    {
+      "nome": "sem auto-religamento",
+      "entradas": {},
+      "status": "OK",
+      "esperado": [],
+      "esperado_lampadas": [
+        "H2"
+      ]
+    }
+  ]
+}

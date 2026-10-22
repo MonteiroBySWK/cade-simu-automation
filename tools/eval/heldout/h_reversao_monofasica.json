@@ -1,0 +1,197 @@
+{
+  "id": "h_reversao_monofasica",
+  "titulo": "Reversao de motor monofasico (4 polos)",
+  "dificuldade": 3,
+  "enunciado": "Reversao de um motor MONOFASICO -M1 de 5 terminais (classe 1008: U1, V1, PE, U2, V2), com contatores de 4 polos -KM1 (horario) e -KM2 (anti-horario), classe 2002, e disjuntor de 4 polos -Q1 (classe 6004). O 4o polo dos contatores passa o neutro. -KM2 cruza os fios do enrolamento auxiliar (U2/V2) para inverter o sentido. Protecao termica -RT1 (6007 com o mesmo rotulo do contato -RT1). O comando e igual ao da reversao trifasica: desliga -S0 (NF), horario -S1 (NA), anti-horario -S2 (NA), NF do termico em serie, selo em cada sentido e intertravamento eletrico entre -KM1 e -KM2.",
+  "restricoes": [
+    "Use UMA fonte trifasica multi-terminal (classe 3007) e trilho PE separado do neutro.",
+    "Ligue TODOS os terminais (nenhum pino solto).",
+    "Os rotulos dos simbolos devem ser exatamente os do enunciado (os testes usam esses nomes).",
+    "Ligue os 5 terminais do motor 1008 (U1, V1, PE, U2, V2) e os 8 pinos de cada 2002/6004 (o 4o polo no neutro).",
+    "Selo = contato NA do proprio contator em paralelo com o botao do mesmo sentido; intertravamento com NF do oposto."
+  ],
+  "obrigatorios": {
+    "classes": {
+      "6007": 1,
+      "7000": 2,
+      "7001": 2,
+      "8000": 2,
+      "8001": 1,
+      "8017": 1,
+      "9000": 2,
+      "9008": 2,
+      "2002": 2,
+      "6004": 1,
+      "1008": 1
+    },
+    "rotulos": [
+      "-S0",
+      "-S1",
+      "-S2",
+      "-KM1",
+      "-KM2",
+      "-RT1",
+      "-Q1",
+      "-M1"
+    ]
+  },
+  "testes": [
+    {
+      "nome": "repouso desligado",
+      "entradas": {},
+      "esperado": [],
+      "esperado_lampadas": [],
+      "status": "OK"
+    },
+    {
+      "nome": "S1 liga KM1",
+      "entradas": {
+        "S1": true
+      },
+      "esperado": [
+        "KM1"
+      ],
+      "esperado_lampadas": [
+        "H1"
+      ],
+      "status": "OK"
+    },
+    {
+      "nome": "S2 liga KM2",
+      "entradas": {
+        "S2": true
+      },
+      "esperado": [
+        "KM2"
+      ],
+      "esperado_lampadas": [
+        "H2"
+      ],
+      "status": "OK"
+    },
+    {
+      "nome": "selo mantem KM1",
+      "entradas": {},
+      "esperado": [
+        "KM1"
+      ],
+      "esperado_lampadas": [
+        "H1"
+      ],
+      "status": "OK",
+      "inicial": [
+        "KM1"
+      ]
+    },
+    {
+      "nome": "selo mantem KM2",
+      "entradas": {},
+      "esperado": [
+        "KM2"
+      ],
+      "esperado_lampadas": [
+        "H2"
+      ],
+      "status": "OK",
+      "inicial": [
+        "KM2"
+      ]
+    },
+    {
+      "nome": "intertravamento: S2 nao liga KM2 com KM1 ligado",
+      "entradas": {
+        "S2": true
+      },
+      "esperado": [
+        "KM1"
+      ],
+      "esperado_lampadas": [
+        "H1"
+      ],
+      "status": "OK",
+      "inicial": [
+        "KM1"
+      ]
+    },
+    {
+      "nome": "intertravamento: S1 nao liga KM1 com KM2 ligado",
+      "entradas": {
+        "S1": true
+      },
+      "esperado": [
+        "KM2"
+      ],
+      "esperado_lampadas": [
+        "H2"
+      ],
+      "status": "OK",
+      "inicial": [
+        "KM2"
+      ]
+    },
+    {
+      "nome": "S0 desliga KM1",
+      "entradas": {
+        "S0": true
+      },
+      "esperado": [],
+      "esperado_lampadas": [],
+      "status": "OK",
+      "inicial": [
+        "KM1"
+      ]
+    },
+    {
+      "nome": "S0 desliga KM2",
+      "entradas": {
+        "S0": true
+      },
+      "esperado": [],
+      "esperado_lampadas": [],
+      "status": "OK",
+      "inicial": [
+        "KM2"
+      ]
+    },
+    {
+      "nome": "sem auto-religamento",
+      "entradas": {},
+      "esperado": [],
+      "esperado_lampadas": [],
+      "status": "OK"
+    },
+    {
+      "nome": "RT1 aberto bloqueia S1",
+      "entradas": {
+        "RT1": true,
+        "S1": true
+      },
+      "esperado": [],
+      "esperado_lampadas": [],
+      "status": "OK"
+    },
+    {
+      "nome": "RT1 aberto bloqueia S2",
+      "entradas": {
+        "RT1": true,
+        "S2": true
+      },
+      "esperado": [],
+      "esperado_lampadas": [],
+      "status": "OK"
+    },
+    {
+      "nome": "RT1 aberto desliga KM1",
+      "entradas": {
+        "RT1": true
+      },
+      "esperado": [],
+      "esperado_lampadas": [],
+      "status": "OK",
+      "inicial": [
+        "KM1"
+      ]
+    }
+  ],
+  "nota": "Potencia monofasica 1008 com 4 polos ainda nao tem bloco na DSL de layout (item A8 do TODO): vale montar com cad_build de baixo nivel. O comando e os testes sao os da reversao trifasica."
+}

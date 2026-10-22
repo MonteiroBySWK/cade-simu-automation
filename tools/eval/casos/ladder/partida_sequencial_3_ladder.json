@@ -1,0 +1,193 @@
+{
+  "id": "partida_sequencial_3_ladder",
+  "dsl": "ladder/1",
+  "titulo": "Partida sequencial de 3 motores por CLP com TON",
+  "dificuldade": 3,
+  "enunciado": "Tres motores trifasicos partem em sequencia, comandados por CLP (ladder). Entradas: -B0 (NF) em I0.1 desliga, -B1 (NA) em I0.2 liga, disjuntor -DJ1 em I0.3. Saidas: Q0.3 aciona -C3 (parte primeiro), Q0.2 aciona -C2 apos 2 s (TON T1), Q0.1 aciona -C1 apos mais 2 s (TON T2). Memoria M0.1 indica RUN com selo e habilita a sequencia. Potencia: disjuntor -DJ1 comum, contatores -C1/-C2/-C3, motores -M1/-M2/-M3.",
+  "restricoes": [
+    "Use o CLP modular: CPU 10206 alimentada por fonte 3011 propria, entradas 10204 e saidas 10205 (n16=1, 24 Vcc).",
+    "Botoes e contatos do termico ligam o +24V da CPU as entradas; as saidas ligam as bobinas, que voltam ao 0V da CPU.",
+    "Ladder com fonte 3008 no trilho esquerdo; bobinas ladder com pino direito sem fio (trilho_direito aberto).",
+    "Operandos I0.x/Q0.x/M0.x exatamente como no enunciado; nenhum operando igual a rotulo fisico (ex.: -KM1).",
+    "Use UMA fonte trifasica multi-terminal (3007) na potencia e trilho PE separado; termico 6007 com o mesmo rotulo do 8017.",
+    "Sem coordenadas no layout; tudo cabe na folha (455x305)."
+  ],
+  "obrigatorios": {
+    "classes": {
+      "10206": 1,
+      "10204": 3,
+      "10205": 3,
+      "3008": 1,
+      "3005": 1,
+      "10050": 7,
+      "10060": 4,
+      "10066": 2,
+      "9000": 3,
+      "8000": 1,
+      "8001": 1,
+      "8016": 1,
+      "2001": 3,
+      "1000": 3,
+      "6003": 1,
+      "6002": 1
+    },
+    "uma_de": [
+      [
+        "6002",
+        "6003",
+        "6009",
+        "6010"
+      ]
+    ],
+    "rotulos": [
+      "B0",
+      "B1",
+      "DJ1",
+      "C1",
+      "C2",
+      "C3",
+      "M1",
+      "M2",
+      "M3"
+    ],
+    "operandos": [
+      "I0.1",
+      "I0.2",
+      "I0.3",
+      "M0.1",
+      "Q0.1",
+      "Q0.2",
+      "Q0.3"
+    ]
+  },
+  "testes": [
+    {
+      "nome": "S1 repouso",
+      "entradas": {
+        "DJ1": true
+      },
+      "status": "OK",
+      "esperado": [],
+      "esperado_bits": {
+        "M0.1": 0
+      }
+    },
+    {
+      "nome": "S2 sequencia M3 -> M2 (2 s) -> M1 (4 s)",
+      "status": "OK",
+      "sequencia": [
+        {
+          "nome": "LIGA (t=0)",
+          "entradas": {
+            "DJ1": true,
+            "B1": true
+          },
+          "ticks": 4,
+          "esperado": [
+            "C3"
+          ]
+        },
+        {
+          "nome": "solta, t~1,9 s: so M3",
+          "entradas": {
+            "DJ1": true
+          },
+          "ticks": 14,
+          "esperado": [
+            "C3"
+          ]
+        },
+        {
+          "nome": "t~2,3 s: M3+M2",
+          "entradas": {
+            "DJ1": true
+          },
+          "ticks": 6,
+          "esperado": [
+            "C2",
+            "C3"
+          ]
+        },
+        {
+          "nome": "t~3,9 s: M3+M2",
+          "entradas": {
+            "DJ1": true
+          },
+          "ticks": 16,
+          "esperado": [
+            "C2",
+            "C3"
+          ]
+        },
+        {
+          "nome": "t~4,5 s: M3+M2+M1",
+          "entradas": {
+            "DJ1": true
+          },
+          "ticks": 6,
+          "esperado": [
+            "C1",
+            "C2",
+            "C3"
+          ]
+        }
+      ]
+    },
+    {
+      "nome": "S3 B0 desliga tudo",
+      "status": "OK",
+      "sequencia": [
+        {
+          "nome": "LIGA",
+          "entradas": {
+            "DJ1": true,
+            "B1": true
+          },
+          "ticks": 4,
+          "esperado": [
+            "C3"
+          ]
+        },
+        {
+          "nome": "regime",
+          "entradas": {
+            "DJ1": true
+          },
+          "ticks": 60,
+          "esperado": [
+            "C1",
+            "C2",
+            "C3"
+          ]
+        },
+        {
+          "nome": "B0",
+          "entradas": {
+            "DJ1": true,
+            "B0": true
+          },
+          "ticks": 8,
+          "esperado": []
+        },
+        {
+          "nome": "solta B0",
+          "entradas": {
+            "DJ1": true
+          },
+          "ticks": 30,
+          "esperado": []
+        }
+      ]
+    },
+    {
+      "nome": "S4 DJ1 desligado: nada liga",
+      "entradas": {
+        "DJ1": false,
+        "B1": true
+      },
+      "status": "OK",
+      "esperado": []
+    }
+  ],
+  "golden": "partida_sequencial_3.ladder"
+}

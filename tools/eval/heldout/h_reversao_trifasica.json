@@ -1,0 +1,202 @@
+{
+  "id": "h_reversao_trifasica",
+  "titulo": "Reversao trifasica com sinalizacao de sentido",
+  "dificuldade": 3,
+  "enunciado": "Reversao de um motor trifasico -M1 (disjuntor -Q1, termico -RT1, contatores -KM1 horario e -KM2 anti-horario; -KM2 inverte duas fases na potencia). O comando tem desliga -S0 (NF), liga horario -S1 (NA), liga anti-horario -S2 (NA), contato NF do termico -RT1 em serie, selo em cada sentido e intertravamento eletrico (NF do contator oposto em serie com cada bobina). A lampada -H1 (em paralelo com -KM1) indica horario e -H2 (em paralelo com -KM2) indica anti-horario. Para inverter o sentido e preciso desligar antes.",
+  "restricoes": [
+    "Use UMA fonte trifasica multi-terminal (classe 3007) e trilho PE separado do neutro.",
+    "Ligue TODOS os terminais (nenhum pino solto; U1/V1/W1/PE do motor, 1-3-5/2-4-6 do contator).",
+    "Os rotulos dos simbolos devem ser exatamente os do enunciado (os testes usam esses nomes).",
+    "Selo = contato NA do proprio contator em paralelo com o botao de liga do mesmo sentido.",
+    "Intertravamento: NF de -KM2 em serie com -KM1 e NF de -KM1 em serie com -KM2."
+  ],
+  "obrigatorios": {
+    "classes": {
+      "1000": 1,
+      "2001": 2,
+      "6007": 1,
+      "6009": 1,
+      "7000": 2,
+      "7001": 2,
+      "8000": 2,
+      "8001": 1,
+      "8017": 1,
+      "9000": 2,
+      "9008": 2
+    },
+    "uma_de": [
+      [
+        "6009",
+        "6010"
+      ]
+    ],
+    "rotulos": [
+      "-S0",
+      "-S1",
+      "-S2",
+      "-KM1",
+      "-KM2",
+      "-RT1",
+      "-H1",
+      "-H2"
+    ]
+  },
+  "testes": [
+    {
+      "nome": "repouso desligado",
+      "entradas": {},
+      "esperado": [],
+      "esperado_lampadas": [],
+      "status": "OK"
+    },
+    {
+      "nome": "S1 liga KM1",
+      "entradas": {
+        "S1": true
+      },
+      "esperado": [
+        "KM1"
+      ],
+      "esperado_lampadas": [
+        "H1"
+      ],
+      "status": "OK"
+    },
+    {
+      "nome": "S2 liga KM2",
+      "entradas": {
+        "S2": true
+      },
+      "esperado": [
+        "KM2"
+      ],
+      "esperado_lampadas": [
+        "H2"
+      ],
+      "status": "OK"
+    },
+    {
+      "nome": "selo mantem KM1",
+      "entradas": {},
+      "esperado": [
+        "KM1"
+      ],
+      "esperado_lampadas": [
+        "H1"
+      ],
+      "status": "OK",
+      "inicial": [
+        "KM1"
+      ]
+    },
+    {
+      "nome": "selo mantem KM2",
+      "entradas": {},
+      "esperado": [
+        "KM2"
+      ],
+      "esperado_lampadas": [
+        "H2"
+      ],
+      "status": "OK",
+      "inicial": [
+        "KM2"
+      ]
+    },
+    {
+      "nome": "intertravamento: S2 nao liga KM2 com KM1 ligado",
+      "entradas": {
+        "S2": true
+      },
+      "esperado": [
+        "KM1"
+      ],
+      "esperado_lampadas": [
+        "H1"
+      ],
+      "status": "OK",
+      "inicial": [
+        "KM1"
+      ]
+    },
+    {
+      "nome": "intertravamento: S1 nao liga KM1 com KM2 ligado",
+      "entradas": {
+        "S1": true
+      },
+      "esperado": [
+        "KM2"
+      ],
+      "esperado_lampadas": [
+        "H2"
+      ],
+      "status": "OK",
+      "inicial": [
+        "KM2"
+      ]
+    },
+    {
+      "nome": "S0 desliga KM1",
+      "entradas": {
+        "S0": true
+      },
+      "esperado": [],
+      "esperado_lampadas": [],
+      "status": "OK",
+      "inicial": [
+        "KM1"
+      ]
+    },
+    {
+      "nome": "S0 desliga KM2",
+      "entradas": {
+        "S0": true
+      },
+      "esperado": [],
+      "esperado_lampadas": [],
+      "status": "OK",
+      "inicial": [
+        "KM2"
+      ]
+    },
+    {
+      "nome": "sem auto-religamento",
+      "entradas": {},
+      "esperado": [],
+      "esperado_lampadas": [],
+      "status": "OK"
+    },
+    {
+      "nome": "RT1 aberto bloqueia S1",
+      "entradas": {
+        "RT1": true,
+        "S1": true
+      },
+      "esperado": [],
+      "esperado_lampadas": [],
+      "status": "OK"
+    },
+    {
+      "nome": "RT1 aberto bloqueia S2",
+      "entradas": {
+        "RT1": true,
+        "S2": true
+      },
+      "esperado": [],
+      "esperado_lampadas": [],
+      "status": "OK"
+    },
+    {
+      "nome": "RT1 aberto desliga KM1",
+      "entradas": {
+        "RT1": true
+      },
+      "esperado": [],
+      "esperado_lampadas": [],
+      "status": "OK",
+      "inicial": [
+        "KM1"
+      ]
+    }
+  ]
+}

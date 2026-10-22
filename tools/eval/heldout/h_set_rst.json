@@ -1,0 +1,167 @@
+{
+  "id": "h_set_rst",
+  "dsl": "ladder/1",
+  "titulo": "Liga/desliga com SET e RESET",
+  "dificuldade": 2,
+  "enunciado": "Partida direta de um motor trifasico -M1 comandada por CLP com bobinas de SET e RESET (sem contato de selo). Entradas: -S0 (NF) em I0.0 desliga, -S1 (NA) em I0.1 liga, NF do termico -RT1 em I0.2. Saida: Q0.0 aciona -KM1. Degrau 1: SET Q0.0 = I0.2 . I0.0 . I0.1. Degrau 2: RST Q0.0 = /I0.0. Degrau 3: RST Q0.0 = /I0.2. Com -S0 e -S1 juntos, o RESET prevalece (desligado).",
+  "restricoes": [
+    "Use o CLP modular: CPU 10206 alimentada por fonte 3011 propria, entradas 10204 e saidas 10205 (n16=1, 24 Vcc).",
+    "Botoes e contatos do termico ligam o +24V da CPU as entradas; as saidas ligam as bobinas, que voltam ao 0V da CPU.",
+    "Ladder com fonte 3008 no trilho esquerdo; bobinas ladder com pino direito sem fio (trilho_direito aberto).",
+    "Operandos I0.x/Q0.x/M0.x exatamente como no enunciado; nenhum operando igual a rotulo fisico (ex.: -KM1).",
+    "Use UMA fonte trifasica multi-terminal (3007) na potencia e trilho PE separado; termico 6007 com o mesmo rotulo do 8017.",
+    "Sem coordenadas no layout; tudo cabe na folha (455x305)."
+  ],
+  "obrigatorios": {
+    "classes": {
+      "1000": 1,
+      "10050": 3,
+      "10051": 2,
+      "10061": 1,
+      "10062": 2,
+      "10204": 3,
+      "10205": 1,
+      "10206": 1,
+      "2001": 1,
+      "3008": 1,
+      "6007": 1,
+      "6009": 1,
+      "8000": 1,
+      "8001": 1,
+      "8017": 1,
+      "9000": 1
+    },
+    "uma_de": [
+      [
+        "6009",
+        "6010"
+      ]
+    ],
+    "rotulos": [
+      "-S0",
+      "-S1",
+      "-RT1",
+      "-KM1"
+    ],
+    "operandos": [
+      "I0.0",
+      "I0.1",
+      "I0.2",
+      "Q0.0"
+    ]
+  },
+  "testes": [
+    {
+      "nome": "repouso desligado",
+      "entradas": {},
+      "status": "OK",
+      "esperado": [],
+      "esperado_bits": {
+        "I0.0": 1,
+        "Q0.0": 0
+      }
+    },
+    {
+      "nome": "S1 liga KM1",
+      "entradas": {
+        "S1": true
+      },
+      "status": "OK",
+      "esperado": [
+        "KM1"
+      ],
+      "esperado_bits": {
+        "Q0.0": 1
+      }
+    },
+    {
+      "nome": "mantem sem selo fisico",
+      "entradas": {},
+      "inicial": [
+        "Q0.0"
+      ],
+      "status": "OK",
+      "esperado": [
+        "KM1"
+      ]
+    },
+    {
+      "nome": "S0 desliga",
+      "entradas": {
+        "S0": true
+      },
+      "inicial": [
+        "Q0.0"
+      ],
+      "status": "OK",
+      "esperado": [],
+      "esperado_bits": {
+        "I0.0": 0,
+        "Q0.0": 0
+      }
+    },
+    {
+      "nome": "S0 e S1 juntos: desliga prevalece",
+      "entradas": {
+        "S0": true,
+        "S1": true
+      },
+      "status": "OK",
+      "esperado": []
+    },
+    {
+      "nome": "RT1 derruba",
+      "entradas": {
+        "RT1": true
+      },
+      "inicial": [
+        "Q0.0"
+      ],
+      "status": "OK",
+      "esperado": []
+    },
+    {
+      "nome": "RT1 bloqueia",
+      "entradas": {
+        "RT1": true,
+        "S1": true
+      },
+      "status": "OK",
+      "esperado": []
+    },
+    {
+      "nome": "sequencia liga, solta, desliga",
+      "status": "OK",
+      "sequencia": [
+        {
+          "nome": "liga",
+          "entradas": {
+            "S1": true
+          },
+          "esperado": [
+            "KM1"
+          ]
+        },
+        {
+          "nome": "solta: mantem",
+          "entradas": {},
+          "esperado": [
+            "KM1"
+          ]
+        },
+        {
+          "nome": "desliga",
+          "entradas": {
+            "S0": true
+          },
+          "esperado": []
+        },
+        {
+          "nome": "repouso",
+          "entradas": {},
+          "esperado": []
+        }
+      ]
+    }
+  ]
+}
