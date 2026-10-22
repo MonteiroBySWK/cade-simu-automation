@@ -89,6 +89,7 @@ dependencies = [
  "cade_core",
  "cade_layout",
  "cade_model",
+ "cade_sim",
  "clap",
  "serde",
  "serde_json",
@@ -148,6 +149,7 @@ dependencies = [
 name = "cade_sim"
 version = "0.2.0"
 dependencies = [
+ "cade_build",
  "cade_check",
  "cade_model",
  "serde_json",
@@ -273,6 +275,7 @@ dependencies = [
  "cade_core",
  "cade_layout",
  "cade_model",
+ "cade_sim",
  "serde_json",
 ]
 

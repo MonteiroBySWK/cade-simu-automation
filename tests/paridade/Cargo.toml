@@ -11,4 +11,5 @@ cade_core.workspace = true
 cade_model.workspace = true
 cade_build.workspace = true
 cade_layout.workspace = true
+cade_sim.workspace = true
 serde_json.workspace = true
