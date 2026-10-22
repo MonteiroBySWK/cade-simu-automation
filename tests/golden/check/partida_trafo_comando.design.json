@@ -2,10 +2,10 @@
  "entrada": "tests/golden/partida_trafo_comando.layout.json",
  "tipo": "design",
  "titulo": "PARTIDA COM COMANDO POR TRANSFORMADOR",
- "n_simbolos": 13,
+ "n_simbolos": 12,
  "build": {
   "ok": true,
-  "mensagem": "93 entidades -> {OUT} | OK {OUT} modo=0 versao=4000"
+  "mensagem": "86 entidades -> {OUT} | OK {OUT} modo=0 versao=4000"
  },
  "geo": {
   "curtos": [],
@@ -15,7 +15,7 @@
  },
  "fios": {
   "ok": true,
-  "n": 80,
+  "n": 74,
   "atravessam": []
  },
  "avisos": [],

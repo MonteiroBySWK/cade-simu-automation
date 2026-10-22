@@ -30,7 +30,7 @@ pub const SKIP: [&str; 12] = [
     "4000", "4009", "4010", "4018", "4019", "4001", "4002", "4003", "4004", "4012", "8", "20000",
 ];
 /// Fontes que estampam fase por pino (`geo_check.FONTE`).
-pub const FONTE: [&str; 9] = ["3000", "3001", "3002", "3003", "3004", "3005", "3006", "3007", "3011"];
+pub const FONTE: [&str; 10] = ["3000", "3001", "3002", "3003", "3004", "3005", "3006", "3007", "3011", "3012"];
 
 /// Ponto da folha em unidades do `.cad`.
 pub type Ponto = (i64, i64);
@@ -45,6 +45,20 @@ pub fn estampa_de(pino: &str) -> Option<&'static str> {
         "PE" => "P",
         _ => return None,
     })
+}
+
+/// Estampa por classe: o transformador `3012` tambem e fonte no app, mas estampa no **secundario**
+/// (`p4` = L/topo, `p3` = N/base). Medido em 22/10/2026: com o 3012 sozinho o comando energiza e nao
+/// ha curto; com uma `3003` extra no mesmo par de trilhos o app acusa CURTO.
+pub fn estampa_de_classe(classe: &str, pino: &str) -> Option<&'static str> {
+    if classe == "3012" {
+        return match pino {
+            "p4" => Some("1"),
+            "p3" => Some("N"),
+            _ => None,
+        };
+    }
+    estampa_de(pino)
 }
 
 /// `_rot(dx, dy, o)`: rotacao/espelho do offset do pino pela orientacao `o` (nums[17]).

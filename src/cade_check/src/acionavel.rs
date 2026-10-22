@@ -1,7 +1,7 @@
 //! Port de `build_spec.acionavel_solto` / `acionavel_curto`: transforma a saida crua do `geo_check`
 //! em mensagens que dizem o que fazer.
 
-const FONTES: [&str; 8] = ["3000", "3001", "3003", "3004", "3005", "3006", "3007", "3011"];
+const FONTES: [&str; 9] = ["3000", "3001", "3003", "3004", "3005", "3006", "3007", "3011", "3012"];
 
 /// `_PINO_SOLTO`: `^(?P<rot>.*)\((?P<classe>\d+)\)\.(?P<pino>[^@]+)@\((?P<x>-?\d+), (?P<y>-?\d+)\)$`.
 fn casar_solto(s: &str) -> Option<(&str, &str, &str, &str, &str)> {

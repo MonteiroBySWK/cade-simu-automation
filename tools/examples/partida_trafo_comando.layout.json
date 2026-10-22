@@ -1,190 +1,185 @@
 {
-  "titulo": "PARTIDA COM COMANDO POR TRANSFORMADOR",
-  "descricao": "Partida direta com o comando em par de trilhos proprio (C1/C2) alimentado por transformador (primario entre L1 e L2) e fonte monofasica no secundario. A rede de comando usa os trilhos C1/C2 em vez de L1/N.",
-  "layout": {
-    "trilhos": {
-      "L1": 14,
-      "L2": 20,
-      "L3": 26,
-      "N": 282,
-      "x0": 25,
-      "x1": 395,
-      "PE": 291
-    },
-    "fontes": [
-      {
-        "id": "X1",
-        "classe": "3007",
-        "rotulo": "-X",
-        "pinos": {
-          "L1": "L1",
-          "L2": "L2",
-          "L3": "L3",
-          "N": "N",
-          "PE": "PE"
-        }
-      }
-    ],
-    "trilhos_comando": {
-      "nomes": [
-        "C1",
-        "C2"
-      ],
-      "transformador": {
-        "id": "T1",
-        "classe": "3012",
-        "rotulo": "-T1",
-        "primario": [
-          "L1",
-          "L2"
-        ]
-      },
-      "fonte": {
-        "id": "X2",
-        "classe": "3003",
-        "rotulo": "-X2"
-      }
-    },
-    "comando": [
-      {
-        "id": "c1",
-        "de": "C1",
-        "para": "C2",
-        "rede": {
-          "serie": [
-            [
-              "RT1",
-              "8017",
-              "-RT1"
-            ],
-            [
-              "S0",
-              "8001",
-              "-S0"
-            ],
-            {
-              "paralelo": [
-                [
-                  "S1",
-                  "8000",
-                  "-S1"
-                ],
-                [
-                  "selo1",
-                  "7000",
-                  "-KM1"
-                ]
-              ]
-            },
-            {
-              "paralelo": [
-                [
-                  "KM1",
-                  "9000",
-                  "-KM1"
-                ],
-                [
-                  "H1",
-                  "9008",
-                  "-H1"
-                ]
-              ]
-            }
-          ]
-        }
-      }
-    ],
-    "potencia": [
-      {
-        "id": "m1",
-        "fases": [
-          "L1",
-          "L2",
-          "L3"
-        ],
-        "neutro": "N",
-        "pe": "PE",
-        "colunas": [
-          [
-            "Q1",
-            "6009",
-            "-Q1"
-          ],
-          [
-            "F1",
-            "6007",
-            "-RT1"
-          ],
-          [
-            "KM1p",
-            "2001",
-            "-KM1"
-          ],
-          [
-            "M1",
-            "1000",
-            "-M1"
-          ]
-        ]
-      }
-    ]
+ "titulo": "PARTIDA COM COMANDO POR TRANSFORMADOR",
+ "descricao": "Partida direta com o comando em par de trilhos proprio (C1/C2) alimentado por transformador (primario entre L1 e L2; o secundario alimenta C1/C2). O 3012 JA e fonte no app: nao acrescente outra fonte no secundario (o app acusa curto).",
+ "layout": {
+  "trilhos": {
+   "L1": 14,
+   "L2": 20,
+   "L3": 26,
+   "N": 282,
+   "x0": 25,
+   "x1": 395,
+   "PE": 291
   },
-  "testes": [
-    {
-      "nome": "repouso desligado",
-      "entradas": {},
-      "esperado": [],
-      "status": "OK"
-    },
-    {
-      "nome": "S1 liga KM1",
-      "entradas": {
-        "S1": true
-      },
-      "esperado": [
-        "KM1"
-      ],
-      "esperado_lampadas": [
-        "H1"
-      ],
-      "status": "OK"
-    },
-    {
-      "nome": "selo mantem KM1",
-      "entradas": {},
-      "inicial": [
-        "KM1"
-      ],
-      "esperado": [
-        "KM1"
-      ],
-      "status": "OK"
-    },
-    {
-      "nome": "S0 desliga",
-      "entradas": {
-        "S0": true
-      },
-      "inicial": [
-        "KM1"
-      ],
-      "esperado": [],
-      "status": "OK"
-    },
-    {
-      "nome": "RT1 aberto bloqueia a partida",
-      "entradas": {
-        "RT1": true,
-        "S1": true
-      },
-      "esperado": [],
-      "status": "OK"
-    },
-    {
-      "nome": "sem auto-religamento",
-      "entradas": {},
-      "esperado": [],
-      "status": "OK"
+  "fontes": [
+   {
+    "id": "X1",
+    "classe": "3007",
+    "rotulo": "-X",
+    "pinos": {
+     "L1": "L1",
+     "L2": "L2",
+     "L3": "L3",
+     "N": "N",
+     "PE": "PE"
     }
+   }
+  ],
+  "trilhos_comando": {
+   "nomes": [
+    "C1",
+    "C2"
+   ],
+   "transformador": {
+    "id": "T1",
+    "classe": "3012",
+    "rotulo": "-T1",
+    "primario": [
+     "L1",
+     "L2"
+    ]
+   }
+  },
+  "comando": [
+   {
+    "id": "c1",
+    "de": "C1",
+    "para": "C2",
+    "rede": {
+     "serie": [
+      [
+       "RT1",
+       "8017",
+       "-RT1"
+      ],
+      [
+       "S0",
+       "8001",
+       "-S0"
+      ],
+      {
+       "paralelo": [
+        [
+         "S1",
+         "8000",
+         "-S1"
+        ],
+        [
+         "selo1",
+         "7000",
+         "-KM1"
+        ]
+       ]
+      },
+      {
+       "paralelo": [
+        [
+         "KM1",
+         "9000",
+         "-KM1"
+        ],
+        [
+         "H1",
+         "9008",
+         "-H1"
+        ]
+       ]
+      }
+     ]
+    }
+   }
+  ],
+  "potencia": [
+   {
+    "id": "m1",
+    "fases": [
+     "L1",
+     "L2",
+     "L3"
+    ],
+    "neutro": "N",
+    "pe": "PE",
+    "colunas": [
+     [
+      "Q1",
+      "6009",
+      "-Q1"
+     ],
+     [
+      "F1",
+      "6007",
+      "-RT1"
+     ],
+     [
+      "KM1p",
+      "2001",
+      "-KM1"
+     ],
+     [
+      "M1",
+      "1000",
+      "-M1"
+     ]
+    ]
+   }
   ]
+ },
+ "testes": [
+  {
+   "nome": "repouso desligado",
+   "entradas": {},
+   "esperado": [],
+   "status": "OK"
+  },
+  {
+   "nome": "S1 liga KM1",
+   "entradas": {
+    "S1": true
+   },
+   "esperado": [
+    "KM1"
+   ],
+   "esperado_lampadas": [
+    "H1"
+   ],
+   "status": "OK"
+  },
+  {
+   "nome": "selo mantem KM1",
+   "entradas": {},
+   "inicial": [
+    "KM1"
+   ],
+   "esperado": [
+    "KM1"
+   ],
+   "status": "OK"
+  },
+  {
+   "nome": "S0 desliga",
+   "entradas": {
+    "S0": true
+   },
+   "inicial": [
+    "KM1"
+   ],
+   "esperado": [],
+   "status": "OK"
+  },
+  {
+   "nome": "RT1 aberto bloqueia a partida",
+   "entradas": {
+    "RT1": true,
+    "S1": true
+   },
+   "esperado": [],
+   "status": "OK"
+  },
+  {
+   "nome": "sem auto-religamento",
+   "entradas": {},
+   "esperado": [],
+   "status": "OK"
+  }
+ ]
 }

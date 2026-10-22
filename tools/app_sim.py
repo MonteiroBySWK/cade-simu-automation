@@ -273,13 +273,34 @@ class Calib:
                 "score": round(float(self.score), 3), "fios_sobre_tinta": round(float(self.cobertura), 3)}
 
 
+def _area_desenho(a):
+    """(y0,y1,x0,x1) da area de desenho em pixels: corta toolbar, paletas e o FUNDO CINZA do MDI.
+
+    Quando a filha MDI nao esta maximizada (WM pequeno), a folha e cortada embaixo; o fundo cinza
+    (128,128,128) delimita o fim da area visivel. Sem isso a calibracao cobra fios que estao fora
+    da vista e falha (`partida_trafo_comando`, 22/10/2026).
+    """
+    H, Wd = a.shape[:2]
+    y0, y1, x0, x1 = 100, H - 22, 28, Wd - 28
+    cinza = (a == np.array([128, 128, 128], dtype=np.uint8)).all(2)
+    for y in range(y0, H):
+        if cinza[y, x0:x1].mean() > 0.9:
+            y1 = y
+            break
+    for x in range(Wd - 1, x1, -1):
+        if cinza[y0:y1, x].mean() > 0.9:
+            x1 = x
+            break
+    return y0, max(y0, y1), x0, max(x0, x1)
+
+
 def calibrar(img, cad, hint=None, min_cobertura=0.85):
     """Casa os fios do .cad com a imagem. Devolve Calib ou None. `hint`=escala anterior (caminho rapido)."""
     if not cad.fios:
         return None
     a = np.asarray(img.convert("RGB"))
     H, Wd = a.shape[:2]
-    y0, y1, x0, x1 = 100, H - 22, 28, Wd - 28      # so a area de desenho (sem toolbar/paleta/barra de status)
+    y0, y1, x0, x1 = _area_desenho(a)               # so a area realmente visivel da folha
     tinta = np.zeros((H, Wd), dtype=bool)
     tinta[y0:y1, x0:x1] = _tinta(a)[y0:y1, x0:x1]
     tinta &= ~_solidos(tinta)                        # fundo cinza do MDI etc. nao e fio
@@ -287,7 +308,10 @@ def calibrar(img, cad, hint=None, min_cobertura=0.85):
     cand = []
     if hint:
         cand.append(hint)
-    cand += [s for s in (1.0, 2.0, 1.5, 0.5, 3.0, 0.75, 1.25, 2.5, 4.0) if s not in cand]
+    base = (1.0, 2.0, 1.5, 0.5, 3.0, 0.75, 1.25, 2.5, 4.0)
+    cand += [s for s in base if s not in cand]
+    # varredura fina: a janela do app pode abrir em zoom que "cabe" (1,4..2,0 px/unidade)
+    cand += [round(0.5 + 0.1 * i, 1) for i in range(36) if round(0.5 + 0.1 * i, 1) not in cand]
     melhor = None
     for s in cand:
         m = _mascara_fios(cad, s)
@@ -408,7 +432,12 @@ def em_simulacao(img):
 
 
 def vista_maximizada(img):
-    """True se a filha MDI esta maximizada: sem a barra de titulo AZUL da filha em TITULO_FILHA."""
+    """True se a filha MDI esta maximizada (sem a barra de titulo da filha e sem o fundo cinza do MDI).
+
+    O criterio antigo so olhava o pixel do titulo (azul/cinza). Em 22/10/2026 a barra veio
+    verde-agua e a filha pequena passou batido: o `zoom_todo` nao maximizava e a calibracao
+    falhava (`partida_trafo_comando`). Agora tambem mede o fundo cinza na metade de baixo.
+    """
     a = np.asarray(img.convert("RGB"))
     y, x = TITULO_FILHA[1], TITULO_FILHA[0]
     if a.shape[0] <= y or a.shape[1] <= x:
@@ -416,7 +445,14 @@ def vista_maximizada(img):
     r, g, b = (int(v) for v in a[y, x])
     azul = b > 160 and r < 90 and 70 < g < 170        # barra de titulo ativa do Windows (0,120,215)
     cinza = (r, g, b) == (128, 128, 128)               # fundo do MDI (filha inativa/pequena)
-    return not (azul or cinza)
+    if azul or cinza:
+        return False
+    sub = a[560:min(a.shape[0], 1000), 60:min(a.shape[1] - 1, 940)]
+    if sub.size:
+        frac = float((sub == np.array([128, 128, 128], dtype=np.uint8)).all(2).mean())
+        if frac > 0.6:                                 # fundo do MDI domina: filha NAO maximizada
+            return False
+    return True
 
 
 # --------------------------------------------------------------------------- app (Wine)
@@ -434,6 +470,7 @@ class AppSim:
         self.saida.mkdir(parents=True, exist_ok=True)
         self.win = None
         self.cal = None
+        self._pressed_at = None
         self.lancou = False                       # so mata o Wine que ESTE objeto subiu
         self.verbose = verbose
         self.n_shot = 0
@@ -619,11 +656,14 @@ class AppSim:
         """Maximiza a filha MDI (duplo-clique na barra de titulo): folha em escala 4 sem scroll. Idempotente."""
         _xdo("windowsize", self.win, "1918", "1052")      # janela alta o bastante p/ a folha inteira (WM pode ignorar)
         time.sleep(0.8)
-        img, _ = self.screenshot("_probe.png")
-        if not vista_maximizada(img):
+        for _ in range(3):
+            img, _ = self.screenshot("_probe.png")
+            if vista_maximizada(img):
+                return self
             self._clica_win(*TITULO_FILHA)
             self._clica_win(*TITULO_FILHA)
-            time.sleep(1.5)
+            time.sleep(1.2)
+        self._log("aviso: nao consegui maximizar a MDI; seguindo na vista atual (calibracao acha o zoom)")
         return self
 
     def reiniciar(self):
@@ -659,13 +699,18 @@ class AppSim:
     def pressionar(self, rotulo_ou_coord, segurar_s=0.6, aliases=None):
         """mousedown, espera, solta (NAO solta se segurar_s=None: use soltar() depois)."""
         wx, wy, _ = self._alvo(rotulo_ou_coord, aliases)
+        self._pressed_at = (wx, wy)
         self._clica_win(wx, wy, "down")
         if segurar_s is not None:
             time.sleep(segurar_s)
             self.soltar()
 
     def soltar(self):
-        self._clica_win(0, 0, "up")
+        """mouseup no MESMO ponto do mousedown. Soltar na esquina (0,0) fazia o app nao ver o
+        release e a botoeira ficava presa (bug observado nos goldens de 22/10/2026)."""
+        wx, wy = self._pressed_at or (0, 0)
+        self._clica_win(wx, wy, "up")
+        self._pressed_at = None
 
     def alternar(self, rotulo_ou_coord, espera=0.6, aliases=None):
         wx, wy, _ = self._alvo(rotulo_ou_coord, aliases)

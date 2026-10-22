@@ -4,7 +4,7 @@
 //! contem; pino so liga a extremo de fio; fontes estampam "char de fase" por pino (L1->1, L2->2,
 //! L3->3, N->N, PE->P) e duas estampas diferentes na mesma net sao CURTO.
 
-use crate::geom::{estampa_de, Conectividade, Ponto, FONTE};
+use crate::geom::{estampa_de_classe, Conectividade, Ponto, FONTE};
 use cade_model::latin1;
 use std::collections::HashMap;
 
@@ -55,7 +55,7 @@ pub fn analisar_entidades(c: &Conectividade) -> Geo {
             continue;
         }
         if FONTE.contains(&p.classe.as_str()) {
-            if let (Some(ch), Some(raiz)) = (estampa_de(&p.nome), c.rede_do_ponto(p.ponto)) {
+            if let (Some(ch), Some(raiz)) = (estampa_de_classe(&p.classe, &p.nome), c.rede_do_ponto(p.ponto)) {
                 let i = *pos.entry(raiz).or_insert_with(|| {
                     estampas.push(Vec::new());
                     estampas.len() - 1

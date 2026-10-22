@@ -344,7 +344,8 @@ despacho `FUN_0040d2b0` + as nomeadas nos diálogos). Gerado por
 | 9005/9006 (OFF / ON-OFF delay) | alta | `FUN_0062f4e0`, `FUN_00630d40` decompilados |
 | 9007 intermitente | média | `FUN_00632a20` decompilado (lógica de alternância densa) |
 | 6007 polos sempre fechados; clique propaga a 8016-8019 | alta | `FUN_005727b0`, `FUN_0043ee20` |
-| disjuntores/seccionadores iniciam abertos | média | CMP `==1` + zeragem no Play; falta prova no app |
+| disjuntores/seccionadores iniciam abertos | alta | CMP `==1` + zeragem no Play; **provado no app** (22/10/2026): em `partida_direta`, sem clicar `Q1` (6009) o motor não gira; com o clique, gira |
+| transformador `3012` é **fonte** (estampa no secundário `p4`=L, `p3`=N) | alta | **provado no app** (22/10/2026): `partida_trafo_comando` com o `3012` sozinho alimenta o comando; com uma `3003` extra no mesmo par de trilhos o app acusa **CURTO** |
 | motores 1000.. (gira com fases distintas) | média | campo 0x7a9dc, não lido linha a linha |
 | sensores 7500.., pneumática 10500.., GRAFCET/portas lógicas 10000..10041 | baixa | só nome + pinos + família |
 | ladder 10050/10051/10060..10063/10066 e CLP 10204/10205/10206 | alta/média | §13 (decompilados) |

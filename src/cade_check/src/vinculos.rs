@@ -16,7 +16,13 @@ fn rot(e: &Entidade) -> String {
 
 /// `(erros, avisos)` sobre as entidades.
 pub fn conferir_entidades(ps: &[Entidade]) -> (Vec<String>, Vec<String>) {
-    let termicos: BTreeSet<String> = ps.iter().filter(|p| p.id == "6007").map(rot).collect();
+    // termico OU disjuntor (DJ1): o app deixa o 8016/8017 seguir o breaker de mesmo rotulo
+    // (arquivo de aula usa `8016 DJ1` com `6003 DJ1`) — igual a `build_spec.conferir_vinculos`.
+    let termicos: BTreeSet<String> = ps
+        .iter()
+        .filter(|p| ["6007", "6002", "6003", "6009", "6010"].contains(&p.id.as_str()))
+        .map(rot)
+        .collect();
     let bobinas: BTreeSet<String> = ps.iter().filter(|p| BOBINAS.contains(&p.id.as_str())).map(rot).collect();
     let (mut erros, mut avisos) = (Vec::new(), Vec::new());
     for p in ps {

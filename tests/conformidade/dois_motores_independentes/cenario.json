@@ -1,6 +1,6 @@
 {
  "versao": 1,
- "descricao": "dois_motores_independentes: cada entrada sozinha e pares (segura uma, aperta a outra); espera de 300 ms entre as acoes",
+ "descricao": "dois_motores_independentes: cada entrada sozinha e pares em sequencia (um atuador por vez: o app tem um ponteiro so); espera de 300 ms entre as acoes",
  "acoes": [
   {
    "acao": "reiniciar"
@@ -148,12 +148,12 @@
    "ms": 300
   },
   {
-   "acao": "alternar",
-   "alvo": "RT2"
-  },
-  {
    "acao": "esperar",
    "ms": 300
+  },
+  {
+   "acao": "alternar",
+   "alvo": "RT2"
   },
   {
    "acao": "esperar",
@@ -195,6 +195,10 @@
    "ms": 300
   },
   {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
    "acao": "pressionar",
    "alvo": "S0"
   },
@@ -205,10 +209,6 @@
   {
    "acao": "soltar",
    "alvo": "S0"
-  },
-  {
-   "acao": "esperar",
-   "ms": 300
   },
   {
    "acao": "esperar",
@@ -238,6 +238,10 @@
    "ms": 300
   },
   {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
    "acao": "pressionar",
    "alvo": "S1"
   },
@@ -248,10 +252,6 @@
   {
    "acao": "soltar",
    "alvo": "S1"
-  },
-  {
-   "acao": "esperar",
-   "ms": 300
   },
   {
    "acao": "esperar",
@@ -281,6 +281,10 @@
    "ms": 300
   },
   {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
    "acao": "pressionar",
    "alvo": "S2"
   },
@@ -291,10 +295,6 @@
   {
    "acao": "soltar",
    "alvo": "S2"
-  },
-  {
-   "acao": "esperar",
-   "ms": 300
   },
   {
    "acao": "esperar",
@@ -324,12 +324,12 @@
    "ms": 300
   },
   {
-   "acao": "alternar",
-   "alvo": "RT1"
-  },
-  {
    "acao": "esperar",
    "ms": 300
+  },
+  {
+   "acao": "alternar",
+   "alvo": "RT1"
   },
   {
    "acao": "esperar",
@@ -365,6 +365,10 @@
   {
    "acao": "alternar",
    "alvo": "RT2"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
   },
   {
    "acao": "esperar",
@@ -387,10 +391,6 @@
    "ms": 300
   },
   {
-   "acao": "esperar",
-   "ms": 300
-  },
-  {
    "acao": "alternar",
    "alvo": "RT2"
   },
@@ -408,6 +408,10 @@
   {
    "acao": "alternar",
    "alvo": "RT2"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
   },
   {
    "acao": "esperar",
@@ -430,10 +434,6 @@
    "ms": 300
   },
   {
-   "acao": "esperar",
-   "ms": 300
-  },
-  {
    "acao": "alternar",
    "alvo": "RT2"
   },
@@ -457,6 +457,10 @@
    "ms": 300
   },
   {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
    "acao": "pressionar",
    "alvo": "S2"
   },
@@ -467,10 +471,6 @@
   {
    "acao": "soltar",
    "alvo": "S2"
-  },
-  {
-   "acao": "esperar",
-   "ms": 300
   },
   {
    "acao": "esperar",
@@ -494,18 +494,6 @@
   {
    "acao": "pressionar",
    "alvo": "S0"
-  },
-  {
-   "acao": "esperar",
-   "ms": 300
-  },
-  {
-   "acao": "alternar",
-   "alvo": "RT1"
-  },
-  {
-   "acao": "esperar",
-   "ms": 300
   },
   {
    "acao": "esperar",
@@ -528,158 +516,6 @@
    "ms": 300
   },
   {
-   "acao": "reiniciar"
-  },
-  {
-   "acao": "esperar",
-   "ms": 300
-  },
-  {
-   "acao": "pressionar",
-   "alvo": "S0"
-  },
-  {
-   "acao": "esperar",
-   "ms": 300
-  },
-  {
-   "acao": "alternar",
-   "alvo": "RT2"
-  },
-  {
-   "acao": "esperar",
-   "ms": 300
-  },
-  {
-   "acao": "esperar",
-   "ms": 300
-  },
-  {
-   "acao": "soltar",
-   "alvo": "S0"
-  },
-  {
-   "acao": "esperar",
-   "ms": 300
-  },
-  {
-   "acao": "alternar",
-   "alvo": "RT2"
-  },
-  {
-   "acao": "esperar",
-   "ms": 300
-  },
-  {
-   "acao": "reiniciar"
-  },
-  {
-   "acao": "esperar",
-   "ms": 300
-  },
-  {
-   "acao": "pressionar",
-   "alvo": "S0"
-  },
-  {
-   "acao": "esperar",
-   "ms": 300
-  },
-  {
-   "acao": "pressionar",
-   "alvo": "S1"
-  },
-  {
-   "acao": "esperar",
-   "ms": 300
-  },
-  {
-   "acao": "soltar",
-   "alvo": "S1"
-  },
-  {
-   "acao": "esperar",
-   "ms": 300
-  },
-  {
-   "acao": "soltar",
-   "alvo": "S0"
-  },
-  {
-   "acao": "esperar",
-   "ms": 300
-  },
-  {
-   "acao": "reiniciar"
-  },
-  {
-   "acao": "esperar",
-   "ms": 300
-  },
-  {
-   "acao": "pressionar",
-   "alvo": "S0"
-  },
-  {
-   "acao": "esperar",
-   "ms": 300
-  },
-  {
-   "acao": "pressionar",
-   "alvo": "S2"
-  },
-  {
-   "acao": "esperar",
-   "ms": 300
-  },
-  {
-   "acao": "soltar",
-   "alvo": "S2"
-  },
-  {
-   "acao": "esperar",
-   "ms": 300
-  },
-  {
-   "acao": "soltar",
-   "alvo": "S0"
-  },
-  {
-   "acao": "esperar",
-   "ms": 300
-  },
-  {
-   "acao": "reiniciar"
-  },
-  {
-   "acao": "esperar",
-   "ms": 300
-  },
-  {
-   "acao": "pressionar",
-   "alvo": "S1"
-  },
-  {
-   "acao": "esperar",
-   "ms": 300
-  },
-  {
-   "acao": "alternar",
-   "alvo": "RT1"
-  },
-  {
-   "acao": "esperar",
-   "ms": 300
-  },
-  {
-   "acao": "esperar",
-   "ms": 300
-  },
-  {
-   "acao": "soltar",
-   "alvo": "S1"
-  },
-  {
    "acao": "esperar",
    "ms": 300
   },
@@ -700,7 +536,15 @@
   },
   {
    "acao": "pressionar",
-   "alvo": "S1"
+   "alvo": "S0"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "soltar",
+   "alvo": "S0"
   },
   {
    "acao": "esperar",
@@ -713,14 +557,6 @@
   {
    "acao": "esperar",
    "ms": 300
-  },
-  {
-   "acao": "esperar",
-   "ms": 300
-  },
-  {
-   "acao": "soltar",
-   "alvo": "S1"
   },
   {
    "acao": "esperar",
@@ -736,14 +572,6 @@
   },
   {
    "acao": "reiniciar"
-  },
-  {
-   "acao": "esperar",
-   "ms": 300
-  },
-  {
-   "acao": "pressionar",
-   "alvo": "S1"
   },
   {
    "acao": "esperar",
@@ -766,39 +594,8 @@
    "ms": 300
   },
   {
-   "acao": "soltar",
-   "alvo": "S1"
-  },
-  {
-   "acao": "esperar",
-   "ms": 300
-  },
-  {
-   "acao": "reiniciar"
-  },
-  {
-   "acao": "esperar",
-   "ms": 300
-  },
-  {
    "acao": "pressionar",
    "alvo": "S1"
-  },
-  {
-   "acao": "esperar",
-   "ms": 300
-  },
-  {
-   "acao": "pressionar",
-   "alvo": "S2"
-  },
-  {
-   "acao": "esperar",
-   "ms": 300
-  },
-  {
-   "acao": "soltar",
-   "alvo": "S2"
   },
   {
    "acao": "esperar",
@@ -821,7 +618,54 @@
   },
   {
    "acao": "pressionar",
+   "alvo": "S0"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "soltar",
+   "alvo": "S0"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "pressionar",
    "alvo": "S2"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "soltar",
+   "alvo": "S2"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "reiniciar"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "pressionar",
+   "alvo": "S1"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "soltar",
+   "alvo": "S1"
   },
   {
    "acao": "esperar",
@@ -834,14 +678,6 @@
   {
    "acao": "esperar",
    "ms": 300
-  },
-  {
-   "acao": "esperar",
-   "ms": 300
-  },
-  {
-   "acao": "soltar",
-   "alvo": "S2"
   },
   {
    "acao": "esperar",
@@ -864,7 +700,15 @@
   },
   {
    "acao": "pressionar",
-   "alvo": "S2"
+   "alvo": "S1"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "soltar",
+   "alvo": "S1"
   },
   {
    "acao": "esperar",
@@ -883,8 +727,164 @@
    "ms": 300
   },
   {
+   "acao": "alternar",
+   "alvo": "RT2"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "reiniciar"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "pressionar",
+   "alvo": "S1"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "soltar",
+   "alvo": "S1"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "pressionar",
+   "alvo": "S0"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "soltar",
+   "alvo": "S0"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "reiniciar"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "pressionar",
+   "alvo": "S1"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "soltar",
+   "alvo": "S1"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "pressionar",
+   "alvo": "S2"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
    "acao": "soltar",
    "alvo": "S2"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "reiniciar"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "pressionar",
+   "alvo": "S2"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "soltar",
+   "alvo": "S2"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "alternar",
+   "alvo": "RT1"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "alternar",
+   "alvo": "RT1"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "reiniciar"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "pressionar",
+   "alvo": "S2"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "soltar",
+   "alvo": "S2"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
+   "acao": "alternar",
+   "alvo": "RT2"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
   },
   {
    "acao": "esperar",
@@ -914,6 +914,14 @@
    "ms": 300
   },
   {
+   "acao": "soltar",
+   "alvo": "S2"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
    "acao": "pressionar",
    "alvo": "S0"
   },
@@ -924,14 +932,6 @@
   {
    "acao": "soltar",
    "alvo": "S0"
-  },
-  {
-   "acao": "esperar",
-   "ms": 300
-  },
-  {
-   "acao": "soltar",
-   "alvo": "S2"
   },
   {
    "acao": "esperar",
@@ -953,6 +953,14 @@
    "ms": 300
   },
   {
+   "acao": "soltar",
+   "alvo": "S2"
+  },
+  {
+   "acao": "esperar",
+   "ms": 300
+  },
+  {
    "acao": "pressionar",
    "alvo": "S1"
   },
@@ -963,14 +971,6 @@
   {
    "acao": "soltar",
    "alvo": "S1"
-  },
-  {
-   "acao": "esperar",
-   "ms": 300
-  },
-  {
-   "acao": "soltar",
-   "alvo": "S2"
   },
   {
    "acao": "esperar",

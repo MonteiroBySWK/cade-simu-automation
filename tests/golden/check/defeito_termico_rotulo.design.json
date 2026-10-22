@@ -20,7 +20,7 @@
  },
  "avisos": [],
  "erros": [
-  "contato termico -RT1 (8017) nao segue nenhum rele termico 6007 de mesmo rotulo (6007: ['-RTX']): no app o termico NUNCA dispara. Use o MESMO rotulo no 6007 e no contato 95-96."
+  "contato termico -RT1 (8017) nao segue nenhum rele termico 6007 de mesmo rotulo (6007: ['-Q1', '-RTX']): no app o termico NUNCA dispara. Use o MESMO rotulo no 6007 e no contato 95-96."
  ],
  "estatico_ok": true
 }
