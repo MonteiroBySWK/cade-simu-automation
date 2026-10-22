@@ -73,6 +73,9 @@ dependencies = [
 name = "cade_check"
 version = "0.2.0"
 dependencies = [
+ "cade_build",
+ "cade_core",
+ "cade_layout",
  "cade_model",
  "serde_json",
 ]
@@ -82,6 +85,7 @@ name = "cade_cli"
 version = "0.2.0"
 dependencies = [
  "cade_build",
+ "cade_check",
  "cade_core",
  "cade_layout",
  "cade_model",

@@ -1,0 +1,26 @@
+{
+ "entrada": "tests/golden/b_motor_e_contator.cad",
+ "tipo": "gate",
+ "titulo": null,
+ "n_simbolos": null,
+ "build": {
+  "ok": true,
+  "mensagem": "OK {PATH} modo=0 versao=2001"
+ },
+ "geo": {
+  "curtos": [],
+  "soltos": [],
+  "curtos_msg": [],
+  "soltos_msg": []
+ },
+ "fios": {
+  "ok": true,
+  "n": 20,
+  "atravessam": []
+ },
+ "avisos": [
+  "2001 -KM1: nenhuma bobina de mesmo rotulo (contato nunca e comandado)"
+ ],
+ "erros": [],
+ "estatico_ok": true
+}

@@ -7,8 +7,12 @@
 //! - `new-from-json <a.json> [-o b.cad]`  alias de emit + aceita template minimo `{meta}`
 //! - `build <spec|layout.json> -o x.cad`  layout topologico OU spec baixa -> `.cad` (cad_build)
 //! - `layout <in> [-o out.spec.json]`     layout topologico -> spec baixa (motor de layout)
+//! - `gate <cad> [--testes t.json] [--json]`   gate estatico de um .cad (geo, fios, vinculos; testes: ver docs/rust-port.md)
+//! - `design <layout.json> -o x.cad [--json]`  layout -> .cad + gate (equivale ao `cad_design` do MCP)
 //!
 //! Fases futuras (crates em `src/`): check, sim, render, mcp, app, vision, maint (ver docs/rust-port.md).
+
+mod check;
 
 use clap::{Parser, Subcommand};
 use serde_json::Value;
@@ -56,6 +60,25 @@ enum Cmd {
         arquivo: String,
         #[arg(short, long)]
         output: Option<String>,
+    },
+    /// gate de um .cad existente: geo_check + wires_check + vinculos (+ testes funcionais quando houver simulador)
+    Gate {
+        arquivo: String,
+        /// casos de teste (lista JSON, ou objeto com a chave `testes`)
+        #[arg(long)]
+        testes: Option<String>,
+        /// relatorio JSON identico ao `cad_gate` do MCP
+        #[arg(long)]
+        json: bool,
+    },
+    /// layout topologico (ou spec baixa) -> .cad + gate completo
+    Design {
+        arquivo: String,
+        #[arg(short, long)]
+        output: String,
+        /// relatorio JSON identico ao `cad_design` do MCP
+        #[arg(long)]
+        json: bool,
     },
 }
 
@@ -294,6 +317,8 @@ fn main() -> ExitCode {
         Cmd::Emit { arquivo, output } | Cmd::NewFromJson { arquivo, output } => cmd_emit(arquivo, output.as_deref()),
         Cmd::Build { arquivo, output } => cmd_build(arquivo, output),
         Cmd::Layout { arquivo, output } => cmd_layout(arquivo, output.as_deref()),
+        Cmd::Gate { arquivo, testes, json } => check::cmd_gate(arquivo, testes.as_deref(), *json),
+        Cmd::Design { arquivo, output, json } => check::cmd_design(arquivo, output, *json),
     };
     ExitCode::from(code as u8)
 }

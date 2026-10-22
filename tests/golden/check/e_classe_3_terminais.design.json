@@ -1,0 +1,26 @@
+{
+ "entrada": "tests/golden/e_classe_3_terminais.layout.json",
+ "tipo": "design",
+ "titulo": null,
+ "n_simbolos": null,
+ "build": {
+  "ok": false,
+  "mensagem": ""
+ },
+ "geo": {
+  "curtos": [],
+  "soltos": [],
+  "curtos_msg": [],
+  "soltos_msg": []
+ },
+ "fios": {
+  "ok": null,
+  "n": 0,
+  "atravessam": []
+ },
+ "avisos": [],
+ "erros": [
+  "layout invalido: Q (classe 2001) tem 6 terminais (['1', '2', '3', '4', '5', '6']); a rede de comando aceita so simbolos de 2 terminais (A/B)"
+ ],
+ "estatico_ok": false
+}

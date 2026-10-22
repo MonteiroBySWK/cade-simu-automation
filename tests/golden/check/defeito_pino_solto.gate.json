@@ -1,0 +1,33 @@
+{
+ "entrada": "tests/golden/check/defeito_pino_solto.cad",
+ "tipo": "gate",
+ "titulo": null,
+ "n_simbolos": null,
+ "build": {
+  "ok": true,
+  "mensagem": "OK {PATH} modo=0 versao=8000"
+ },
+ "geo": {
+  "curtos": [],
+  "soltos": [
+   "-KM1(9000).p2@(40, 112)",
+   "-H1(9008).p2@(90, 52)"
+  ],
+  "curtos_msg": [],
+  "soltos_msg": [
+   "pino p2 de -KM1 (9000) solto em (40,112): nenhum fio termina nesse ponto; ligue o pino (conexao de/para) ou remova o simbolo",
+   "pino p2 de -H1 (9008) solto em (90,52): nenhum fio termina nesse ponto; ligue o pino (conexao de/para) ou remova o simbolo"
+  ]
+ },
+ "fios": {
+  "ok": true,
+  "n": 4,
+  "atravessam": []
+ },
+ "avisos": [],
+ "erros": [
+  "pino p2 de -KM1 (9000) solto em (40,112): nenhum fio termina nesse ponto; ligue o pino (conexao de/para) ou remova o simbolo",
+  "pino p2 de -H1 (9008) solto em (90,52): nenhum fio termina nesse ponto; ligue o pino (conexao de/para) ou remova o simbolo"
+ ],
+ "estatico_ok": false
+}

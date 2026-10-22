@@ -1,0 +1,26 @@
+{
+ "entrada": "tests/golden/check/defeito_termico_rotulo.cad",
+ "tipo": "gate",
+ "titulo": null,
+ "n_simbolos": null,
+ "build": {
+  "ok": true,
+  "mensagem": "OK {PATH} modo=0 versao=3007"
+ },
+ "geo": {
+  "curtos": [],
+  "soltos": [],
+  "curtos_msg": [],
+  "soltos_msg": []
+ },
+ "fios": {
+  "ok": true,
+  "n": 67,
+  "atravessam": []
+ },
+ "avisos": [],
+ "erros": [
+  "contato termico -RT1 (8017) nao segue nenhum rele termico 6007 de mesmo rotulo (6007: ['-RTX']): no app o termico NUNCA dispara. Use o MESMO rotulo no 6007 e no contato 95-96."
+ ],
+ "estatico_ok": true
+}

@@ -1,0 +1,27 @@
+{
+ "entrada": "tests/golden/x_paralelo_aninhado.cad",
+ "tipo": "gate",
+ "titulo": null,
+ "n_simbolos": null,
+ "build": {
+  "ok": true,
+  "mensagem": "OK {PATH} modo=0 versao=4000"
+ },
+ "geo": {
+  "curtos": [],
+  "soltos": [],
+  "curtos_msg": [],
+  "soltos_msg": []
+ },
+ "fios": {
+  "ok": true,
+  "n": 39,
+  "atravessam": []
+ },
+ "avisos": [
+  "7000 -D: nenhuma bobina de mesmo rotulo (contato nunca e comandado)",
+  "7001 -E: nenhuma bobina de mesmo rotulo (contato nunca e comandado)"
+ ],
+ "erros": [],
+ "estatico_ok": true
+}

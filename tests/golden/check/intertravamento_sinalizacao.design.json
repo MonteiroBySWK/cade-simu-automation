@@ -1,0 +1,24 @@
+{
+ "entrada": "tests/golden/intertravamento_sinalizacao.layout.json",
+ "tipo": "design",
+ "titulo": "INTERTRAVAMENTO COM SINALIZACAO",
+ "n_simbolos": 28,
+ "build": {
+  "ok": true,
+  "mensagem": "166 entidades -> {OUT} | OK {OUT} modo=0 versao=4000"
+ },
+ "geo": {
+  "curtos": [],
+  "soltos": [],
+  "curtos_msg": [],
+  "soltos_msg": []
+ },
+ "fios": {
+  "ok": true,
+  "n": 138,
+  "atravessam": []
+ },
+ "avisos": [],
+ "erros": [],
+ "estatico_ok": true
+}
