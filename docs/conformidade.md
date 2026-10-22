@@ -47,6 +47,9 @@ Divergencias conhecidas que o motor ainda nao cobre (a gravar/tratar no `cade_si
 
 ### Achados do app na gravacao (22/10/2026)
 
+- **aviso de CURTO e uma janela separada** (titulo `Erro`, ~150x82): o `import -window` da principal
+  nao a mostra e o app fica bloqueado. `AppSim.janela_dialogo()/fechar_dialogo()` detectam e fecham
+  (Return, senao clique no OK); o gravador marca `curto:true` no passo.
 - **transformador `3012` ja e fonte**: o app estampa no secundario (`p4`=L, `p3`=N). Somar uma fonte
   `3003` no mesmo par de trilhos de comando = **CURTO** (foi o que derrubou `partida_trafo_comando`;
   o gate nao via porque o modelo nao tratava `3012` como fonte). Corrigido no Python e no Rust.

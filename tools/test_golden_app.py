@@ -235,3 +235,22 @@ def test_cenarios_de_conformidade_respeitam_o_ponteiro():
             elif acao in ("pressionar", "alternar"):
                 assert segurando is None, f"{p.parent.name} acao {i}: {acao} {a.get('alvo')} com {segurando} segurado"
                 segurando = a.get("alvo") if acao == "pressionar" else None
+
+def test_passo_marca_curto_quando_o_observador_fecha_o_modal():
+    """O aviso de CURTO e uma janela separada; o observador fecha e marca o passo."""
+    class ObsCurto(ObsFalso):
+        def __init__(self):
+            super().__init__([{"bobinas": {}}, {"bobinas": {}}])
+            self.ultimo_curto = False
+            self.n = 0
+
+        def observar(self):
+            self.n += 1
+            self.ultimo_curto = self.n == 2
+            return super().observar()
+
+    obs = ObsCurto()
+    passos = G.executar_cenario({"acoes": [{"acao": "reiniciar"}, {"acao": "reiniciar"}]}, obs)
+    assert "curto" not in passos[0]
+    assert passos[1]["curto"] is True
+

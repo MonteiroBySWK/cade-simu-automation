@@ -55,11 +55,11 @@ Consequência: A7 (estrela-triângulo) e A10 (GRAFCET/pneumática) saem do camin
   contato de 2 fios.
   - Aceite: modelo de sensor alimentado (pino de alimentação + saída), caso no app com objeto
     detectado, exemplo de partida com sensor. Custo M.
-- [ ] **A6. Robustez do app/gravador** — detectar e **fechar o diálogo de CURTO** (hoje o app fica
-  bloqueado), registrar `curto:true` no golden; confirmar estado inicial de `6002`/`6003`; medir os
-  caracteres do secundário do `3012`.
-  - Aceite: cenário com curto grava golden com `curto:true` e segue; 6002/6003 documentados em
-    `docs/re-engenharia.md`. Custo S.
+- [x] **A6a. Diálogo de CURTO** — o aviso é uma **janela separada** ('Erro', ~150x82); `AppSim`
+  detecta (`janela_dialogo`), fecha (Return e, se preciso, clique no OK) e o gravador marca
+  `curto:true` no passo. Testado no app (modal detectado/fechado) + teste unitário.
+- [ ] **A6b. 6002/6003 e caracteres do `3012`** — confirmar estado inicial de `6002`/`6003` no app;
+  medir os chars do secundário do transformador (hoje assumidos L/N). Custo S.
 - [ ] **A7. Estrela-triângulo** (`opcional` — fora das refs) — 3 contatores (principal, estrela, triângulo),
   intertravamento e temporizador.
   - Aceite: layout no DSL (ou `cad_build` documentado), exemplo + app. Custo L.

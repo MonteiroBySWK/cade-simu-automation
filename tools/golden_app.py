@@ -105,6 +105,8 @@ def executar_cenario(cenario, obs, campos=CAMPOS, progresso=None):
         est = obs.observar()
         passo = {"i": i, "t_ms": t_ms, "t_parede_ms": int(round((time.time() - t0) * 1000))}
         passo.update(_extrair(est, campos))
+        if getattr(obs, "ultimo_curto", False):
+            passo["curto"] = True
         passos.append(passo)
         if progresso:
             progresso(i, len(cenario["acoes"]), passo)
