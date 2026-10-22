@@ -91,6 +91,8 @@ def mcp_config():
 
 
 NOME = "cade-simu"
+NOME_RUST = "cade-rust"
+RUST_BIN = ROOT / "target" / "release" / "cade"
 SKILL = ROOT / "skills" / "automacao-industrial"
 OPENCODE_CFG = Path.home() / ".config" / "opencode" / "opencode.json"
 SKILL_DIRS = {"claude": Path.home() / ".claude" / "skills", "opencode": Path.home() / ".config" / "opencode" / "skills"}
@@ -105,20 +107,20 @@ def _quieto(cmd):
     return subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", errors="replace")
 
 
-def _opencode_remover():
+def _opencode_remover(nome=NOME):
     """`opencode mcp` nao tem 'remove': tira a chave do JSON global (backup .bak ao lado)."""
     if not OPENCODE_CFG.is_file():
         return
     d = json.loads(OPENCODE_CFG.read_text(encoding="utf-8"))
     mcp = d.get("mcp", {})
     # opencode v2 grava em mcp.servers.<nome>; v1 usava mcp.<nome>
-    alvos = [m for m in (mcp.get("servers", {}), mcp) if isinstance(m, dict) and NOME in m]
+    alvos = [m for m in (mcp.get("servers", {}), mcp) if isinstance(m, dict) and nome in m]
     if alvos:
         shutil.copy(OPENCODE_CFG, OPENCODE_CFG.with_suffix(".json.bak"))
         for m in alvos:
-            del m[NOME]
+            del m[nome]
         OPENCODE_CFG.write_text(json.dumps(d, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
-        print(f"opencode: '{NOME}' removido de {OPENCODE_CFG} (backup .bak)")
+        print(f"opencode: '{nome}' removido de {OPENCODE_CFG} (backup .bak)")
 
 
 def _skill(link):
@@ -141,11 +143,13 @@ def _skill(link):
 
 def uninstall_mcp():
     if shutil.which("claude"):
-        for esc in ("user", "local", "project"):
-            r = _quieto(["claude", "mcp", "remove", NOME, "-s", esc])
-            if r.returncode == 0:
-                print(f"claude: '{NOME}' removido (escopo {esc})")
-    _opencode_remover()
+        for nome in (NOME, NOME_RUST):
+            for esc in ("user", "local", "project"):
+                r = _quieto(["claude", "mcp", "remove", nome, "-s", esc])
+                if r.returncode == 0:
+                    print(f"claude: '{nome}' removido (escopo {esc})")
+    for nome in (NOME, NOME_RUST):
+        _opencode_remover(nome)
     _skill(link=False)
 
 
@@ -162,6 +166,16 @@ def install_mcp():
         run(["opencode", "mcp", "add", "--global", NOME, "--", *cmd])
     else:
         print("opencode CLI ausente; quando instalar: opencode mcp add --global", NOME, "--", *cmd)
+    # MCP em Rust (cade mcp) ao lado do Python, quando o binario existe
+    if RUST_BIN.is_file():
+        cmd_r = [str(RUST_BIN), "mcp"]
+        if shutil.which("claude"):
+            run(["claude", "mcp", "add", "-s", "user", NOME_RUST, "--", *cmd_r])
+        if shutil.which("opencode"):
+            run(["opencode", "mcp", "add", "--global", NOME_RUST, "--", *cmd_r])
+        print(f"cade-rust: {RUST_BIN} mcp (10 ferramentas; sem preview/app)")
+    else:
+        print(f"cade-rust nao registrado: {RUST_BIN} ausente (rode cargo build --release)")
     _skill(link=True)
     print("\nConfira: `claude mcp get cade-simu` e `opencode mcp list` (devem mostrar connected).")
 
