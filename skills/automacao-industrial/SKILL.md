@@ -70,7 +70,8 @@ ou `python3 tools/build_spec.py meu.layout.json out/x.cad` (imprime `GATE: OK`/`
 | Reversão | 2 contatores em `paralelo`, o 2º com `ordem` invertida L1↔L3 + NF cruzado | `2001` ×2, `7001` ×2 |
 | Intercalar | como reversão no comando (NF cruzado) mas 2 motores, 1 contator cada | `exemplos` `intercalada` |
 | Sem auto-religamento | selo cai ao desligar; teste `esperado: []` após soltar | — |
-| Partida estrela-triângulo / temporizador | **fora da DSL v1** (sem blocos T): avise o limite; veja "esclarecimento" | — |
+| Temporizador / sequencial / intercalado por CLP | **`ladder/1`** (TON em linha no degrau): seção "CLP + ladder" | `10206`, `10066` |
+| Partida estrela-triângulo | **fora da DSL**: avise o limite; veja "esclarecimento" | — |
 
 Regra de ouro do comando: `trilho_L → [proteções NF em série] → [liga ∥ selo] → [intertravamentos NF] → bobina → trilho_N`.
 Série só passa se fechada; paralelo liga se *qualquer* ramo fechar.
@@ -91,6 +92,27 @@ Série só passa se fechada; paralelo liga se *qualquer* ramo fechar.
 | Contato da bobina com rótulo diferente | selo/intertravamento não fecha nos testes | rótulo do contato = rótulo da bobina (`-KM1`) |
 | Série longa / muitos ramos | `layout invalido: ... fora da folha` | menos elementos por série; dividir em blocos `comando` |
 
+## CLP + ladder (DSL `ladder/1`, `docs/ladder.md`)
+
+`cad_design` aceita `{"dsl":"ladder/1","layout":{"clp","potencia","ladder","textos"},"testes":[...]}`. Moldes que passam o
+gate (`cad_example`): `partida_direta.ladder`, `reversao.ladder`, `intercalada.ladder`, `pratica5_complementar.ladder`
+(intercalada com térmicos e sinalização), `partida_sequencial_3.ladder` (TON em linha).
+
+- **Hardware** (`clp`): CPU `10206` + fonte `3011` (+ `protecao` `6002` de mesmo rótulo do disjuntor), `entradas[]`
+  `{operando, dispositivo:[id,classe,rotulo]}` (10204) e `saidas[]` `{operando, carga | [cargas em paralelo], serie?}` (10205).
+  Pinos: 10204 só (0,0); 10205 (0,24); 10206 L(0,0) N(6,0) PE(12,0) +(18,0) −(24,0); 10050/51/60 A(0,0) B(12,0); 10066 IN(0,0) Q(15,6).
+- **Potência**: `{"tipo":"dj_comum","disjuntor":["DJ1","6003","DJ1"],"motores":[{"contator","termico"?,"motor"}]}`
+  (um DJ1 6002/6003 + aux `8016` de **mesmo rótulo**; o app alterna os três juntos) ou a lista de `dsl-layout.md` com `trilhos`/`fontes`.
+- **Ladder**: `rungs[]` `{id, logica, saida}`; `logica` = `["NA"|"NF", op]`, `{"serie":[..]}`, `{"paralelo":[..]}` e
+  **TON em linha** `["TON","T1",{"tempo":1,"base":"1s"}]` (sem bobina de Q; só na série principal do degrau, como no arquivo-base);
+  `saida` = `["OUT"|"SET"|"RST", op]`. Operando ≠ rótulo físico; todo operando lido é produzido (V1–V8).
+- **Térmico**: `6007` e contatos `8017` (NF → entrada de permissão) / `8016` (NA → lâmpada de falha) com o **mesmo rótulo**.
+  Não reutilize operandos ocupados; rearme não religa (o selo depende de bits que caíram).
+- **Testes**: `sequencia` de passos `{entradas, ticks|tempo_s, esperado, esperado_lampadas, esperado_bits}`; `inicial`; `DJ1: true`
+  em todo passo (disjuntor ligado). O gate roda o modelo **geométrico** (`clp_sim`, a partir do .cad) e o **lógico** da DSL e exige igualdade.
+- **No app**: `python3 tools/app_sim.py x.cad --roteiro roteiro.json` (alternar `DJ1` antes; `pressionar`, `aguardar`, `foto` por
+  instante; lê bobinas 9000, lâmpadas 9008, saídas 10205 e bobinas ladder). Um Wine por vez.
+
 ## Quando pedir esclarecimento (pontos de parada)
 
 Pare e pergunte (em vez de chutar) quando:
@@ -99,10 +121,10 @@ Pare e pergunte (em vez de chutar) quando:
 - **Faltam rótulos/nomes** que os testes precisam (botões `-S0/-S1`, contatores, térmicos) — proponha o padrão
   `-S0` desliga, `-S1/-S2` ligam, `-KMn`, `-RTn`, `-Hn`, `-Qn`, `-Fn`, e peça confirmação se o enunciado tiver outro.
 - **O enunciado pede algo fora da DSL v1**: temporizador/estrela-triângulo, CLP/ladder, inversor, soft-starter,
-  ramos aninhados, comando em 2 pontos de liga. Diga o limite e ofereça a alternativa (`cad_build` com `conexoes`,
+  ramos aninhados, comando em 2 pontos de liga. (CLP/ladder e temporizador TON **estao** cobertos: veja
+  "CLP + ladder" abaixo.) Diga o limite e ofereça a alternativa (`cad_build` com `conexoes`,
   ou simplificar) — não entregue um circuito "parecido" como se fosse o pedido.
-  **CLP/ladder**: a semântica e o contrato da DSL `ladder/1` estão especificados (`docs/ladder.md`, exemplos
-  `tools/examples/*.ladder.json`), mas o gerador ainda **não** os compila (port em Rust). Até lá, diga isso.
+  **CLP/ladder**: use a DSL `ladder/1` (seção abaixo); `cad_design` a compila e testa.
 - **Número de motores/fases/tensão** não estão claros, ou há **sinalização/emergência** só insinuada.
 - **O gate falhou 3 vezes seguidas com o mesmo erro**: pare, leia `cad_pins`/`docs/dsl-layout.md`, e relate o
   bloqueio ao usuário com o erro literal em vez de contornar o gate.

@@ -1,0 +1,761 @@
+{
+ "titulo": "PRATICA 5 COMPLEMENTAR - PARTIDA INTERCALADA COM TERMICOS",
+ "dsl": "ladder/1",
+ "layout": {
+  "clp": {
+   "id": "CLP1",
+   "classe": "10206",
+   "rotulo": "-CLP",
+   "alimentacao": {
+    "fonte": {
+     "id": "X2",
+     "classe": "3011",
+     "rotulo": "-X"
+    },
+    "protecao": [
+     "DJ1p",
+     "6002",
+     "DJ1"
+    ]
+   },
+   "entradas": [
+    {
+     "operando": "I0.1",
+     "dispositivo": [
+      "B0",
+      "8001",
+      "B0"
+     ]
+    },
+    {
+     "operando": "I0.2",
+     "dispositivo": [
+      "B1",
+      "8000",
+      "B1"
+     ]
+    },
+    {
+     "operando": "I0.3",
+     "dispositivo": [
+      "DJ1a",
+      "8016",
+      "DJ1"
+     ]
+    },
+    {
+     "operando": "I0.4",
+     "dispositivo": [
+      "RT1n",
+      "8017",
+      "RT1"
+     ]
+    },
+    {
+     "operando": "I0.5",
+     "dispositivo": [
+      "RT2n",
+      "8017",
+      "RT2"
+     ]
+    },
+    {
+     "operando": "I0.6",
+     "dispositivo": [
+      "RT1a",
+      "8016",
+      "RT1"
+     ]
+    },
+    {
+     "operando": "I0.7",
+     "dispositivo": [
+      "RT2a",
+      "8016",
+      "RT2"
+     ]
+    }
+   ],
+   "saidas": [
+    {
+     "operando": "Q0.1",
+     "carga": [
+      [
+       "C1",
+       "9000",
+       "C1"
+      ],
+      [
+       "H1",
+       "9008",
+       "H1"
+      ]
+     ]
+    },
+    {
+     "operando": "Q0.2",
+     "carga": [
+      [
+       "C2",
+       "9000",
+       "C2"
+      ],
+      [
+       "H2",
+       "9008",
+       "H2"
+      ]
+     ]
+    },
+    {
+     "operando": "Q0.4",
+     "carga": [
+      "H3",
+      "9008",
+      "H3"
+     ]
+    },
+    {
+     "operando": "Q0.5",
+     "carga": [
+      "H4",
+      "9008",
+      "H4"
+     ]
+    }
+   ]
+  },
+  "potencia": {
+   "tipo": "dj_comum",
+   "fonte": {
+    "classe": "3005",
+    "rotulo": "-X"
+   },
+   "disjuntor": [
+    "DJ1",
+    "6003",
+    "DJ1"
+   ],
+   "motores": [
+    {
+     "contator": "C1",
+     "termico": "RT1",
+     "motor": "M1"
+    },
+    {
+     "contator": "C2",
+     "termico": "RT2",
+     "motor": "M2"
+    }
+   ]
+  },
+  "ladder": {
+   "fonte": {
+    "id": "XL",
+    "classe": "3008",
+    "rotulo": "+L"
+   },
+   "trilho_direito": "aberto",
+   "rungs": [
+    {
+     "id": "R1",
+     "comentario": "M1: I0.3.I0.1.PERMISSAO.(I0.2+Q0.1+Q0.3)./Q0.2",
+     "logica": {
+      "serie": [
+       [
+        "NA",
+        "I0.3"
+       ],
+       [
+        "NA",
+        "I0.1"
+       ],
+       [
+        "NA",
+        "I0.4"
+       ],
+       [
+        "NA",
+        "I0.5"
+       ],
+       {
+        "paralelo": [
+         [
+          "NA",
+          "I0.2"
+         ],
+         [
+          "NA",
+          "Q0.1"
+         ],
+         [
+          "NA",
+          "Q0.3"
+         ]
+        ]
+       },
+       [
+        "NF",
+        "Q0.2"
+       ]
+      ]
+     },
+     "saida": [
+      "OUT",
+      "Q0.1"
+     ]
+    },
+    {
+     "id": "R2",
+     "comentario": "M2 apos 1 s de M1 (corrigido: bobina Q0.2)",
+     "logica": {
+      "serie": [
+       [
+        "NA",
+        "I0.3"
+       ],
+       [
+        "NA",
+        "I0.1"
+       ],
+       [
+        "NA",
+        "I0.4"
+       ],
+       [
+        "NA",
+        "I0.5"
+       ],
+       {
+        "paralelo": [
+         [
+          "NA",
+          "Q0.1"
+         ],
+         [
+          "NA",
+          "Q0.2"
+         ]
+        ]
+       },
+       [
+        "TON",
+        "T1",
+        {
+         "tempo": 1,
+         "base": "1s"
+        }
+       ],
+       [
+        "NF",
+        "Q0.3"
+       ]
+      ]
+     },
+     "saida": [
+      "OUT",
+      "Q0.2"
+     ]
+    },
+    {
+     "id": "R3",
+     "comentario": "volta p/ M1 apos 1 s de M2",
+     "logica": {
+      "serie": [
+       [
+        "NA",
+        "I0.3"
+       ],
+       [
+        "NA",
+        "I0.1"
+       ],
+       [
+        "NA",
+        "Q0.2"
+       ],
+       [
+        "NF",
+        "Q0.1"
+       ],
+       [
+        "TON",
+        "T2",
+        {
+         "tempo": 1,
+         "base": "1s"
+        }
+       ]
+      ]
+     },
+     "saida": [
+      "OUT",
+      "Q0.3"
+     ]
+    },
+    {
+     "id": "R4",
+     "comentario": "H3 sobrecarga M1",
+     "logica": [
+      "NA",
+      "I0.6"
+     ],
+     "saida": [
+      "OUT",
+      "Q0.4"
+     ]
+    },
+    {
+     "id": "R5",
+     "comentario": "H4 sobrecarga M2",
+     "logica": [
+      "NA",
+      "I0.7"
+     ],
+     "saida": [
+      "OUT",
+      "Q0.5"
+     ]
+    }
+   ]
+  },
+  "textos": [
+   {
+    "x": 24,
+    "y": 8,
+    "txt": "CIRCUITO DE COMANDO CLP"
+   },
+   {
+    "x": 219,
+    "y": 8,
+    "txt": "CIRCUITO DE POTENCIA MOTORES"
+   },
+   {
+    "x": 24,
+    "y": 136,
+    "txt": "CIRCUITO LADDER"
+   },
+   {
+    "x": 330,
+    "y": 18,
+    "txt": "TABELA DE I/O"
+   },
+   {
+    "x": 330,
+    "y": 24,
+    "txt": "I0.1 B0 DESLIGA (NF)"
+   },
+   {
+    "x": 330,
+    "y": 30,
+    "txt": "I0.2 B1 LIGA (NA)"
+   },
+   {
+    "x": 330,
+    "y": 36,
+    "txt": "I0.3 DJ1 aux. disjuntor"
+   },
+   {
+    "x": 330,
+    "y": 42,
+    "txt": "I0.4 RT1 NF (95-96)"
+   },
+   {
+    "x": 330,
+    "y": 48,
+    "txt": "I0.5 RT2 NF (95-96)"
+   },
+   {
+    "x": 330,
+    "y": 54,
+    "txt": "I0.6 RT1 alarme NA (97-98)"
+   },
+   {
+    "x": 330,
+    "y": 60,
+    "txt": "I0.7 RT2 alarme NA (97-98)"
+   },
+   {
+    "x": 330,
+    "y": 66,
+    "txt": "Q0.1 C1 (M1) e H1"
+   },
+   {
+    "x": 330,
+    "y": 72,
+    "txt": "Q0.2 C2 (M2) e H2"
+   },
+   {
+    "x": 330,
+    "y": 78,
+    "txt": "Q0.3 memoria interna"
+   },
+   {
+    "x": 330,
+    "y": 84,
+    "txt": "Q0.4 H3 sobrecarga M1"
+   },
+   {
+    "x": 330,
+    "y": 90,
+    "txt": "Q0.5 H4 sobrecarga M2"
+   },
+   {
+    "x": 330,
+    "y": 100,
+    "txt": "LEGENDA: B botoeira DJ disjuntor"
+   },
+   {
+    "x": 330,
+    "y": 106,
+    "txt": "RT rele termico C contator H piloto"
+   },
+   {
+    "x": 330,
+    "y": 112,
+    "txt": "PERMISSAO = RT1_OK . RT2_OK (I0.4.I0.5)"
+   },
+   {
+    "x": 96,
+    "y": 8,
+    "txt": "PAINEL DE COMANDOS"
+   }
+  ]
+ },
+ "testes": [
+  {
+   "nome": "T1 repouso com DJ1 ligado",
+   "entradas": {
+    "DJ1": true
+   },
+   "status": "OK",
+   "esperado": [],
+   "esperado_lampadas": [],
+   "esperado_bits": {
+    "I0.1": 1,
+    "I0.3": 1,
+    "I0.4": 1,
+    "I0.5": 1,
+    "Q0.1": 0,
+    "Q0.2": 0
+   }
+  },
+  {
+   "nome": "T2 LIGA parte M1 (C1+H1)",
+   "status": "OK",
+   "sequencia": [
+    {
+     "nome": "repouso",
+     "entradas": {
+      "DJ1": true
+     },
+     "ticks": 3,
+     "esperado": []
+    },
+    {
+     "nome": "LIGA",
+     "entradas": {
+      "DJ1": true,
+      "B1": true
+     },
+     "ticks": 4,
+     "esperado": [
+      "C1"
+     ],
+     "esperado_lampadas": [
+      "H1"
+     ]
+    },
+    {
+     "nome": "solta (selo)",
+     "entradas": {
+      "DJ1": true
+     },
+     "ticks": 5,
+     "esperado": [
+      "C1"
+     ],
+     "esperado_lampadas": [
+      "H1"
+     ]
+    }
+   ]
+  },
+  {
+   "nome": "T3 alterna M1 -> M2 -> M1 a cada 1 s",
+   "status": "OK",
+   "sequencia": [
+    {
+     "nome": "LIGA",
+     "entradas": {
+      "DJ1": true,
+      "B1": true
+     },
+     "ticks": 4,
+     "esperado": [
+      "C1"
+     ],
+     "esperado_lampadas": [
+      "H1"
+     ]
+    },
+    {
+     "nome": "solta",
+     "entradas": {
+      "DJ1": true
+     },
+     "ticks": 6,
+     "esperado": [
+      "C1"
+     ],
+     "esperado_lampadas": [
+      "H1"
+     ]
+    },
+    {
+     "nome": "apos 1 s: M2",
+     "entradas": {
+      "DJ1": true
+     },
+     "ticks": 9,
+     "esperado": [
+      "C2"
+     ],
+     "esperado_lampadas": [
+      "H2"
+     ]
+    },
+    {
+     "nome": "apos mais 1 s: M1",
+     "entradas": {
+      "DJ1": true
+     },
+     "ticks": 11,
+     "esperado": [
+      "C1"
+     ],
+     "esperado_lampadas": [
+      "H1"
+     ]
+    }
+   ]
+  },
+  {
+   "nome": "T4 DESLIGA (B0) para tudo",
+   "status": "OK",
+   "sequencia": [
+    {
+     "nome": "LIGA",
+     "entradas": {
+      "DJ1": true,
+      "B1": true
+     },
+     "ticks": 4,
+     "esperado": [
+      "C1"
+     ]
+    },
+    {
+     "nome": "solta",
+     "entradas": {
+      "DJ1": true
+     },
+     "ticks": 5,
+     "esperado": [
+      "C1"
+     ]
+    },
+    {
+     "nome": "B0",
+     "entradas": {
+      "DJ1": true,
+      "B0": true
+     },
+     "ticks": 6,
+     "esperado": [],
+     "esperado_lampadas": []
+    },
+    {
+     "nome": "solta B0 (nao religa)",
+     "entradas": {
+      "DJ1": true
+     },
+     "ticks": 30,
+     "esperado": [],
+     "esperado_lampadas": []
+    }
+   ]
+  },
+  {
+   "nome": "T5 falha RT1 com M1 ligado: desliga tudo, H3, bloqueia LIGA",
+   "status": "OK",
+   "sequencia": [
+    {
+     "nome": "LIGA",
+     "entradas": {
+      "DJ1": true,
+      "B1": true
+     },
+     "ticks": 4,
+     "esperado": [
+      "C1"
+     ]
+    },
+    {
+     "nome": "solta",
+     "entradas": {
+      "DJ1": true
+     },
+     "ticks": 5,
+     "esperado": [
+      "C1"
+     ]
+    },
+    {
+     "nome": "RT1 atua",
+     "entradas": {
+      "DJ1": true,
+      "RT1": true
+     },
+     "ticks": 6,
+     "esperado": [],
+     "esperado_lampadas": [
+      "H3"
+     ],
+     "esperado_bits": {
+      "Q0.1": 0,
+      "Q0.2": 0
+     }
+    },
+    {
+     "nome": "LIGA bloqueado",
+     "entradas": {
+      "DJ1": true,
+      "RT1": true,
+      "B1": true
+     },
+     "ticks": 10,
+     "esperado": [],
+     "esperado_lampadas": [
+      "H3"
+     ]
+    },
+    {
+     "nome": "RT1 rearmado sem LIGA: nao religa",
+     "entradas": {
+      "DJ1": true
+     },
+     "ticks": 30,
+     "esperado": [],
+     "esperado_lampadas": []
+    }
+   ]
+  },
+  {
+   "nome": "T6 falha RT2 com M2 ligado: desliga tudo, H4, bloqueia LIGA",
+   "status": "OK",
+   "sequencia": [
+    {
+     "nome": "LIGA",
+     "entradas": {
+      "DJ1": true,
+      "B1": true
+     },
+     "ticks": 4,
+     "esperado": [
+      "C1"
+     ]
+    },
+    {
+     "nome": "solta ate M2",
+     "entradas": {
+      "DJ1": true
+     },
+     "ticks": 15,
+     "esperado": [
+      "C2"
+     ]
+    },
+    {
+     "nome": "RT2 atua",
+     "entradas": {
+      "DJ1": true,
+      "RT2": true
+     },
+     "ticks": 6,
+     "esperado": [],
+     "esperado_lampadas": [
+      "H4"
+     ],
+     "esperado_bits": {
+      "Q0.1": 0,
+      "Q0.2": 0
+     }
+    },
+    {
+     "nome": "LIGA bloqueado",
+     "entradas": {
+      "DJ1": true,
+      "RT2": true,
+      "B1": true
+     },
+     "ticks": 10,
+     "esperado": [],
+     "esperado_lampadas": [
+      "H4"
+     ]
+    },
+    {
+     "nome": "RT2 rearmado sem LIGA: nao religa",
+     "entradas": {
+      "DJ1": true
+     },
+     "ticks": 30,
+     "esperado": [],
+     "esperado_lampadas": []
+    }
+   ]
+  },
+  {
+   "nome": "T7 rearme + novo LIGA religa M1",
+   "status": "OK",
+   "sequencia": [
+    {
+     "nome": "RT1 atuado",
+     "entradas": {
+      "DJ1": true,
+      "RT1": true
+     },
+     "ticks": 6,
+     "esperado": [],
+     "esperado_lampadas": [
+      "H3"
+     ]
+    },
+    {
+     "nome": "rearmado",
+     "entradas": {
+      "DJ1": true
+     },
+     "ticks": 10,
+     "esperado": [],
+     "esperado_lampadas": []
+    },
+    {
+     "nome": "novo LIGA",
+     "entradas": {
+      "DJ1": true,
+      "B1": true
+     },
+     "ticks": 4,
+     "esperado": [
+      "C1"
+     ],
+     "esperado_lampadas": [
+      "H1"
+     ]
+    }
+   ]
+  }
+ ]
+}
