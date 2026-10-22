@@ -175,6 +175,72 @@ def test_cad_design_classe_inexistente(tmp_path):
     assert not r["ok"] and r["erros"]
 
 
+# --- A11: recusa de classe sem modelo -------------------------------------------------
+
+def _spec_com_classe(classe):
+    d = _ex("partida_direta")
+    d["layout"]["comando"][0]["serie"].append(["X9", classe, "-X9"])
+    return d
+
+
+def test_cad_design_recusa_pneumatica_10500(tmp_path):
+    r = _design(_spec_com_classe("10500"), tmp_path / "p.cad")
+    assert not r["ok"]
+    assert any("classe 10500" in e and "sem modelo" in e for e in r["erros"]), r["erros"]
+    assert any("10500-10599" in e for e in r["erros"])
+    assert r["proximo_passo"].startswith("Troque")
+
+
+def test_cad_design_recusa_9007_e_sensor_7501(tmp_path):
+    r = _design(_spec_com_classe("9007"), tmp_path / "t.cad")
+    assert not r["ok"]
+    assert any("classe 9007" in e and "sem modelo" in e for e in r["erros"]), r["erros"]
+    r = _design(_spec_com_classe("7501"), tmp_path / "s.cad")
+    assert not r["ok"]
+    assert any("classe 7501" in e and "3 fios" in e for e in r["erros"]), r["erros"]
+
+
+def test_cad_design_recusa_grafcet_ladder_plc_protecao(tmp_path):
+    for classe, trecho in (("10100", "GRAFCET"), ("10052", "ladder"),
+                           ("10202", "CLP"), ("6015", "protecao")):
+        r = _design(_spec_com_classe(classe), tmp_path / f"{classe}.cad")
+        assert not r["ok"], classe
+        assert any(f"classe {classe}" in e and "sem modelo" in e and trecho in e
+                   for e in r["erros"]), (classe, r["erros"])
+
+
+def test_cad_design_outro_gera_aviso_nao_erro(tmp_path):
+    import build_spec
+    ev, av = build_spec.conferir_classes_em_spec({"layout": {"comando": [{"serie": [["X", "1072", "-X"]]}]}})
+    assert not ev and any("classe 1072" in a for a in av), (ev, av)
+    r = _design(_spec_com_classe("1050"), tmp_path / "o.cad")  # resistencia: 2 pinos, compila
+    assert any("classe 1050" in a for a in r["avisos"]), (r["avisos"], r["erros"])
+    assert not any("classe 1050" in e and "sem modelo" in e for e in r["erros"])
+
+
+def test_cad_gate_recusa_classe_sem_modelo_mesmo_com_testes_ok(tmp_path):
+    d = _ex("partida_direta")
+    out = tmp_path / "g.cad"
+    assert _design(d, out)["ok"]
+    raw = out.read_text(encoding="latin1")
+    assert "*9008#-H1" in raw
+    ruim = tmp_path / "g9007.cad"
+    ruim.write_text(raw.replace("*9008#-H1", "*9007#-H1"), encoding="latin1")
+    testes = [{"nome": "S1 liga KM1", "entradas": {"S1": True}, "esperado": ["KM1"], "status": "OK"}]
+    r = json.loads(C.cad_gate(str(ruim), json.dumps(testes)))
+    assert r["gate"]["testes"]["ok"], r  # o teste funcional passa: o 9007 e ignorado (falso verde)
+    assert not r["ok"], r
+    assert any("classe 9007" in e and "sem modelo" in e for e in r["erros"]), r["erros"]
+
+
+def test_cad_design_partida_direta_e_ladder_continuam_verdes(tmp_path):
+    assert _design(_ex("partida_direta"), tmp_path / "p.cad")["ok"]
+    for nome in ("partida_direta", "reversao", "intercalada",
+                 "pratica5_complementar", "partida_sequencial_3"):
+        r = _design(_ex(f"{nome}.ladder"), tmp_path / f"{nome}.cad")
+        assert r["ok"], (nome, r["erros"])
+
+
 # --- cad_gate -----------------------------------------------------------------
 
 def test_cad_gate_em_cad_existente(tmp_path):

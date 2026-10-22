@@ -392,6 +392,8 @@ def _proximo_passo(r, path):
             return f"Ligue o pino solto: {e}. Depois chame cad_design de novo."
         if e.startswith("sem testes") or e.startswith("teste"):
             return f"Ajuste os testes ou o circuito: {e}. Depois chame cad_design de novo."
+        if e.startswith("classe "):
+            return f"Troque o componente sem modelo: {e}. Depois chame cad_design de novo."
         return f"Corrija: {e}. Depois chame cad_design de novo."
     return "Revise o relatorio do gate."
 
@@ -469,7 +471,8 @@ def cad_gate(path: str, testes_json: str = "[]") -> str:
         r["fios"] = {"ok": None, "atravessam": []}
         return json.dumps(_relatorio(r, path), ensure_ascii=False, indent=1)
     build_spec.gate(path, testes, r)
-    r["ok"] = bool(r["testes"]["ok"] and not r["geo"]["curtos"] and not r["geo"]["soltos"])
+    r["ok"] = bool(r["testes"]["ok"] and not r["geo"]["curtos"] and not r["geo"]["soltos"]
+                   and not r.get("sem_modelo"))
     return json.dumps(_relatorio(r, path), ensure_ascii=False, indent=1)
 
 
