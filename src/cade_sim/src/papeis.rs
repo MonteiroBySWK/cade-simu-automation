@@ -149,6 +149,13 @@ fn derivar(cid: &str, v: &Value) -> Option<Papel> {
         "temporizador_OFF" => return Some(Papel::Temporizador(TipoTemp::Tof)),
         "temporizador_ON_OFF" => return Some(Papel::Temporizador(TipoTemp::TonTof)),
         "temporizador_intermitente" => return Some(Papel::Temporizador(TipoTemp::Intermitente)),
+        "sensor_NA" | "sensor_NC" => {
+            // so 2 fios viram contato; 3+ fios (PNP/NPN) seguem sem modelo (A11 recusa)
+            if v.get("pinos")?.as_array()?.len() != 2 {
+                return None;
+            }
+            return Some(Papel::Contato { modo: if papel.ends_with("NC") { Modo::Nc } else { Modo::Na } });
+        }
         _ => {}
     }
     let contatos = v.get("contatos")?.as_array()?;
@@ -220,4 +227,11 @@ mod tests {
         // pulso (9015): ainda sem modelo
         assert!(t.get("9015").is_none());
     }
+    #[test]
+    fn sensores_2_fios_viram_contato_e_3_fios_ficam_sem_modelo() {
+        let t = Papeis::padrao();
+        assert_eq!(t.get("7500"), Some(&Papel::Contato { modo: Modo::Na }));
+        assert!(t.get("7501").is_none(), "3 fios (PNP) ainda sem modelo");
+    }
+
 }
