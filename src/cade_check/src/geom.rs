@@ -31,6 +31,17 @@ pub const SKIP: [&str; 12] = [
 ];
 /// Fontes que estampam fase por pino (`geo_check.FONTE`).
 pub const FONTE: [&str; 10] = ["3000", "3001", "3002", "3003", "3004", "3005", "3006", "3007", "3011", "3012"];
+/// Classes que escolhem o gate do ladder (`tem_clp` de `tools/clp_sim.py`): CPU/entradas/saidas
+/// do CLP, fonte do trilho, bobinas ladder, TON e contatos ladder.
+pub const CLASSES_CLP: [&str; 10] =
+    ["10206", "10204", "10205", "3008", "10060", "10061", "10062", "10066", "10050", "10051"];
+
+/// `tem_clp` do Python: True se o desenho tem CPU/entradas/saidas de CLP ou elementos ladder.
+/// Circuito com CLP segue o gate do ladder (`gate_clp` de `tools/ladder_dsl.py`): geo com o pino B
+/// das bobinas ladder permitido, sem `wires_check`, testes no modelo geometrico por ticks.
+pub fn tem_clp(ents: &[cade_model::Entidade]) -> bool {
+    ents.iter().any(|e| CLASSES_CLP.contains(&e.id.as_str()))
+}
 
 /// Ponto da folha em unidades do `.cad`.
 pub type Ponto = (i64, i64);

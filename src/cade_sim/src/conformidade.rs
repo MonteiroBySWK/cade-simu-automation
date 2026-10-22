@@ -16,8 +16,9 @@
 //! mostra). Conjuntos comparam sem ordem.
 
 use crate::circuito::{Circuito, Entradas, EstadoSim, Status};
+use crate::ladder::{self, CircuitoClp};
 use serde_json::{json, Map, Value};
-use std::collections::BTreeSet;
+use std::collections::{BTreeMap, BTreeSet};
 use std::fs;
 use std::path::Path;
 
@@ -70,7 +71,7 @@ pub struct Observacao {
     pub i: usize,
     pub t_ms: u64,
     pub estado: EstadoSim,
-    /// saidas do CLP (ladder ainda nao implementado: sempre vazio)
+    /// saidas do CLP (10205 com bit 1 no estado assentado; vazio em circuito sem CLP)
     pub saidas_clp: Vec<String>,
 }
 
@@ -120,6 +121,61 @@ pub fn executar(c: &Circuito, cen: &Cenario) -> Result<Vec<Observacao>, String> 
         }
         let estado = c.avancar(&mut st, &ent, avanca);
         obs.push(Observacao { i, t_ms, estado, saidas_clp: vec![] });
+    }
+    Ok(obs)
+}
+
+/// Executa o cenario no motor ladder (circuito com CLP): cada acao troca as entradas e
+/// assenta (`regime`); `esperar` avanca N ticks de 100 ms (`rodar`); `reiniciar` zera tudo.
+/// `saidas_clp` = saidas 10205 com bit 1 no estado assentado.
+pub fn executar_clp(c: &CircuitoClp, cen: &Cenario) -> Result<Vec<Observacao>, String> {
+    let valido = |k: &str| c.entradas.iter().any(|e| e == k) || c.bobinas_fisicas().iter().any(|b| b == k);
+    let mut ent: BTreeMap<String, bool> = BTreeMap::new();
+    let mut est = c.estado_zero(&[]);
+    let mut t_ms = 0u64;
+    let mut obs = Vec::new();
+    for (i, a) in cen.acoes.iter().enumerate() {
+        let (novo, r) = match a {
+            Acao::Pressionar(k) | Acao::Soltar(k) | Acao::Alternar(k) => {
+                if !valido(k) {
+                    return Err(format!("acao {i}: rotulo {k:?} nao existe no circuito (entradas: {:?})", c.entradas));
+                }
+                match a {
+                    Acao::Pressionar(_) => ent.insert(k.clone(), true),
+                    Acao::Soltar(_) => ent.insert(k.clone(), false),
+                    _ => ent.insert(k.clone(), !ent.get(k).copied().unwrap_or(false)),
+                };
+                c.regime(&ent, Some(est), ladder::MAX_TICKS)
+            }
+            Acao::Esperar(ms) => {
+                t_ms += ms;
+                c.rodar(&ent, (*ms as f64 / 100.0).round() as i64, Some(est))
+            }
+            Acao::Reiniciar => {
+                ent.clear();
+                est = c.estado_zero(&[]);
+                c.regime(&ent, Some(est.clone()), ladder::MAX_TICKS)
+            }
+        };
+        est = novo;
+        obs.push(Observacao {
+            i,
+            t_ms,
+            estado: EstadoSim {
+                status: match r.status.as_str() {
+                    "CURTO" => Status::Curto,
+                    "INDEFINIDO" => Status::Race,
+                    "OSCILA" => Status::Instavel,
+                    _ => Status::Ok,
+                },
+                bobinas: r.bobinas,
+                lampadas: r.lampadas,
+                motores: vec![],
+                temporizadores: vec![],
+                curtos: r.curtos,
+            },
+            saidas_clp: c.saidas_energizadas(&est),
+        });
     }
     Ok(obs)
 }
@@ -284,10 +340,17 @@ pub fn rodar_caso(dir: &Path) -> RelCaso {
     let nome = dir.file_name().map(|n| n.to_string_lossy().into_owned()).unwrap_or_default();
     let mut r = RelCaso { nome, fonte: String::new(), resultado: Resultado::Erro, passos: 0, erro: None, diffs: vec![] };
     let res: Result<(), String> = (|| {
-        let c = Circuito::abrir(&dir.join("circuito.cad").to_string_lossy())?;
+        let raw = fs::read(dir.join("circuito.cad")).map_err(|e| format!("{}: {e}", dir.join("circuito.cad").display()))?;
         let cen = Cenario::de_json(&le_json(&dir.join("cenario.json"))?)?;
         r.passos = cen.acoes.len();
-        let obs = executar(&c, &cen)?;
+        // circuito com CLP: motor ladder por ticks (preenche `saidas_clp`); senao o eletrico
+        let obs = if ladder::tem_clp(&raw) {
+            let clp = CircuitoClp::de_bytes(&raw)?;
+            executar_clp(&clp, &cen)?
+        } else {
+            let c = Circuito::de_bytes(&raw, crate::papeis::Papeis::padrao())?;
+            executar(&c, &cen)?
+        };
         let gp = dir.join("golden_app.json");
         if !gp.is_file() {
             r.resultado = Resultado::SemGolden;

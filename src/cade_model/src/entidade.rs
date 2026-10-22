@@ -65,6 +65,70 @@ fn corta_ultimo(s: &str) -> (&str, &str) {
     }
 }
 
+/// `prefixo_ent` sem o `#` inicial: `*` ja consumido, `i` aponta para o 1o digito.
+fn prefixo_ent_sem_hash(b: &[u8], i: usize) -> Option<usize> {
+    if b.get(i) != Some(&b'*') {
+        return None;
+    }
+    prefixo_ent(b, i + 1)
+}
+
+/// Fim da 1a entidade quando colada (`_desgruda` do Python em `tools/dissect.py`):
+/// `#((?:\*-?\d+){4,})#([^#*]*)(?=\*\d+\*-?\d+#)`. Quando a string final da entidade nao e
+/// vazia (IP do CPU 10206, texto da classe 8), a proxima entidade vem colada sem `#`:
+/// `...*31*32#192.128.0.1*26*10204#...`. Devolve o indice onde a 2a entidade comeca
+/// (`m.end()` do Python), ou `None` se `b[i..]` nao casa (com `b[i] == b'#'`).
+fn fim_grudada(b: &[u8], i: usize) -> Option<usize> {
+    let mut j = i + 1;
+    let mut n = 0;
+    loop {
+        if b.get(j) != Some(&b'*') {
+            break;
+        }
+        j += 1;
+        if b.get(j) == Some(&b'-') {
+            j += 1;
+        }
+        let k = j;
+        while j < b.len() && b[j].is_ascii_digit() {
+            j += 1;
+        }
+        if j == k {
+            return None;
+        }
+        n += 1;
+    }
+    if n < 4 || b.get(j) != Some(&b'#') {
+        return None;
+    }
+    j += 1;
+    while j < b.len() && b[j] != b'#' && b[j] != b'*' {
+        j += 1;
+    }
+    if prefixo_ent_sem_hash(b, j).is_some() { Some(j) } else { None }
+}
+
+/// `_desgruda` do Python: separa entidades coladas pela string final nao vazia.
+fn desgrudar(e: &str) -> Vec<String> {
+    let b = e.as_bytes();
+    let mut out = Vec::new();
+    let mut ini = 0;
+    let mut i = 0;
+    while i < b.len() {
+        if b[i] == b'#' {
+            if let Some(fim) = fim_grudada(b, i) {
+                out.push(e[ini..fim].to_string());
+                ini = fim;
+                i = fim;
+                continue;
+            }
+        }
+        i += 1;
+    }
+    out.push(e[ini..].to_string());
+    out
+}
+
 /// `split_entities`: header ate o 1o `#` que antecede `*N*ID#`, entidades, footer a partir de `$$$`.
 pub fn split_entities(d: &str) -> Result<Particao, String> {
     let b = d.as_bytes();
@@ -82,11 +146,11 @@ pub fn split_entities(d: &str) -> Result<Particao, String> {
     let mut prev = 0;
     for i in 0..bb.len() {
         if inicio_ent(bb, i) {
-            ents.push(body[prev..i].to_string());
+            ents.extend(desgrudar(&body[prev..i]));
             prev = i + 1;
         }
     }
-    ents.push(body[prev..].to_string());
+    ents.extend(desgrudar(&body[prev..]));
     Ok(Particao { header: header.to_string(), ents, footer: footer.to_string() })
 }
 
@@ -211,5 +275,27 @@ mod tests {
         assert!(bloco_nums("*0*-12*3"));
         assert!(!bloco_nums("*0*a"));
         assert!(!bloco_nums(""));
+    }
+
+    #[test]
+    fn desgruda_entidade_com_string_final() {
+        // IP do 10206 cola a proxima entidade sem `#` (tools/dissect.py `_desgruda`)
+        let d = "CADe_SIMU*0*3004#-X#*0*0*0*0*93*45#*49*10206#-CLP#*0*0*0*0*196*45*0*0*0#192.128.0.1*50*4000##*0*0*0*0*196*18*196*45*0#$$$*0*1&&&";
+        let p = split_entities(d).unwrap();
+        assert_eq!(p.ents.len(), 2, "{:?}", p.ents);
+        let cpu = parse_ent(&p.ents[0]).unwrap();
+        assert_eq!(cpu.id, "10206");
+        let fio = parse_ent(&p.ents[1]).unwrap();
+        assert_eq!((fio.seq.as_str(), fio.id.as_str()), ("50", "4000"));
+        assert_eq!(fio.nums[4], "196");
+    }
+
+    #[test]
+    fn desgruda_nao_quebra_entidade_normal() {
+        // bloco de nums no fim, sem string colada: nada para separar
+        let p = split_entities(MINI).unwrap();
+        assert_eq!(p.ents.len(), 1);
+        let q = split_all(MINI).unwrap();
+        assert_eq!(q.ents.len(), 2);
     }
 }
