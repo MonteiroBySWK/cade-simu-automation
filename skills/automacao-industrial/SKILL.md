@@ -109,15 +109,15 @@ Série só passa se fechada; paralelo liga se *qualquer* ramo fechar.
 | Fonte "L1 só" ou sem fonte | circuito "não simula" no app | fonte `3007` (ou `3006`/`3003`) ligada aos trilhos |
 | Contato da bobina com rótulo diferente | selo/intertravamento não fecha nos testes | rótulo do contato = rótulo da bobina (`-KM1`) |
 | Série longa / muitos ramos | `layout invalido: ... fora da folha` | menos elementos por série; dividir em blocos `comando` |
-| **Classe sem modelo** (A11) | `classe ... sem modelo` | **troque o componente, não insista**: pneumática/GRAFCET, sensor 3 fios, `9007`, instruções de ladder não portadas — o gate não vai passar por repetição |
+| **Classe sem modelo** (A11) | `classe ... sem modelo` | **troque o componente, não insista**: pneumática/GRAFCET, sensor 3 fios, `9015` (pulso), instruções de ladder não portadas — o gate não vai passar por repetição |
 
 ### Classe sem modelo (A11): troque, não insista
 
 Se o gate falhar com "classe ... sem modelo", **não tente de novo com a mesma classe nem
 contorne o gate**: o componente não tem modelo geométrico/lógico (pneumática/GRAFCET,
-sensor 3 fios, `9007` intermitente/pulso, instruções de ladder ainda não portadas — ver
+sensor 3 fios, `9015` gerador de pulsos, instruções de ladder ainda não portadas — ver
 `docs/TODO.md` A3/A4/A5/A10/A11). Troque por um equivalente suportado (ex.: contato de
-2 fios no lugar do sensor, TON 10066 no lugar do 9007) ou declare o limite ao usuário.
+2 fios no lugar do sensor, TON 10066 ou 9004..9007 no lugar do 9015) ou declare o limite ao usuário.
 
 ### Gravando goldens (só para validar no app, com Wine)
 

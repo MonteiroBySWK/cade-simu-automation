@@ -240,6 +240,146 @@ def _papeis_timer(tipo, tempo):
     return p
 
 
+# --- temporizadores-carga 9004..9007 + contatos 7004..7015 ----------------------------------------
+
+def _circ_timer(tmp_path, carga, contato, nome, rot="-KT1", rot_carga=None):
+    """Circuito de 2 ramos: S1 alimenta a carga; o contato de mesmo rotulo comanda H1."""
+    spec = {"titulo": nome, "layout": {
+        "trilhos": {"L1": 14, "L2": 20, "L3": 26, "N": 282, "x0": 25, "x1": 395, "PE": 291},
+        "fontes": [{"id": "X1", "classe": "3007", "rotulo": "-X",
+                    "pinos": {"L1": "L1", "L2": "L2", "L3": "L3", "N": "N", "PE": "PE"}}],
+        "comando": [
+            {"id": "m1", "de": "L1", "para": "N", "serie": [["S1", "8000", "-S1"]],
+             "ramos": [{"carga": ["KT1", carga, rot_carga or rot]}]},
+            {"id": "m2", "de": "L1", "para": "N", "serie": [["T1", contato, rot]],
+             "ramos": [{"carga": ["H1", "9008", "-H1"]}]},
+        ],
+        "testes": []}}
+    return ns.Circuito(_build(spec, tmp_path / f"{nome}.cad"))
+
+
+def test_tempo_do_temporizador_labels():
+    t = ns.Circuito._tempo_do_temporizador
+    base = ["-KT1", "", "A1", "A2"]
+    assert t(base + ["0", "5"]) == 5.0      # proto do 9004 no symbol_lib: unidade s, tempo 5
+    assert t(base + ["3", "10"]) == 1.0     # x0,1 s: 10 ticks de 100 ms
+    assert t(base + ["1", "1"]) == 10.0     # x10 s
+    assert t(base + ["2", "1"]) == 100.0    # rotulo x60 s do dialogo = x1000 ticks no codigo
+    assert t(base + ["9", "5"]) == 0.5      # unidade desconhecida: x1 tick (0,5 s)
+    assert t(base + ["0", "0.5"]) == 0.0    # atoi do C: fracao vira 0 (comuta no 1o tick)
+    assert t(base) == 0.0                  # sem labels: 0 s
+
+
+def test_9004_on_delay_liga_via_7004(tmp_path):
+    c = _circ_timer(tmp_path, "9004", "7004", "timer_on")
+    assert [t["tipo"] for t in c._tim] == ["ton"]
+    assert c._cont and all(x["fonte"] == "timer" for x in c._cont if x["chave"] == "KT1")
+    assert c.estado({"S1": True}, avanca=1.9, tempos={"KT1": 2})["lampadas"] == []
+    e = c.estado({"S1": True}, avanca=2, tempos={"KT1": 2})
+    assert e["lampadas"] == ["H1"] and e["temporizadores"]["KT1"]["saida"] is True
+    assert c.estado({}, avanca=0, tempos={"KT1": 2})["lampadas"] == []   # sem S1 o timer nao parte
+    st = c.novo_estado(tempos={"KT1": 2})
+    c.avancar(st, {"S1": True}, 2)
+    assert c.avancar(st, {}, 0)["lampadas"] == []                        # desenergizou: abre na hora
+
+
+def test_9005_off_delay_segura_via_7008(tmp_path):
+    c = _circ_timer(tmp_path, "9005", "7008", "timer_off")
+    assert [t["tipo"] for t in c._tim] == ["tof"]
+    st = c.novo_estado(tempos={"KT1": 3})
+    assert c.avancar(st, {"S1": True}, 0)["lampadas"] == ["H1"]          # fecha na hora
+    assert c.avancar(st, {}, 2.9)["lampadas"] == ["H1"]                 # comando caiu: segura 3 s
+    assert c.avancar(st, {}, 0.1)["lampadas"] == []                     # 3 s completos: abre
+
+
+def test_9006_on_off_nos_dois_sentidos(tmp_path):
+    c = _circ_timer(tmp_path, "9006", "7012", "timer_onoff")
+    assert [t["tipo"] for t in c._tim] == ["tonof"]
+    st = c.novo_estado(tempos={"KT1": 2})
+    c.avancar(st, {"S1": True}, 1.9)
+    assert c.avancar(st, {"S1": True}, 0.1)["lampadas"] == ["H1"]        # ligou apos 2 s
+    assert c.avancar(st, {}, 1.9)["lampadas"] == ["H1"]                  # soltou: segura 2 s
+    assert c.avancar(st, {}, 0.1)["lampadas"] == []                      # apagou
+
+
+def test_9007_intermitente_alterna_e_para(tmp_path):
+    c = _circ_timer(tmp_path, "9007", "7004", "timer_pisca")
+    assert [t["tipo"] for t in c._tim] == ["intermitente"]
+    st = c.novo_estado(tempos={"KT1": 1})
+    passos = [c.avancar(st, {"S1": True}, 0.5) for _ in range(6)]
+    assert [e["temporizadores"]["KT1"]["saida"] for e in passos] == [False, True, True, False, False, True]
+    assert passos[1]["lampadas"] == ["H1"] and passos[3]["lampadas"] == []   # lampada segue o pisca
+    e = c.avancar(st, {}, 0.5)
+    assert e["lampadas"] == [] and e["temporizadores"]["KT1"]["saida"] is False  # parou em 0
+
+
+def test_contato_NC_temporizado(tmp_path):
+    c = _circ_timer(tmp_path, "9004", "7005", "timer_nc")               # NC do ON-delay
+    assert c.estado({"S1": True}, avanca=0, tempos={"KT1": 2})["lampadas"] == ["H1"]  # fechado antes de T
+    assert c.estado({"S1": True}, avanca=2, tempos={"KT1": 2})["lampadas"] == []      # abre apos T
+
+
+def test_tipo_vem_do_timer_mesmo_rotulo(tmp_path):
+    """7008 e OFF por classe, mas com 9004 (ON) de mesmo rotulo segue o ON."""
+    c = _circ_timer(tmp_path, "9004", "7008", "timer_tipo_do_timer")
+    assert c.estado({"S1": True}, avanca=1.9, tempos={"KT1": 2})["lampadas"] == []
+    assert c.estado({"S1": True}, avanca=2, tempos={"KT1": 2})["lampadas"] == ["H1"]
+
+
+def test_contato_temp_sem_timer_mesmo_rotulo(tmp_path):
+    """7004 sem 9004 de mesmo rotulo: NA abre (NC 7005 fecha); sem contagem propria."""
+    c = _circ_timer(tmp_path, "9000", "7004", "timer_sem_timer", rot_carga="-KM1")
+    assert not c._tim
+    assert c.estado({"S1": True}, avanca=100)["lampadas"] == []
+    d = _circ_timer(tmp_path, "9000", "7005", "timer_sem_timer_nc", rot_carga="-KM1")
+    assert d.estado({"S1": True}, avanca=0)["lampadas"] == ["H1"]
+
+
+def test_ligacoes_multipar_por_fecha_quando():
+    assert ns._ligacoes_re("7006", {"pinos": ["55", "57", "56", "58"], "contatos": [
+        {"pinos": ["55", "56"], "fecha_quando": "estado==0"},
+        {"pinos": ["57", "58"], "fecha_quando": "estado==1"}]}) == [(["p1", "p3"], "NC"), (["p2", "p4"], "NA")]
+    assert ns._ligacoes_re("7004", {"pinos": ["67", "68"], "contatos": [
+        {"pinos": ["67", "68"], "fecha_quando": "estado==1"}]}) == [(["p1", "p2"], "NA")]
+    assert ns._ligacoes_re("7004", {"pinos": ["67"], "contatos": [
+        {"pinos": ["67", "68"], "fecha_quando": "estado==1"}]}) == []     # pino fora: cai no par padrao
+    assert ns._ligacoes_re("7004", {}) == []
+
+
+def test_7006_dois_pares_seguem_o_timer(tmp_path):
+    """7006 NA-NC (55-56 NC, 57-58 NA) com 9004 de mesmo rotulo: os 2 pares seguem a saida."""
+    import cade_mcp
+    sims = [{"classe": "3007", "x": 50, "y": 20, "rotulo": "-X", "id": "X1"},
+            {"classe": "8000", "x": 50, "y": 60, "rotulo": "-S1", "id": "S1"},
+            {"classe": "9004", "x": 50, "y": 120, "rotulo": "-KT1", "id": "KT1"},
+            {"classe": "7006", "x": 110, "y": 60, "rotulo": "-KT1", "id": "T1"},
+            {"classe": "9008", "x": 110, "y": 110, "rotulo": "-H1", "id": "H1"},
+            {"classe": "9008", "x": 119, "y": 110, "rotulo": "-H2", "id": "H2"}]
+    fios = [{"x1": 50, "y1": 20, "x2": 50, "y2": 60},                     # trilho L1
+            {"x1": 68, "y1": 20, "x2": 68, "y2": 122},                   # trilho N (pino N da fonte)
+            {"x1": 68, "y1": 122, "x2": 68, "y2": 132},
+            {"x1": 50, "y1": 72, "x2": 50, "y2": 120},                   # S1.B -> KT1.A
+            {"x1": 50, "y1": 132, "x2": 68, "y2": 132},                  # KT1.B -> N
+            {"x1": 50, "y1": 60, "x2": 110, "y2": 60},                   # L1 -> p1 (55)
+            {"x1": 50, "y1": 60, "x2": 119, "y2": 60},                   # L1 -> p2 (57)
+            {"x1": 110, "y1": 72, "x2": 110, "y2": 110},                 # p3 (56) -> H1.A
+            {"x1": 110, "y1": 122, "x2": 68, "y2": 122},                 # H1.B -> N
+            {"x1": 119, "y1": 72, "x2": 119, "y2": 110},                 # p4 (58) -> H2.A
+            {"x1": 119, "y1": 122, "x2": 68, "y2": 122}]                 # H2.B -> N
+    out = str(tmp_path / "timer_7006.cad")
+    msg = cade_mcp.cad_build("TIMER_7006", json.dumps(sims), json.dumps(fios), out_path=out)
+    assert "ERRO" not in msg, msg
+    c = ns.Circuito(out)
+    assert not c.soltos, c.soltos
+    assert [t["tipo"] for t in c._tim] == ["ton"]
+    st = c.novo_estado(tempos={"KT1": 2})
+    e = c.avancar(st, {"S1": True}, 0)
+    assert e["lampadas"] == ["H1"], e                                     # NC conduz, NA abre
+    e = c.avancar(st, {"S1": True}, 2)
+    assert e["lampadas"] == ["H2"], e                                     # apos T: inverte
+
+
+
 def test_on_delay_fecha_apos_o_tempo(cads):
     c = ns.Circuito(cads["partida_sinalizacao"], papeis=_papeis_timer("ton", 5))
     assert c.estado({"RT1": True}, avanca=0)["lampadas"] == []

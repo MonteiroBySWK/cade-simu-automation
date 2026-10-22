@@ -60,10 +60,14 @@ Consequência: A7 (estrela-triângulo) e A10 (GRAFCET/pneumática) saem do camin
   - Aceite: DSL + modelo lógico + modelo geométrico + caso no app por instrução; teste unitário e
     exemplo em `tools/examples`. Custo M (era L; o layout de 4 pinos do 10063 saiu com o R ligado
     via contato a partir do trilho e o D sem fio).
-- [bloqueado] **A4. Temporizadores elétricos 9007/9015** (`recomendado`) — `netlist_sim.py` NAO tem modelo de
-  temporizador elétrico (0 refs a 9004; o Rust tem `TipoTemp`); 9007 tem protótipo, 9015 nao. Passos: portar
-  9004-9006 para o Python (oraculo) + 9007, depois 9015 quando houver protótipo/RE. (intermitente/pulso) + contatos associados.
-  - Aceite: caso no app com 9007 (pisca) e 9015 (pulso), lido por imagem; exemplo no gate. Custo M.
+- [andamento] **A4. Temporizadores elétricos 9004..9007** (`recomendado`) — `netlist_sim.py` agora tem
+  o modelo (oraculo: Rust `TipoTemp`): temporizador-carga A1/A2 (9004 ton / 9005 tof / 9006 tonof /
+  9007 intermitente; tempo = atoi(label5) x mult(label4) ticks de 100 ms) + contatos 7004..7015 que
+  seguem a saida do timer de mesmo rotulo (tipo do timer; sem timer, tipo pela faixa da classe).
+  7006/7007/7010/7011/7014/7015 multipares via `fecha_quando`. Exemplos `out/timer_on_9004.cad`
+  (liga apos 1 s) e `out/timer_pisca_9007.cad` (pisca 0,5 s), gerados por `tools/demo_timers.py`.
+  **Pendente**: 9015 gerador de pulsos (sem protótipo em `symbol_lib.json`, RE §11.4 pouco
+  documentado) + caso no app com 9007 (pisca) e 9015 (pulso), lido por imagem. Custo M.
 - [bloqueado] **A5. Sensores 3 fios (PNP/NPN)** (`recomendado`) — sem protótipo/geometria no `symbol_lib`
   (so 2 fios: 7500/7506/...) e sem doador no acervo (grep 7501/7502 vazio). 2 fios pode ser modelado ja;
   3 fios exige Ghidra/desenho no app. — 56 classes do catálogo (`7501/7502/7504/7505`…); hoje só
@@ -139,7 +143,7 @@ Consequência: A7 (estrela-triângulo) e A10 (GRAFCET/pneumática) saem do camin
 | lacuna (confiança) | item |
 |---|---|
 | ladder: borda/TOF/contador/RS/INV-XOR (alta semântica, falta modelo) | A3 |
-| 9007 intermitente / 9015 pulso (média) | A4 |
+| 9015 pulso (RE §11.4 pouco documentado, sem protótipo) | A4 |
 | sensores 3 fios PNP/NPN (56 classes, baixa) | A5 |
 | curto bloqueia o app; 6002/6003; chars do `3012` (média) | A6 |
 | estrela-triângulo (fora da DSL) | A7 |

@@ -22,13 +22,13 @@ _FONTES = {"3000", "3001", "3003", "3004", "3005", "3006", "3007", "3011"}
 
 # --- A11: classes sem modelo de simulacao (recusa com erro claro, nao falso verde) ------
 _LADDER_SEM_MODELO = {"10064", "10065", "10068", "10069", "10075", "10081"}
-_TEMP_SEM_MODELO = {"9007", "9015"}
+_TEMP_SEM_MODELO = {"9015"}              # 9004..9007 tem modelo (netlist_sim temporizador); pulso ainda nao
 _PROT_SEM_MODELO = {"6015", "6017"}
 _PLC_MODELADO = {"10204", "10205", "10206"}
 _FIOS_SEM_AVISO = {"4000", "4001", "4009", "4010", "4018", "4019"}  # fio/juncao: geometria pura
 _SUPORTADOS = ("contatos 8000/8001/8016/8017, auxiliares 7000/7001, bobinas 9000/9001/9002/9014, "
                "sinalizacao 9008/9009..9013/8101/8103, polos 2000/2001/2002/2006/2008, "
-               "protecao 6007/6009/6010, temporizadores 9004/9005/9006 + contatos 7004..7015, "
+               "protecao 6007/6009/6010, temporizadores 9004/9005/9006/9007 + contatos 7004..7015, "
                "motores, ladder 10050/10051/10052/10053/10060/10061/10062/10066/10067, contador 10063, "
                "CLP 10204/10205/10206, fontes 3000..3012")
 _CATALOGO = None
@@ -58,7 +58,7 @@ def _motivo_sem_modelo(cid, cat):
     if 10100 <= n <= 10199:
         return "erro", "GRAFCET (faixa 10100-10199) nao tem modelo (sem pinos no binario)"
     if cid in _TEMP_SEM_MODELO:
-        return "erro", "temporizador " + cid + " ainda sem modelo (use 9004/9005/9006 + contatos 7004..7015)"
+        return "erro", "temporizador " + cid + " ainda sem modelo (use 9004/9005/9006/9007 + contatos 7004..7015)"
     if cid in _LADDER_SEM_MODELO:
         return "erro", ("instrucao ladder " + cid + " ainda sem modelo "
                         "(use 10050/10051/10052/10053, 10060/10061/10062, TON 10066, TOF 10067 ou CTU 10063)")
@@ -285,6 +285,7 @@ def conferir_vinculos(path):
     termicos = {rot(p) for p in ps if p["id"] in ("6007", "6002", "6003", "6004", "6009", "6010")}   # termico OU disjuntor (DJ1)
     bobinas = {rot(p) for p in ps if p["id"] in ("9000", "9001", "9002", "9004", "9005", "9006", "9007",
                                                   "9014", "9015", "10060")}
+    timers = {rot(p) for p in ps if p["id"] in ("9004", "9005", "9006", "9007")}
     erros, avisos = [], []
     for p in ps:
         r = rot(p)
@@ -294,6 +295,13 @@ def conferir_vinculos(path):
                          f"Use o MESMO rotulo no 6007 e no contato 95-96.")
         if p["id"] in ("7000", "7001", "2001", "2002") and r and r not in bobinas:
             avisos.append(f"{p['id']} {r}: nenhuma bobina de mesmo rotulo (contato nunca e comandado)")
+        try:
+            ncid = int(p["id"])
+        except (TypeError, ValueError):
+            ncid = -1
+        if 7004 <= ncid <= 7015 and r not in timers:
+            avisos.append(f"{p['id']} {r or p['id']}: nenhum temporizador 9004..9007 de mesmo rotulo "
+                          f"(contato temporizado sem timer: NA abre, NC fecha; confira o rotulo)")
     return erros, avisos
 
 

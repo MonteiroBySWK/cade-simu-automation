@@ -327,6 +327,12 @@ despacho `FUN_0040d2b0` + as nomeadas nos diálogos). Gerado por
   (`FUN_008c8f40`, rádios) mostra "x 0,1 Seg / x 1 Seg / x 10 Seg / x 60 Seg" ⇒ com tick de
   100 ms: 0,1 s / 1 s / 10 s / **100 s** (o "x60" da UI não bate com ×1000 — inconsistência
   do app). `atoi` ⇒ fração ("0.5") vira 0 (comuta no 1º tick).
+- **Modelo Python** (`tools/netlist_sim.py`, A4, 22/10/2026): implementa 9004 (ton), 9005 (tof),
+  9006 (tonof = mesmo T nos dois sentidos) e 9007 (intermitente: energizado alterna a cada T,
+  desenergizado volta a 0; T=0 pisca a cada tick) + contatos 7004..7015 seguindo o timer de mesmo
+  rótulo (tipo do timer; sem timer, tipo pela faixa da classe e contagem própria para os casos
+  com `tempos`). 9007 também copia o pisca aos polos e contatos instantâneos de mesmo rótulo;
+  9015 (pulso) segue sem modelo.
 - **Tick** = `SetTimer(1, 1000 − 18×vel)` ms; `vel` = `DAT_00b80804` = velocidade de simulação
   (opção do app; `FUN_00878080` grava-a como último `%4d` do registro de configuração
   `CADe_SIMU*…*%4d$$$` — **não** faz parte do `.cad`: o acervo começa direto em
