@@ -1,0 +1,55 @@
+{
+ "entrada": "tests/golden/x_serpentina_30.cad",
+ "tipo": "gate",
+ "titulo": null,
+ "n_simbolos": null,
+ "build": {
+  "ok": true,
+  "mensagem": "OK {PATH} modo=0 versao=4000"
+ },
+ "geo": {
+  "curtos": [],
+  "soltos": [],
+  "curtos_msg": [],
+  "soltos_msg": []
+ },
+ "fios": {
+  "ok": true,
+  "n": 67,
+  "atravessam": []
+ },
+ "avisos": [
+  "7000 -K0: nenhuma bobina de mesmo rotulo (contato nunca e comandado)",
+  "7000 -K1: nenhuma bobina de mesmo rotulo (contato nunca e comandado)",
+  "7000 -K2: nenhuma bobina de mesmo rotulo (contato nunca e comandado)",
+  "7000 -K3: nenhuma bobina de mesmo rotulo (contato nunca e comandado)",
+  "7000 -K4: nenhuma bobina de mesmo rotulo (contato nunca e comandado)",
+  "7000 -K5: nenhuma bobina de mesmo rotulo (contato nunca e comandado)",
+  "7000 -K6: nenhuma bobina de mesmo rotulo (contato nunca e comandado)",
+  "7000 -K7: nenhuma bobina de mesmo rotulo (contato nunca e comandado)",
+  "7000 -K8: nenhuma bobina de mesmo rotulo (contato nunca e comandado)",
+  "7000 -K9: nenhuma bobina de mesmo rotulo (contato nunca e comandado)",
+  "7000 -K10: nenhuma bobina de mesmo rotulo (contato nunca e comandado)",
+  "7000 -K11: nenhuma bobina de mesmo rotulo (contato nunca e comandado)",
+  "7000 -K12: nenhuma bobina de mesmo rotulo (contato nunca e comandado)",
+  "7000 -K13: nenhuma bobina de mesmo rotulo (contato nunca e comandado)",
+  "7000 -K14: nenhuma bobina de mesmo rotulo (contato nunca e comandado)",
+  "7000 -K15: nenhuma bobina de mesmo rotulo (contato nunca e comandado)",
+  "7000 -K16: nenhuma bobina de mesmo rotulo (contato nunca e comandado)",
+  "7000 -K17: nenhuma bobina de mesmo rotulo (contato nunca e comandado)",
+  "7000 -K18: nenhuma bobina de mesmo rotulo (contato nunca e comandado)",
+  "7000 -K19: nenhuma bobina de mesmo rotulo (contato nunca e comandado)",
+  "7000 -K20: nenhuma bobina de mesmo rotulo (contato nunca e comandado)",
+  "7000 -K21: nenhuma bobina de mesmo rotulo (contato nunca e comandado)",
+  "7000 -K22: nenhuma bobina de mesmo rotulo (contato nunca e comandado)",
+  "7000 -K23: nenhuma bobina de mesmo rotulo (contato nunca e comandado)",
+  "7000 -K24: nenhuma bobina de mesmo rotulo (contato nunca e comandado)",
+  "7000 -K25: nenhuma bobina de mesmo rotulo (contato nunca e comandado)",
+  "7000 -K26: nenhuma bobina de mesmo rotulo (contato nunca e comandado)",
+  "7000 -K27: nenhuma bobina de mesmo rotulo (contato nunca e comandado)",
+  "7000 -K28: nenhuma bobina de mesmo rotulo (contato nunca e comandado)",
+  "7000 -K29: nenhuma bobina de mesmo rotulo (contato nunca e comandado)"
+ ],
+ "erros": [],
+ "estatico_ok": true
+}

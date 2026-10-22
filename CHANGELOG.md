@@ -10,6 +10,12 @@ Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/). 
   ao Python (goldens em `tests/golden`, testes em `tests/paridade`); crates-esqueleto para as próximas fases.
   Veja `docs/rust-port.md`. O binário agora fica em `target/{debug,release}/cade` (antes `src/cade_cli/target/...`).
 
+### Porte para Rust (cade_check)
+- Crate `cade_check`: `geo_check`, `wires_check`, vínculos por rótulo, `lint_layout` e mensagens acionáveis, mais
+  `cade gate <cad> [--testes t.json] [--json]` e `cade design <layout.json> -o x.cad [--json]` com o mesmo relatório do
+  MCP. Testes funcionais via trait `ExecutorTestes` (sem o `cade_sim`: `nao_portado`, gate reprovado). Paridade com o
+  Python em `tests/golden/check` (27 layouts + 27 `.cad`, incluindo fixtures defeituosas).
+
 ### Instalação
 - `python scripts/dev.py install-mcp|uninstall-mcp`: registra MCP + skill via `claude mcp add -s user` e
   `opencode mcp add --global` (caminhos absolutos, idempotente). Removidos `.mcp.json`/`opencode.json` do repo

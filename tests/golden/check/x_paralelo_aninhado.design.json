@@ -1,0 +1,27 @@
+{
+ "entrada": "tests/golden/x_paralelo_aninhado.layout.json",
+ "tipo": "design",
+ "titulo": "T",
+ "n_simbolos": 8,
+ "build": {
+  "ok": true,
+  "mensagem": "47 entidades -> {OUT} | OK {OUT} modo=0 versao=4000"
+ },
+ "geo": {
+  "curtos": [],
+  "soltos": [],
+  "curtos_msg": [],
+  "soltos_msg": []
+ },
+ "fios": {
+  "ok": true,
+  "n": 39,
+  "atravessam": []
+ },
+ "avisos": [
+  "7000 -D: nenhuma bobina de mesmo rotulo (contato nunca e comandado)",
+  "7001 -E: nenhuma bobina de mesmo rotulo (contato nunca e comandado)"
+ ],
+ "erros": [],
+ "estatico_ok": true
+}

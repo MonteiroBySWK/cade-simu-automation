@@ -1,0 +1,39 @@
+{
+ "entrada": "tests/golden/check/defeito_3004x3_pe_no_n.layout.json",
+ "tipo": "design",
+ "titulo": "PARTIDA DIRETA",
+ "n_simbolos": 13,
+ "build": {
+  "ok": true,
+  "mensagem": "82 entidades -> {OUT} | OK {OUT} modo=0 versao=3004"
+ },
+ "geo": {
+  "curtos": [],
+  "soltos": [
+   "-X(3004).L3@(42, 40)",
+   "-X(3004).L3@(50, 48)",
+   "-X(3004).L3@(58, 56)"
+  ],
+  "curtos_msg": [],
+  "soltos_msg": [
+   "pino L3 da fonte -X (3004) solto em (42,40): ligue-o ao trilho L3 (fontes: {\"pinos\":{\"L3\":\"L3\"}}; cada pino da fonte vai a um trilho)",
+   "pino L3 da fonte -X (3004) solto em (50,48): ligue-o ao trilho L3 (fontes: {\"pinos\":{\"L3\":\"L3\"}}; cada pino da fonte vai a um trilho)",
+   "pino L3 da fonte -X (3004) solto em (58,56): ligue-o ao trilho L3 (fontes: {\"pinos\":{\"L3\":\"L3\"}}; cada pino da fonte vai a um trilho)"
+  ]
+ },
+ "fios": {
+  "ok": true,
+  "n": 69,
+  "atravessam": []
+ },
+ "avisos": [
+  "fonte 3004 por fase (X1): desenho legado que gera curto N x PE e fase solta. Use UMA fonte 3007: {\"id\":\"X1\",\"classe\":\"3007\",\"rotulo\":\"-X\",\"pinos\":{\"L1\":\"L1\",\"L2\":\"L2\",\"L3\":\"L3\",\"N\":\"N\",\"PE\":\"PE\"}}",
+  "potencia 'm1': o PE do motor vai ao neutro (curto N x PE). Declare um trilho \"PE\" em 'trilhos' e \"pe\":\"PE\" no grupo."
+ ],
+ "erros": [
+  "pino L3 da fonte -X (3004) solto em (42,40): ligue-o ao trilho L3 (fontes: {\"pinos\":{\"L3\":\"L3\"}}; cada pino da fonte vai a um trilho)",
+  "pino L3 da fonte -X (3004) solto em (50,48): ligue-o ao trilho L3 (fontes: {\"pinos\":{\"L3\":\"L3\"}}; cada pino da fonte vai a um trilho)",
+  "pino L3 da fonte -X (3004) solto em (58,56): ligue-o ao trilho L3 (fontes: {\"pinos\":{\"L3\":\"L3\"}}; cada pino da fonte vai a um trilho)"
+ ],
+ "estatico_ok": false
+}
