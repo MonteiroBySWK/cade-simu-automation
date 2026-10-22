@@ -54,7 +54,9 @@ JSON define a ordem de conexões/fios e portanto os bytes do `.cad`) e `clap`.
 | `build_spec.conferir_chaves_de_teste`, `_parse_testes` | `cade_check::gate` (`parse_testes`; chaves vêm do executor) | parse portado; chaves: `cade_sim::executor::mensagens_chaves` |
 | `geo_check.py`, `wires_check.py` | `cade_check::{geo,fios}` (+ `geom`, geometria compartilhada) | **idêntico** |
 | `netlist_sim.py`, `cad_test`/`cad_simulate` | `cade_sim` (`cade simulate`, `cade test`, executor do gate) | **feito** (estado idêntico ao Python em 11 exemplos × ~1000 combinações + temporizadores) |
-| `clp_sim.py` (+ `gate_clp` de `ladder_dsl.py`) | `cade_sim::ladder` (`CircuitoClp`, `tem_clp`, `teste_casos` idêntico) + gate CLP em `cade_check::gate` | **feito** (paridade string a string nos 5 exemplos ladder) |
+| `clp_sim.py` (+ `gate_clp` de `ladder_dsl.py`) | `cade_sim::ladder` (`CircuitoClp`, `tem_clp`, `teste_casos` idêntico) + gate CLP em `cade_check::gate` | **feito** (paridade string a string nos 5 exemplos ladder + borda/TOF/CTU) |
+| `layout.py` `tipo:"monofasico"` e `"polos":4` (A8/A9) | `cade_layout` | **pendente** (skips explícitos em `tests/paridade` e `cade_cli/tests/cli.rs` para `reversao_monofasica`/`reversao_4polos`) |
+| `build_spec` "classe sem modelo" (A11) | `cade_check` | **pendente** (skips `CADe_S1`/`Arranque_1`; mensagens Python-only) |
 | `cad_render.py`, `cad_preview.py` | `cade_render` | pendente |
 | `cade_mcp.py` (tools MCP), `mcp_call.py` | `cade_mcp` + `cade mcp` | pendente (`cad_build`/`cad_design` já têm núcleo) |
 | `app_sim.py`, `wine_mgr.py`, `cade_open.py`, `cade_config.py` | `cade_app` | pendente |
