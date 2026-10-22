@@ -68,11 +68,11 @@ Consequência: A7 (estrela-triângulo) e A10 (GRAFCET/pneumática) saem do camin
   (liga apos 1 s) e `out/timer_pisca_9007.cad` (pisca 0,5 s), gerados por `tools/demo_timers.py`.
   **Pendente**: 9015 gerador de pulsos (sem protótipo em `symbol_lib.json`, RE §11.4 pouco
   documentado) + caso no app com 9007 (pisca) e 9015 (pulso), lido por imagem. Custo M.
-  **App (22/10/2026, Ghidra 2ª sessão, ver §11.6)**: o `.cad` do demo está **correto**
-  (unidade=label4 @+0x4a464, tempo=label5 @+0x4c3a4, ×1/×10/×100/×1000, cópia a 7004..7007 por
-  label0 — `~/cade-ghidra/f9004.c`). O não-disparo é procedural: S1 é momentâneo, precisa
-  **segurar o clique** por todo o retardo, e sob Wine o app roda ~0,41× o tempo de parede
-  (1 s de sim ≈ 2,4 s segurando). Repetir o teste segurando S1 ≥3 s de parede.
+  **App (22/10/2026)**: **9004 PROVADO** — o screenshot de `out/timer_on_9004.cad` mostra
+  9004/7004/H1 **vermelhos** (energizado/fechado/aceso). O `.cad` esta correto (Ghidra §11.6);
+  o "nao disparo" anterior era a **calibracao do leitor** (FFT com score 1.114, alinhamento
+  falso em circuito com poucos fios), nao o app. **Pendente**: ancorar a calibracao
+  (moldura/simbolos) e revalidar 9007/sensor; 9015 sem prototipo.
 - [bloqueado] **A5. Sensores** (`recomendado`) — **2 fios (7500/7506)**: conduz com `estado==1`
   (igual a botão; clique põe estado=1 p/ classes 7500..7637 + propaga a mesmo label0 — Ghidra
   §11.6, `~/cade-ghidra/f7500.c`). **Momentâneo**: H1 só acende enquanto segurado; "apagado no
