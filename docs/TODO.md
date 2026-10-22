@@ -71,9 +71,10 @@ Consequência: A7 (estrela-triângulo) e A10 (GRAFCET/pneumática) saem do camin
   **App (22/10/2026)**: o demo **nao disparou** no app (H1 nao ligou com 9004 nem piscou com 9007),
   embora o modelo Python/Rust passe; nao ha doador 9004/9007 no acervo (grep vazio). Antes de
   declarar funcional, isolar: fiacao/rotulos do demo x comportamento real do app (Ghidra/experimento).
-- [bloqueado] **A5. Sensores 3 fios (PNP/NPN)** (`recomendado`) — sem protótipo/geometria no `symbol_lib`
-  (so 2 fios: 7500/7506/...) e sem doador no acervo (grep 7501/7502 vazio). 2 fios pode ser modelado ja;
-  3 fios exige Ghidra/desenho no app. — 56 classes do catálogo (`7501/7502/7504/7505`…); hoje só
+- [bloqueado] **A5. Sensores** (`recomendado`) — **2 fios (7500/7506) modelado** no Python/Rust
+  (contato NA/NC) e exemplo DSL com GATE OK; **app NAO acionou** (H1 apagado no repouso/click/solta) —
+  falta doador/prototipo com os campos que o app usa. **3 fios (7501/7502)**: sem prototipo/geometria no
+  `symbol_lib` e sem doador (grep vazio) — exige Ghidra/desenho no app. — 56 classes do catálogo (`7501/7502/7504/7505`…); hoje só
   contato de 2 fios.
   - Aceite: modelo de sensor alimentado (pino de alimentação + saída), caso no app com objeto
     detectado, exemplo de partida com sensor. Custo M.
