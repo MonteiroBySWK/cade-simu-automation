@@ -1,0 +1,26 @@
+{
+ "entrada": "tests/golden/e_trilhos_comando_sem_fonte.layout.json",
+ "tipo": "design",
+ "titulo": null,
+ "n_simbolos": null,
+ "build": {
+  "ok": false,
+  "mensagem": ""
+ },
+ "geo": {
+  "curtos": [],
+  "soltos": [],
+  "curtos_msg": [],
+  "soltos_msg": []
+ },
+ "fios": {
+  "ok": null,
+  "n": 0,
+  "atravessam": []
+ },
+ "avisos": [],
+ "erros": [
+  "layout invalido: trilhos_comando sem 'transformador' nem 'fonte': o par de trilhos ficaria sem alimentacao"
+ ],
+ "estatico_ok": false
+}

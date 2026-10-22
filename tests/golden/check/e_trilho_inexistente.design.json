@@ -1,0 +1,26 @@
+{
+ "entrada": "tests/golden/e_trilho_inexistente.layout.json",
+ "tipo": "design",
+ "titulo": null,
+ "n_simbolos": null,
+ "build": {
+  "ok": false,
+  "mensagem": ""
+ },
+ "geo": {
+  "curtos": [],
+  "soltos": [],
+  "curtos_msg": [],
+  "soltos_msg": []
+ },
+ "fios": {
+  "ok": null,
+  "n": 0,
+  "atravessam": []
+ },
+ "avisos": [],
+ "erros": [
+  "layout invalido: comando 'c1': 'para'='X' nao e um trilho (trilhos: ['L1', 'N'])"
+ ],
+ "estatico_ok": false
+}

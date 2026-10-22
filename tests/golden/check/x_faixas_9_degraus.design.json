@@ -1,0 +1,24 @@
+{
+ "entrada": "tests/golden/x_faixas_9_degraus.layout.json",
+ "tipo": "design",
+ "titulo": "T",
+ "n_simbolos": 46,
+ "build": {
+  "ok": true,
+  "mensagem": "229 entidades -> {OUT} | OK {OUT} modo=0 versao=4000"
+ },
+ "geo": {
+  "curtos": [],
+  "soltos": [],
+  "curtos_msg": [],
+  "soltos_msg": []
+ },
+ "fios": {
+  "ok": true,
+  "n": 183,
+  "atravessam": []
+ },
+ "avisos": [],
+ "erros": [],
+ "estatico_ok": true
+}

@@ -1,0 +1,37 @@
+{
+ "entrada": "tests/golden/check/defeito_fio_atravessa.cad",
+ "tipo": "gate",
+ "titulo": null,
+ "n_simbolos": null,
+ "build": {
+  "ok": true,
+  "mensagem": "OK {PATH} modo=0 versao=4000"
+ },
+ "geo": {
+  "curtos": [],
+  "soltos": [
+   "-S1(8000).p1@(40, 40)",
+   "-KM1(9000).p2@(40, 112)"
+  ],
+  "curtos_msg": [],
+  "soltos_msg": [
+   "pino p1 de -S1 (8000) solto em (40,40): nenhum fio termina nesse ponto; ligue o pino (conexao de/para) ou remova o simbolo",
+   "pino p2 de -KM1 (9000) solto em (40,112): nenhum fio termina nesse ponto; ligue o pino (conexao de/para) ou remova o simbolo"
+  ]
+ },
+ "fios": {
+  "ok": false,
+  "n": 2,
+  "atravessam": [
+   "fio (20, 110)->(120, 110) atravessa o simbolo -KM1"
+  ]
+ },
+ "avisos": [
+  "1 trecho(s) de fio atravessam simbolo (estetico): fio (20, 110)->(120, 110) atravessa o simbolo -KM1"
+ ],
+ "erros": [
+  "pino p1 de -S1 (8000) solto em (40,40): nenhum fio termina nesse ponto; ligue o pino (conexao de/para) ou remova o simbolo",
+  "pino p2 de -KM1 (9000) solto em (40,112): nenhum fio termina nesse ponto; ligue o pino (conexao de/para) ou remova o simbolo"
+ ],
+ "estatico_ok": false
+}

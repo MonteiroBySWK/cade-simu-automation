@@ -1,0 +1,26 @@
+{
+ "entrada": "tests/golden/e_id_duplicado.layout.json",
+ "tipo": "design",
+ "titulo": null,
+ "n_simbolos": null,
+ "build": {
+  "ok": false,
+  "mensagem": ""
+ },
+ "geo": {
+  "curtos": [],
+  "soltos": [],
+  "curtos_msg": [],
+  "soltos_msg": []
+ },
+ "fios": {
+  "ok": null,
+  "n": 0,
+  "atravessam": []
+ },
+ "avisos": [],
+ "erros": [
+  "layout invalido: id duplicado: K"
+ ],
+ "estatico_ok": false
+}

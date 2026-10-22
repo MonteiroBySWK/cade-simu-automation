@@ -1,0 +1,34 @@
+{
+ "entrada": "tests/golden/check/defeito_curto_pe_n_e_fases.layout.json",
+ "tipo": "design",
+ "titulo": "PARTIDA DIRETA",
+ "n_simbolos": 11,
+ "build": {
+  "ok": false,
+  "mensagem": "78 entidades -> {OUT} | OK {OUT} modo=0 versao=3007 | AVISO curto A==B em: -X"
+ },
+ "geo": {
+  "curtos": [
+   "1+2 na mesma net: -X.L1, -X.L2",
+   "N+P na mesma net: -X.N, -X.PE"
+  ],
+  "soltos": [],
+  "curtos_msg": [
+   "CURTO 1+2 na mesma net: -X.L1, -X.L2 — duas fases no mesmo no: confira trilhos L1/L2/L3 e a coluna de cada fase",
+   "CURTO N+P na mesma net: -X.N, -X.PE — PE ligado ao neutro: crie trilho PE separado (\"pe\":\"PE\")"
+  ],
+  "soltos_msg": []
+ },
+ "fios": {
+  "ok": true,
+  "n": 67,
+  "atravessam": []
+ },
+ "avisos": [],
+ "erros": [
+  "build: 78 entidades -> {OUT} | OK {OUT} modo=0 versao=3007 | AVISO curto A==B em: -X — um simbolo ficou com os dois pinos no mesmo no (curto); revise as conexoes do simbolo citado",
+  "CURTO 1+2 na mesma net: -X.L1, -X.L2 — duas fases no mesmo no: confira trilhos L1/L2/L3 e a coluna de cada fase",
+  "CURTO N+P na mesma net: -X.N, -X.PE — PE ligado ao neutro: crie trilho PE separado (\"pe\":\"PE\")"
+ ],
+ "estatico_ok": false
+}
