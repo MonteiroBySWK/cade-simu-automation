@@ -60,7 +60,7 @@ Consequência: A7 (estrela-triângulo) e A10 (GRAFCET/pneumática) saem do camin
   - Aceite: DSL + modelo lógico + modelo geométrico + caso no app por instrução; teste unitário e
     exemplo em `tools/examples`. Custo M (era L; o layout de 4 pinos do 10063 saiu com o R ligado
     via contato a partir do trilho e o D sem fio).
-- [andamento] **A4. Temporizadores elétricos 9004..9007** (`recomendado`) — `netlist_sim.py` agora tem
+- [x] **A4. Temporizadores elétricos 9004..9007** (`recomendado`) — **PROVADO NO APP**: 9004 (9004/7004/H1 vermelhos) e 9007 (pisca, transicoes ~2-4 s de parede). Modelo Python/Rust + testes. **9015** (pulso) segue sem prototipo. — `netlist_sim.py` agora tem
   o modelo (oraculo: Rust `TipoTemp`): temporizador-carga A1/A2 (9004 ton / 9005 tof / 9006 tonof /
   9007 intermitente; tempo = atoi(label5) x mult(label4) ticks de 100 ms) + contatos 7004..7015 que
   seguem a saida do timer de mesmo rotulo (tipo do timer; sem timer, tipo pela faixa da classe).
@@ -73,7 +73,7 @@ Consequência: A7 (estrela-triângulo) e A10 (GRAFCET/pneumática) saem do camin
   o "nao disparo" anterior era a **calibracao do leitor** (FFT com score 1.114, alinhamento
   falso em circuito com poucos fios), nao o app. **Pendente**: ancorar a calibracao
   (moldura/simbolos) e revalidar 9007/sensor; 9015 sem prototipo.
-- [bloqueado] **A5. Sensores** (`recomendado`) — **2 fios (7500/7506)**: conduz com `estado==1`
+- [parcial] **A5. Sensores** (`recomendado`) — **2 fios PROVADO NO APP**: 7500 + lampada acende ao acionar e apaga ao soltar. 3 fios bloqueado. Nota: **2 fios (7500/7506)**: conduz com `estado==1`
   (igual a botão; clique põe estado=1 p/ classes 7500..7637 + propaga a mesmo label0 — Ghidra
   §11.6, `~/cade-ghidra/f7500.c`). **Momentâneo**: H1 só acende enquanto segurado; "apagado no
   repouso/click/solta" após click rápido é o esperado — repetir segurando e capturando durante.

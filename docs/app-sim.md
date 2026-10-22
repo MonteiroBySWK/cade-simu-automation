@@ -137,3 +137,10 @@ Também confirmado: remover a entidade 0 herdada do doador (fonte `3004 -X` solt
 - **Fragilidades**: depende de Wine+X11 (xdotool move o ponteiro real do usuário); o popup do menu
   *Ver* é clicado por posição fixa (+197,+19 da janela); posições dos botões Play/Stop são fixas
   em px à esquerda da toolbar; `inicial` inalcançável por botões → `indeterminado`.
+
+### Calibracao em circuitos com poucos fios (22/10/2026)
+A correlacao de fios sozinha pode escolher um **pico falso** (`fios_sobre_tinta` > 1 = mais acertos
+que pixels da mascara). O `calibrar` agora **rejeita `cob > 1.05`** e exige que >= 60% dos simbolos
+tenham tinta na posicao prevista (`_confere_simbolos`). Caso real: `9004+7004+lampada` calibrava em
+(ox=30, oy=50) e lia tudo apagado; com a correcao acha (31,102) e le 9004/7004/H1 vermelhos (112/75/109 px).
+
