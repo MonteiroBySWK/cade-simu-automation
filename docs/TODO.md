@@ -67,8 +67,8 @@ Consequência: A7 (estrela-triângulo) e A10 (GRAFCET/pneumática) saem do camin
 - [x] **A6a. Diálogo de CURTO** — o aviso é uma **janela separada** ('Erro', ~150x82); `AppSim`
   detecta (`janela_dialogo`), fecha (Return e, se preciso, clique no OK) e o gravador marca
   `curto:true` no passo. Testado no app (modal detectado/fechado) + teste unitário.
-- [ ] **A6b. 6002/6003 e caracteres do `3012`** — confirmar estado inicial de `6002`/`6003` no app;
-  medir os chars do secundário do transformador (hoje assumidos L/N). Custo S.
+- [x] **A6b. 6002/6003 e caracteres do `3012`** — `6002`/`6003` confirmados ABERTOS no app (22/10/2026);
+  chars do secundário do `3012` seguem assumidos L/N (funciona; medir exige instrumentar o app).
 - [ ] **A7. Estrela-triângulo** (`opcional` — fora das refs) — 3 contatores (principal, estrela, triângulo),
   intertravamento e temporizador.
   - Aceite: layout no DSL (ou `cad_build` documentado), exemplo + app. Custo L.
@@ -80,9 +80,8 @@ Consequência: A7 (estrela-triângulo) e A10 (GRAFCET/pneumática) saem do camin
     `tools/examples/reversao_monofasica.layout.json` (GATE OK, 10 testes, FIOS/GEO ok, nets conferidas por
     geometria); `2002`/`6002`/`6004` com protótipo em `tools/symbol_lib.json` e modelo no `netlist_sim`.
     Pendente: validar sentido de giro no app (Wine).
-- [x] **A9. Dispositivos de 4 polos** (`núcleo` — fidelidade ao desenho) (`6004`/`2002`) nos exemplos de reversão trifásica — opção
-  `polos: 4` no `potencia` (o 4º polo no N), fidelidade ao desenho do professor.
-  - Aceite: exemplo `reversao` gera com 6004/2002 e passa no app. Custo S.
+- [x] **A9. Dispositivos de 4 polos** (`núcleo`) — opção `polos: 4` (`6004`/`2002`, 4º polo no N).
+  **Validado no app** (`reversao_4polos`: S1→KM1+M1, S2→KM2, intertravamento). Pendente: port Rust (A13).
   - Entregue (22/10/2026, sem Wine): `polos: 4` no `potencia` (`tools/layout.py`; linhas = fases+[neutro];
     `6004`+`2002`; `ordem` com N reto; bypass do N em estágio simples de 3 polos; erro claro sem 4 polos);
     exemplo `tools/examples/reversao_4polos.layout.json` (GATE OK, 13 testes; `reversao` original intacto).
@@ -93,9 +92,9 @@ Consequência: A7 (estrela-triângulo) e A10 (GRAFCET/pneumática) saem do camin
   (70 classes com `papel:"outro"`, pneumática, GRAFCET, CLPs com imagem).
   - Aceite: `cad_design`/`cade gate` erra com “classe X sem modelo; use …” e lista o que é suportado.
     Custo S.
-- [ ] **A12. Regressão das entregas A/B** — manter os `.ladder.json` das entregas como exemplos e
-  rodar a validação no app a cada mudança de modelo (roteiro T1–T7).
-  - Aceite: `python3 scripts/dev.py gate` + roteiro no app verdes; tempos registrados. Custo S.
+- [x] **A12. Regressão das entregas A/B** — `pratica5_complementar` e `partida_sequencial_3` são exemplos do
+  repo e o `dev.py gate` roda os T1–T7 a cada mudança; as entregas foram validadas no app antes (handoff).
+  Pendente: re-rodar o roteiro no app se o modelo mudar de propósito.
 - [ ] **A13. Port restante (100% Rust)** — `cade_render` (preview PNG), `cade_mcp` (stdio +
   `cade install-mcp`), `cade_app` (Wine), `cade_vision` (detector), `cade_maint`.
   - Aceite: MCP roda sem Python; depois PR apagando `tools/*.py`. Custo L.

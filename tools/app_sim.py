@@ -190,15 +190,15 @@ def tipo_simbolo(cid):
         return "contato_aux_termico"             # contato NA 97-98
     if cid in ("7000", "7001", "10050", "10051"):
         return "contato"
-    if cid in ("6002", "6003", "6009", "6010"):
+    if cid in ("6000", "6001", "6002", "6003", "6004", "6008", "6009", "6010", "6011", "6012"):
         return "disjuntor"                         # DJ1 6002/6003: de mesmo rotulo do aux 8016; alterna ANTES do teste
     if cid in SAIDA_CLP:
         return "saida_clp"
-    if cid in ("2001",):
+    if cid in ("2000", "2001", "2002", "2006", "2008"):
         return "contator_potencia"
     if cid == "6007":
         return "termico_potencia"
-    if cid == "1000":
+    if cid in ("1000", "1001", "1002", "1003", "1004", "1005", "1006", "1007", "1008", "1010"):
         return "motor"
     if cid.startswith("30"):
         return "fonte"
