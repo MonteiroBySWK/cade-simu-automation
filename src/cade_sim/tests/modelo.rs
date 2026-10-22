@@ -195,6 +195,40 @@ fn contato_temporizado_comutado_7007_troca_de_via_no_tempo() {
 }
 
 #[test]
+fn intermitente_9007_alterna_a_cada_t_e_reseta_com_7000_instantaneo() {
+    // 9007 (T = 2 s) + NA 7000 de mesmo rotulo: ate o "instantaneo" pisca (RE 11.4, FUN_00632a20)
+    let c = Circuito::abrir(concat!(env!("CARGO_MANIFEST_DIR"), "/../../tests/golden/9007_intermitente.cad")).unwrap();
+    assert!(c.soltos.is_empty(), "pinos soltos: {:?}", c.soltos);
+    assert_eq!(c.entradas, ["S1"], "o 7000 le o temporizador, nao e entrada");
+    assert_eq!(c.ids_temporizadores(), ["KT"]);
+    let t0 = est(&c, json!({"S1": true}), 0.0).temporizadores;
+    assert_eq!((t0[0].tipo, t0[0].tempo), ("intermitente", 2.0));
+    assert_eq!(est(&c, json!({"S1": true}), 0.0).bobinas, ["KT"], "a carga energiza na hora");
+    let mut st = c.novo_estado(&[], None);
+    let on = entradas_de_json(&json!({"S1": true}));
+    let off = entradas_de_json(&json!({}));
+    assert!(c.avancar(&mut st, &off, 5.0).lampadas.is_empty(), "repouso: apagado");
+    assert!(c.avancar(&mut st, &on, 1.9).lampadas.is_empty(), "antes de T: apagado");
+    let e = c.avancar(&mut st, &on, 0.1);
+    assert_eq!(e.lampadas, ["H1"], "em T: o contato 7000 fecha");
+    assert!(e.temporizadores[0].saida);
+    assert_eq!(e.temporizadores[0].decorrido, 0.0);
+    let e = c.avancar(&mut st, &on, 1.9);
+    assert_eq!(e.lampadas, ["H1"]);
+    assert_eq!(e.temporizadores[0].decorrido, 1.9);
+    let e = c.avancar(&mut st, &on, 0.1);
+    assert!(e.lampadas.is_empty() && !e.temporizadores[0].saida, "em 2T: abre de novo");
+    let e = c.avancar(&mut st, &on, 5.0);
+    assert!(e.lampadas.is_empty(), "5 s = 2 alternancias + 1 s: termina apagado");
+    assert_eq!(e.temporizadores[0].decorrido, 1.0);
+    // desenergizou: zera na hora
+    let e = c.avancar(&mut st, &off, 3.0);
+    assert!(e.lampadas.is_empty() && !e.temporizadores[0].saida);
+    assert_eq!(e.temporizadores[0].decorrido, 0.0);
+    assert_eq!(c.avancar(&mut st, &on, 2.0).lampadas, ["H1"], "reenergizado: pisca de novo");
+}
+
+#[test]
 fn contato_na_nc_7002_instantaneo() {
     // S1 -> KM1 (9000); 7002: p1-p3 (11-12) NF -> H1, p2-p4 (13-14) NA -> H2
     let c = montar(
