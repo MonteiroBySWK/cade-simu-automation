@@ -1,0 +1,36 @@
+{
+ "entrada": "tests/golden/check/defeito_3004x3_pe_no_n.cad",
+ "tipo": "gate",
+ "titulo": null,
+ "n_simbolos": null,
+ "build": {
+  "ok": true,
+  "mensagem": "OK {PATH} modo=0 versao=3004"
+ },
+ "geo": {
+  "curtos": [],
+  "soltos": [
+   "-X(3004).L3@(42, 40)",
+   "-X(3004).L3@(50, 48)",
+   "-X(3004).L3@(58, 56)"
+  ],
+  "curtos_msg": [],
+  "soltos_msg": [
+   "pino L3 da fonte -X (3004) solto em (42,40): ligue-o ao trilho L3 (fontes: {\"pinos\":{\"L3\":\"L3\"}}; cada pino da fonte vai a um trilho)",
+   "pino L3 da fonte -X (3004) solto em (50,48): ligue-o ao trilho L3 (fontes: {\"pinos\":{\"L3\":\"L3\"}}; cada pino da fonte vai a um trilho)",
+   "pino L3 da fonte -X (3004) solto em (58,56): ligue-o ao trilho L3 (fontes: {\"pinos\":{\"L3\":\"L3\"}}; cada pino da fonte vai a um trilho)"
+  ]
+ },
+ "fios": {
+  "ok": true,
+  "n": 69,
+  "atravessam": []
+ },
+ "avisos": [],
+ "erros": [
+  "pino L3 da fonte -X (3004) solto em (42,40): ligue-o ao trilho L3 (fontes: {\"pinos\":{\"L3\":\"L3\"}}; cada pino da fonte vai a um trilho)",
+  "pino L3 da fonte -X (3004) solto em (50,48): ligue-o ao trilho L3 (fontes: {\"pinos\":{\"L3\":\"L3\"}}; cada pino da fonte vai a um trilho)",
+  "pino L3 da fonte -X (3004) solto em (58,56): ligue-o ao trilho L3 (fontes: {\"pinos\":{\"L3\":\"L3\"}}; cada pino da fonte vai a um trilho)"
+ ],
+ "estatico_ok": false
+}

@@ -10,6 +10,8 @@ cargo test --workspace         # inclui tests/paridade (byte-a-byte contra o Pyt
 cargo clippy --workspace --all-targets
 cade build tools/examples/reversao.layout.json -o out/reversao.cad
 cade layout tools/examples/reversao.layout.json -o out/reversao.spec.json
+cade design tools/examples/reversao.layout.json -o out/reversao.cad --json   # layout -> .cad + gate (como cad_design)
+cade gate out/reversao.cad [--testes t.json] [--json]                        # gate de um .cad existente (como cad_gate)
 ```
 
 Sem rede em runtime; os dados (`tools/*.json`, `docs/*.json`, doador `corpus/Arranque_1.cad`) são
@@ -24,8 +26,8 @@ nenhum além do que o usuário passa.
 | `cade_model` | entidades (`split_entities`, `split_all`, `parse_ent` = `tools/dissect.py`), catálogo de protótipos (`Catalogo` = `cade_mcp._lib()` + `mk_dataset.load_donor`), dados embutidos (`dados::*`), `pyfmt` (repr/int/`//` do Python p/ mensagens idênticas) | pronto |
 | `cade_build` | `cad_build`: símbolos/fios/conexões/trilhos → `.cad`; roteador `_rotear`, `_assign_nets`, `_shorts`; entidade 0 = 1ª gerada | pronto, byte-idêntico |
 | `cade_layout` | `layout.py`: `compilar` (spec topológica → spec baixa: rede série-paralelo, rungs, serpentina, faixas, `trilhos_comando`, fontes, terra, `potencia` com paralelo/`ordem`) e `build_spec.normalizar` | pronto, byte-idêntico |
-| `cade_cli` | binário `cade`: `validate|parse|emit|new-from-json|build|layout` | pronto |
-| `cade_check` | `geo_check`, `wires_check`, vínculos por rótulo, `lint_layout`, mensagens acionáveis do gate | **esqueleto** |
+| `cade_cli` | binário `cade`: `validate|parse|emit|new-from-json|build|layout|gate|design` | pronto |
+| `cade_check` | `geo_check`, `wires_check`, vínculos por rótulo, `lint_layout`, mensagens acionáveis, `gate`/`construir` (relatório idêntico ao MCP); **testes funcionais via trait** | **pronto (parte estática)** |
 | `cade_sim` | `netlist_sim` (+temporizadores), `ladder_sim`, `teste_casos` | **esqueleto** |
 | `cade_render` | `cad_render` (preview PNG) | **esqueleto** |
 | `cade_mcp` | servidor MCP stdio (`cade mcp`) | **esqueleto** |
@@ -47,8 +49,10 @@ JSON define a ordem de conexões/fios e portanto os bytes do `.cad`) e `clap`.
 | `layout.compilar` (todas as formas) | `cade_layout::compilar` | **byte-idêntico** (spec baixa em JSON `indent=1`) |
 | `build_spec.normalizar` | `cade_layout::normalizar` | feito |
 | mensagens de erro do `ValueError` do layout | `LayoutError` | idênticas (8 casos de erro) |
-| `build_spec.lint_layout`, `conferir_vinculos`, `acionavel_*`, `gate` | `cade_check` | pendente |
-| `geo_check.py`, `wires_check.py` | `cade_check` | pendente |
+| `build_spec.lint_layout`, `conferir_vinculos`, `acionavel_*` | `cade_check::{lint,vinculos,acionavel}` | **idêntico** (goldens `tests/golden/check`) |
+| `build_spec.gate/construir`, `cad_gate`/`cad_design` (relatório JSON) | `cade_check::{gate_arquivo,construir}` + `cade gate/design` | **idêntico na parte estática**; testes funcionais = `nao_portado` até o `cade_sim` |
+| `build_spec.conferir_chaves_de_teste`, `_parse_testes` | `cade_check::gate` (`parse_testes`; chaves vêm do executor) | parse portado; chaves dependem do `cade_sim` |
+| `geo_check.py`, `wires_check.py` | `cade_check::{geo,fios}` (+ `geom`, geometria compartilhada) | **idêntico** |
 | `netlist_sim.py`, `ladder_sim.py`, `cad_test`/`cad_simulate` | `cade_sim` | pendente |
 | `cad_render.py`, `cad_preview.py` | `cade_render` | pendente |
 | `cade_mcp.py` (tools MCP), `mcp_call.py` | `cade_mcp` + `cade mcp` | pendente (`cad_build`/`cad_design` já têm núcleo) |
@@ -73,6 +77,36 @@ falha se um exemplo novo/alterado não tiver golden — rode `python3 tests/gold
 
 **Resultado atual: byte-idêntico em todos os casos**, sem exceção documentada.
 
+#### Paridade do gate (`cade_check`)
+
+`tests/golden/check/gerar.py` roda `build_spec.construir` (layouts) e `build_spec.gate` (`.cad`) no **Python**
+com a parte funcional neutralizada (`cad_test` → `SEM_TESTES`, chaves de teste → `[]`) e grava a parte
+**estática** do relatório: `build{ok,mensagem}`, `geo{curtos,soltos,curtos_msg,soltos_msg}`, `fios{ok,n,atravessam}`,
+`avisos`, `erros` (sem os de teste, prefixos `teste `/`sem testes`/`testes:`), `estatico_ok`. Casos:
+
+- `<n>.design.json` (27): todos os `tests/golden/*.layout.json` (exemplos, `x_*` e os 8 `e_*` de erro) + fixtures
+  layout; o teste Rust roda `cade_check::construir` e compara campo a campo;
+- `<n>.gate.json` (27): todos os `.cad` de `tests/golden`, `corpus/*.cad` e as fixtures defeituosas;
+- fixtures defeituosas (geradas pelo Python): `defeito_3004x3_pe_no_n` (3004 por fase, fases soltas), `defeito_curto_pe_n_e_fases`
+  (PE no N e L2 no L1 → `CURTO`), `defeito_termico_rotulo` (6007 × 8017 com rótulos diferentes), `defeito_pino_solto`,
+  `defeito_fio_atravessa` (fio manual atravessando o corpo do 9000).
+
+O teste fica em `src/cade_check/tests/paridade.rs` (e `src/cade_cli/tests/check.rs` repete pelo binário). O gerador é
+separado de `tests/golden/gerar.py` (que apaga tudo em `tests/golden/*`; ele preserva subdiretórios). Rode
+`cargo build && python3 tests/golden/check/gerar.py` (o Python chama `target/debug/cade`) quando o oráculo mudar de propósito.
+
+**Testes funcionais:** `cade_check` define `trait ExecutorTestes { fn executar(&self, cad, casos) -> Option<SaidaTestes> }`
+(`SaidaTestes` = texto do `cad_test` + mensagens de `conferir_chaves_de_teste`; o gate interpreta como o Python:
+`PASSOU`/`SEM_TESTES`/`[FALHA]`/`RESULTADO: n/m`). O padrão do binário é `NaoPortado` → `testes.status = "nao_portado"`,
+`ok = false`, erro `testes: funcionais nao executados ...` e `proximo_passo` dizendo que a parte estática está verde mas a
+funcional não rodou — **nunca** verde falso. Para ligar o simulador: implemente o trait em `cade_sim` e troque
+`executor()` em `src/cade_cli/src/check.rs` (único ponto). `Relatorio::estatico_ok()` expõe só o veredito estático.
+
+**Geometria compartilhada (`cade_check::geom`)**: `pinos_da_classe` (binário primeiro, depois `symbol_pins.json` **na ordem do
+arquivo** — a ordem define a dos pinos soltos), `rotacionar`, `entidades_do_cad`, `Conectividade::de_entidades` (união de nets
+por extremo/junta 4001, `pinos` em coordenada absoluta, `rede_do_ponto`, `e_extremo`) e `geo::analisar_entidades`. O `cade_sim`
+deve construir o `Circuito` em cima disso em vez de reimplementar a conectividade.
+
 ### Armadilhas de paridade (já resolvidas, não reintroduza)
 
 - **Ordem de inserção** importa: `serde_json` com `preserve_order`; union-find do layout mantém a
@@ -87,6 +121,7 @@ falha se um exemplo novo/alterado não tiver golden — rode `python3 tests/gold
 - Mensagens de erro usam `cade_model::pyfmt::repr*` (repr de dict/list/str do Python).
 - Diferença deliberada: `cade layout` usa `normalizar` (o `titulo` do envelope vence, como no `build`),
   enquanto `python tools/layout.py` imprimia `"NOVO"` quando o título estava só no envelope.
+- Gate: `wires_check` com campo numérico ausente usa 0 (o Python abortaria com `IndexError`); erro de build que não começa com `ERRO` vira `layout invalido: ...` (no Python seria `<Exceção>: ...`); JSON malformado usa a mensagem do `serde_json`.
 - Limitações vs Python: classes que só existem no acervo externo (`CADE_ACERVO`: 5009, 1055) não
   estão no catálogo embutido; `IndexError` de listas curtas vira `ValueError` com a mesma mensagem.
 
@@ -120,9 +155,7 @@ Regras comuns:
 
 Por fase:
 
-- **cade_check**: `geo_check.analisar(path, redes)` (regras de docs/re-engenharia.md §9.2), `wires_check.analisar`,
-  `conferir_vinculos`, `lint_layout`, `acionavel_solto/curto`. Golden: JSON de `(curtos, soltos)` e `(n, ruins)`
-  por `.cad` de `tests/golden/*.cad` + `corpus/*.cad`.
+- **cade_check**: FEITO (ver "Paridade do gate"). Falta só ligar o executor de testes do `cade_sim`.
 - **cade_sim**: `Circuito` (nets por geometria, entradas/bobinas/lâmpadas), `estado`, temporizadores, `teste_casos`.
   Golden: `tools/eval/casos/*.json` e os casos `testes` dos exemplos (`RESULTADO: n/n OK`).
 - **cade_render**: `renderizar(path, scale)` → PNG; golden por hash de pixels ou comparação com tolerância.

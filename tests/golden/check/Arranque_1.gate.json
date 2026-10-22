@@ -1,0 +1,50 @@
+{
+ "entrada": "corpus/Arranque_1.cad",
+ "tipo": "gate",
+ "titulo": null,
+ "n_simbolos": null,
+ "build": {
+  "ok": true,
+  "mensagem": "OK {PATH} modo=0 versao=3004"
+ },
+ "geo": {
+  "curtos": [],
+  "soltos": [
+   "-X(3004).L2@(99, 45)",
+   "-X(3004).L3@(105, 45)",
+   "1(4011).p2@(153, 243)",
+   "2(4011).p2@(159, 243)",
+   "3(4011).p2@(165, 243)",
+   "4(4011).p2@(171, 243)"
+  ],
+  "curtos_msg": [],
+  "soltos_msg": [
+   "pino L2 da fonte -X (3004) solto em (99,45): ligue-o ao trilho L2 (fontes: {\"pinos\":{\"L2\":\"L2\"}}; cada pino da fonte vai a um trilho)",
+   "pino L3 da fonte -X (3004) solto em (105,45): ligue-o ao trilho L3 (fontes: {\"pinos\":{\"L3\":\"L3\"}}; cada pino da fonte vai a um trilho)",
+   "pino p2 de 1 (4011) solto em (153,243): nenhum fio termina nesse ponto; ligue o pino (conexao de/para) ou remova o simbolo",
+   "pino p2 de 2 (4011) solto em (159,243): nenhum fio termina nesse ponto; ligue o pino (conexao de/para) ou remova o simbolo",
+   "pino p2 de 3 (4011) solto em (165,243): nenhum fio termina nesse ponto; ligue o pino (conexao de/para) ou remova o simbolo",
+   "pino p2 de 4 (4011) solto em (171,243): nenhum fio termina nesse ponto; ligue o pino (conexao de/para) ou remova o simbolo"
+  ]
+ },
+ "fios": {
+  "ok": false,
+  "n": 56,
+  "atravessam": [
+   "fio (159, 93)->(159, 120) atravessa o simbolo -F1",
+   "fio (165, 93)->(165, 120) atravessa o simbolo -F1"
+  ]
+ },
+ "avisos": [
+  "2 trecho(s) de fio atravessam simbolo (estetico): fio (159, 93)->(159, 120) atravessa o simbolo -F1; fio (165, 93)->(165, 120) atravessa o simbolo -F1"
+ ],
+ "erros": [
+  "pino L2 da fonte -X (3004) solto em (99,45): ligue-o ao trilho L2 (fontes: {\"pinos\":{\"L2\":\"L2\"}}; cada pino da fonte vai a um trilho)",
+  "pino L3 da fonte -X (3004) solto em (105,45): ligue-o ao trilho L3 (fontes: {\"pinos\":{\"L3\":\"L3\"}}; cada pino da fonte vai a um trilho)",
+  "pino p2 de 1 (4011) solto em (153,243): nenhum fio termina nesse ponto; ligue o pino (conexao de/para) ou remova o simbolo",
+  "pino p2 de 2 (4011) solto em (159,243): nenhum fio termina nesse ponto; ligue o pino (conexao de/para) ou remova o simbolo",
+  "pino p2 de 3 (4011) solto em (165,243): nenhum fio termina nesse ponto; ligue o pino (conexao de/para) ou remova o simbolo",
+  "pino p2 de 4 (4011) solto em (171,243): nenhum fio termina nesse ponto; ligue o pino (conexao de/para) ou remova o simbolo"
+ ],
+ "estatico_ok": false
+}

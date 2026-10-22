@@ -1,0 +1,29 @@
+{
+ "entrada": "corpus/Aula1.cad",
+ "tipo": "gate",
+ "titulo": null,
+ "n_simbolos": null,
+ "build": {
+  "ok": true,
+  "mensagem": "OK {PATH} modo=0 versao=3000"
+ },
+ "geo": {
+  "curtos": [],
+  "soltos": [],
+  "curtos_msg": [],
+  "soltos_msg": []
+ },
+ "fios": {
+  "ok": false,
+  "n": 61,
+  "atravessam": [
+   "fio (162, 63)->(162, 90) atravessa o simbolo -F",
+   "fio (168, 63)->(168, 90) atravessa o simbolo -F"
+  ]
+ },
+ "avisos": [
+  "2 trecho(s) de fio atravessam simbolo (estetico): fio (162, 63)->(162, 90) atravessa o simbolo -F; fio (168, 63)->(168, 90) atravessa o simbolo -F"
+ ],
+ "erros": [],
+ "estatico_ok": true
+}

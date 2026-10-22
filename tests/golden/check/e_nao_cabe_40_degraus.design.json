@@ -1,0 +1,26 @@
+{
+ "entrada": "tests/golden/e_nao_cabe_40_degraus.layout.json",
+ "tipo": "design",
+ "titulo": null,
+ "n_simbolos": null,
+ "build": {
+  "ok": false,
+  "mensagem": ""
+ },
+ "geo": {
+  "curtos": [],
+  "soltos": [],
+  "curtos_msg": [],
+  "soltos_msg": []
+ },
+ "fios": {
+  "ok": null,
+  "n": 0,
+  "atravessam": []
+ },
+ "avisos": [],
+ "erros": [
+  "layout invalido: faixa extra nao cabe na folha (y=373 > 305); reduza a rede ou use 'rungs' em menos degraus"
+ ],
+ "estatico_ok": false
+}

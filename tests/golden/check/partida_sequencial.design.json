@@ -1,0 +1,24 @@
+{
+ "entrada": "tests/golden/partida_sequencial.layout.json",
+ "tipo": "design",
+ "titulo": "PARTIDA SEQUENCIAL",
+ "n_simbolos": 23,
+ "build": {
+  "ok": true,
+  "mensagem": "132 entidades -> {OUT} | OK {OUT} modo=0 versao=4000"
+ },
+ "geo": {
+  "curtos": [],
+  "soltos": [],
+  "curtos_msg": [],
+  "soltos_msg": []
+ },
+ "fios": {
+  "ok": true,
+  "n": 109,
+  "atravessam": []
+ },
+ "avisos": [],
+ "erros": [],
+ "estatico_ok": true
+}

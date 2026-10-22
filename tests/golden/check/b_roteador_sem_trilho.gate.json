@@ -1,0 +1,30 @@
+{
+ "entrada": "tests/golden/b_roteador_sem_trilho.cad",
+ "tipo": "gate",
+ "titulo": null,
+ "n_simbolos": null,
+ "build": {
+  "ok": true,
+  "mensagem": "OK {PATH} modo=0 versao=8000"
+ },
+ "geo": {
+  "curtos": [],
+  "soltos": [
+   "-KM1(7000).p1@(140, 20)"
+  ],
+  "curtos_msg": [],
+  "soltos_msg": [
+   "pino p1 de -KM1 (7000) solto em (140,20): nenhum fio termina nesse ponto; ligue o pino (conexao de/para) ou remova o simbolo"
+  ]
+ },
+ "fios": {
+  "ok": true,
+  "n": 18,
+  "atravessam": []
+ },
+ "avisos": [],
+ "erros": [
+  "pino p1 de -KM1 (7000) solto em (140,20): nenhum fio termina nesse ponto; ligue o pino (conexao de/para) ou remova o simbolo"
+ ],
+ "estatico_ok": false
+}

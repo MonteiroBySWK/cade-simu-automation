@@ -1,11 +1,28 @@
-//! `cade_check` — ESQUELETO (fase futura).
+//! `cade_check` — gate estatico do projeto (port de `geo_check.py`, `wires_check.py` e do gate de
+//! `build_spec.py`). O Python continua sendo o ORACULO: `tests/golden/check/` guarda a saida dele.
 //!
-//! Portar de Python (oraculo), mantendo as mesmas mensagens:
-//! - `tools/geo_check.py`   -> `geo::analisar(path, redes) -> (curtos, soltos)`  (conectividade por geometria,
-//!   docs/re-engenharia.md §9.2: fio-fio por extremo, junta 4001, pino so liga a extremo de fio, estampas de fase)
-//! - `tools/wires_check.py` -> `fios::analisar(path) -> (n_fios, ruins)`          (fio atravessando corpo de simbolo)
-//! - `tools/build_spec.py`  -> `conferir_vinculos`, `acionavel_solto`, `acionavel_curto`, `lint_layout`,
-//!   `conferir_chaves_de_teste` (parte que nao depende do simulador)
+//! | modulo | Python | papel |
+//! |---|---|---|
+//! | [`geom`] | `geo_check.pinos_da_classe/_rot` + uniao de nets | **geometria compartilhada** (API publica p/ o `cade_sim`) |
+//! | [`geo`] | `geo_check.analisar` | curtos de fase e pinos soltos |
+//! | [`fios`] | `wires_check.analisar` | fio atravessando o corpo de simbolo |
+//! | [`vinculos`] | `build_spec.conferir_vinculos` | termico/bobina por rotulo |
+//! | [`lint`] | `build_spec.lint_layout` | avisos de autoria do layout |
+//! | [`acionavel`] | `acionavel_solto/curto` | mensagens que dizem o que fazer |
+//! | [`gate`] | `build_spec.gate/construir`, `cad_gate/cad_design` | relatorio JSON identico ao do MCP |
 //!
-//! Use `cade_model::{split_all, parse_ent}` e `cade_model::dados::{pinos_binario, symbol_pins}`.
-//! Paridade: gere goldens com o Python (ver docs/rust-port.md, "Proximas fases").
+//! Testes funcionais **nao** ficam aqui: dependem do simulador (`cade_sim`). O gate recebe um
+//! [`ExecutorTestes`]; sem ele ([`NaoPortado`]) o campo `testes` sai `nao_portado` e o gate NAO
+//! aprova (`ok=false`), expondo a parte estatica em [`Relatorio::estatico_ok`].
+
+pub mod acionavel;
+pub mod fios;
+pub mod gate;
+pub mod geo;
+pub mod geom;
+pub mod lint;
+pub mod vinculos;
+
+pub use gate::{
+    construir, design_texto, gate_arquivo, gate_bytes, parse_testes, ExecutorTestes, NaoPortado, Relatorio, SaidaTestes,
+};

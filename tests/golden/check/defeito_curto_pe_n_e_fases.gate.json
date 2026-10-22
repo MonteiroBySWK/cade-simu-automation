@@ -1,0 +1,33 @@
+{
+ "entrada": "tests/golden/check/defeito_curto_pe_n_e_fases.cad",
+ "tipo": "gate",
+ "titulo": null,
+ "n_simbolos": null,
+ "build": {
+  "ok": true,
+  "mensagem": "OK {PATH} modo=0 versao=3007"
+ },
+ "geo": {
+  "curtos": [
+   "1+2 na mesma net: -X.L1, -X.L2",
+   "N+P na mesma net: -X.N, -X.PE"
+  ],
+  "soltos": [],
+  "curtos_msg": [
+   "CURTO 1+2 na mesma net: -X.L1, -X.L2 — duas fases no mesmo no: confira trilhos L1/L2/L3 e a coluna de cada fase",
+   "CURTO N+P na mesma net: -X.N, -X.PE — PE ligado ao neutro: crie trilho PE separado (\"pe\":\"PE\")"
+  ],
+  "soltos_msg": []
+ },
+ "fios": {
+  "ok": true,
+  "n": 67,
+  "atravessam": []
+ },
+ "avisos": [],
+ "erros": [
+  "CURTO 1+2 na mesma net: -X.L1, -X.L2 — duas fases no mesmo no: confira trilhos L1/L2/L3 e a coluna de cada fase",
+  "CURTO N+P na mesma net: -X.N, -X.PE — PE ligado ao neutro: crie trilho PE separado (\"pe\":\"PE\")"
+ ],
+ "estatico_ok": false
+}

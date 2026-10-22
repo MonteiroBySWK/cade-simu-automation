@@ -1,0 +1,26 @@
+{
+ "entrada": "tests/golden/e_duas_chaves.layout.json",
+ "tipo": "design",
+ "titulo": null,
+ "n_simbolos": null,
+ "build": {
+  "ok": false,
+  "mensagem": ""
+ },
+ "geo": {
+  "curtos": [],
+  "soltos": [],
+  "curtos_msg": [],
+  "soltos_msg": []
+ },
+ "fios": {
+  "ok": null,
+  "n": 0,
+  "atravessam": []
+ },
+ "avisos": [],
+ "erros": [
+  "layout invalido: expressao invalida {'serie': [['K', '9000', '-K']], 'paralelo': []}: use exatamente uma chave 'serie' ou 'paralelo'"
+ ],
+ "estatico_ok": false
+}

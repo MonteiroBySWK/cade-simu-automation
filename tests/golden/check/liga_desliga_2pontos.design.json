@@ -1,0 +1,24 @@
+{
+ "entrada": "tests/golden/liga_desliga_2pontos.layout.json",
+ "tipo": "design",
+ "titulo": "LIGA/DESLIGA DE 2 PONTOS",
+ "n_simbolos": 13,
+ "build": {
+  "ok": true,
+  "mensagem": "81 entidades -> {OUT} | OK {OUT} modo=0 versao=4000"
+ },
+ "geo": {
+  "curtos": [],
+  "soltos": [],
+  "curtos_msg": [],
+  "soltos_msg": []
+ },
+ "fios": {
+  "ok": true,
+  "n": 68,
+  "atravessam": []
+ },
+ "avisos": [],
+ "erros": [],
+ "estatico_ok": true
+}
