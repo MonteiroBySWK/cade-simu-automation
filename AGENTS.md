@@ -1,5 +1,7 @@
 # AGENTS.md — cade-simu-automation
 
+> **Sessão nova? Leia `docs/HANDOFF.md` primeiro** (estado, trabalho em andamento, regras do usuário).
+
 Gera/valida circuitos do **CADe_SIMU 4.0** (`.cad`) por IA. **Nunca escreva `*`/`#` à mão**: use o MCP `cade-simu`.
 
 ## Setup (sem Wine)
