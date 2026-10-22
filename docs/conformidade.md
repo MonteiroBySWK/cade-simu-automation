@@ -189,6 +189,10 @@ Notas de gravacao de ladder (22/10/2026):
 - o `zoom_todo` NAO e chamado pelo gravador (os cliques na barra da MDI mexem na vista e o primeiro
   clique da acao se perde). No display dedicado a folha cabe no zoom automatico (~2 px/unidade).
 
+**Relogio do app**: sob Xvfb/Wine o app avanca ~0,41x o tempo de parede (medido com o TOF de 1 s:
+2,43 s de parede). Para temporizadores, `t_parede_ms` puro **nao** alinha; calibre o fator ou compare
+por janela.
+
 **Limite atual (22/10/2026)**: a comparacao instantanea funciona para ladder **combinacional**
 (`ladder_partida_direta`, `ladder_reversao`). Casos com **temporizador/oscilacao** (`intercalada`,
 `partida_sequencial_3`, `pratica5_complementar`) ainda nao sao comparaveis: o app repinta em ticks e

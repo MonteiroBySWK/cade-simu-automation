@@ -45,6 +45,8 @@ Consequência: A7 (estrela-triângulo) e A10 (GRAFCET/pneumática) saem do camin
 - [parcial] **A2. Conformidade de ladder** — casos `tests/conformidade/ladder_*` gerados por
   `tools/ladder_conformance.py`; golden do app com `--leituras 5 --settle 0.8 --sem-motores`.
   **Feito**: `ladder_partida_direta` e `ladder_reversao` (combinacionais) verdes em `cade conformidade`.
+  **Achado (22/10/2026)**: sob Xvfb/Wine o app roda ~0,41x o tempo de parede (TOF de 1 s caiu em 2,43 s
+  de parede) — por isso `t_parede_ms` puro nao alinha; calibrar o fator ou comparar por janela.
   **Pendente**: casos com temporizador/oscilação (`intercalada`, `partida_sequencial_3`,
   `pratica5_complementar`) — a comparação instantânea não serve (o app repinta em ticks e o relógio
   real não bate tick a tick); precisa de comparação por **janela** (conjunto de saídas ao longo de N
