@@ -1,123 +1,63 @@
-# HANDOFF — leia isto primeiro (próximo modelo/sessão)
+# HANDOFF — leia isto primeiro (próxima sessão)
 
-Atualizado: 2026-10-22 ~10h (horário de Brasília). Repo: `~/dev/codes/personal/cade-automation` (GitHub
-`MonteiroBySWK/cade-simu-automation`). O MCP `cade-simu` do usuário roda **deste checkout** (Claude Code e opencode).
+Atualizado: **2026-11-01**. Repo: `~/dev/codes/personal/cade-automation` (GitHub
+`MonteiroBySWK/cade-simu-automation`, **público**, GPL-3.0). O MCP roda **deste checkout**
+(Claude Code e opencode: `cade-simu` Python 17 tools + `cade-rust` 10 tools).
 
-## Objetivo do usuário
-1. **Hoje até 12h:** duas entregas em CLP + ladder no CADe_SIMU (A: Prática 5; B: partida sequencial de
-   3 motores). Exigem ladder no MCP, que **não existia** — está sendo implementado (seção abaixo).
-2. Projeto **100% Rust** (binário único `cade`, sem Python), com **motor de simulação próprio** validado por
-   **teste diferencial contra o app real** e rodando em **Docker sem Wine**. Python = oráculo até a paridade.
-3. Confiabilidade ≥ 80% de um modelo usando o MCP para resolver pedidos novos (benchmark held-out).
+## Objetivo
+1. **100% Rust**: binário único `cade` (build/layout/check/sim/mcp), sem Python; Python = oráculo
+   até a paridade. Motor de simulação próprio validado contra o app real (Wine) e Docker sem Wine.
+2. **≥ 80%** de confiabilidade de um agente usando o MCP em casos novos (benchmark held-out).
 
-## Regras do usuário (valem sempre)
-- Subagentes em **Sonnet**; no máximo ~3 em paralelo (limite de uso já derrubou sessões).
-- **Pode mergear PR sozinho** quando pronto e validado (CI verde + testes). Pode commitar direto no main.
-- Não commitar nos arquivos das entregas em `~/docs/uema/...` sem o usuário pedir (outro repo).
-- **Wine: um por vez**, nunca derrubar processo alheio (`python3 tools/wine_mgr.py status`). DISPLAY=:1.
-- **Ghidra: um por vez**, `GHIDRA_HEADLESS_MAXMEM=3G`, projeto `~/cade-ghidra` (programa
-  `CADe_SIMU 4.0 [BR].exe.0`), `-noanalysis`. Caminho de projeto sem `.`.
-- Não declarar "funciona" sem prova (testes; para comportamento do app, screenshot no Wine).
-- Responder em PT-BR, direto.
+## Regras (valem sempre)
+- Subagentes no máximo ~3 em paralelo; responder em PT-BR, direto. Pode commitar/mergear no main
+  com **CI verde + testes**.
+- **Nunca** commitar no repo da UEMA (`~/docs/uema`) sem o usuário pedir.
+- **Senha do app**: `CADE_SENHA` no ambiente — **nunca** no repo (histórico já purgado).
+- **Wine: um por vez** (DISPLAY dedicado). **Ghidra: um por vez**, `GHIDRA_HEADLESS_MAXMEM=3G`,
+  projeto `~/cade-ghidra`, programa `CADe_SIMU 4.0 [BR].exe.0`, `-noanalysis`.
+- Não declarar "funciona" sem prova (teste; no app, screenshot/leitura no Wine).
 
-## Estado (main, 22/10/2026 pos-v0.3.0)
-- Rust: **`cade mcp`** (stdio, 10 ferramentas: design/gate/pins/examples/build/test/
-  simulate/validate/symbols), **A8/A9/A11 portados** (layout monofasico/4 polos byte-identico +
-  recusa sem modelo; skips de paridade removidos) e **9007 intermitente** no `cade_sim`.
-- Python: **A4** (9004-9006 + 9007 + contatos 7004..7015 no `netlist_sim`) e **A5 parcial**
-  (sensores 2 fios como contato; 3+ fios sem modelo).
-- **A4/A5 no app: BLOQUEADO** — os `.cad` gerados com 9004/9007 e 7500 nao disparam no app
-  (modelo Python/Rust passa). Sem doador 9004/9007/7501/7502 no acervo. Investigacao com Ghidra
-  em andamento (campos `nums`/labels do 9004/7004/7500).
-- Pendente de harness: A2 timers (comparacao por janela; app ~0,41x tempo de parede sob Xvfb).
-- A13 restante: `cade_render` (preview PNG), `cade_app` (Wine), `cade_vision`, `cade_maint`.
+## Estado (main `c513c69`, CI **verde** Linux+Windows)
+- **Rust**: workspace com 34 suítes (`cargo test --workspace`); `cade mcp` (10 tools); paridade
+  byte-a-byte com o Python nos goldens; A8/A9 (mono/4 polos), A11 (recusa sem modelo), 9007,
+  ladder (TON/TOF/borda/CTU), 3012 como fonte.
+- **Python (oráculo)**: `python3 scripts/dev.py test` → **244 passed, 1 skipped**.
+  `dev.py gate` → média 100 (18-21 exemplos); `run_eval --golden` → 100 em 16 casos.
+- **App (Wine)**: A4/A5 provados (9004, 9007 pisca, sensor 2 fios); CTU/TOF provados.
+  `cade conformidade tests/conformidade` → 13 ok / 0 divergentes / 3 sem golden.
+- **Benchmark B6**: 12/12 held-out × 100 (3 grupos).
+- **Doador**: rodapé (621 chars) e proto do fio 4000 são **constantes** em
+  `src/cade_model/src/dados.rs` (o binário não embute `.cad`). `corpus/` = só fixtures + `NOTICE.md`.
 
-## Estado (main)
-- `main` = `3b25658` + trabalho desta sessão (goldens do app, conformidade 11/11, correções do gravador,
-  `3012` como fonte, bibliografia/skill). Python completo (layout, gate, MCP, simulador, `app_sim`), Rust
-  fase 1 (`cade build`, `cade layout`), `cade_check`/`cade_sim` com testes funcionais de verdade.
-- **Conformidade**: `tests/conformidade/` tem os 11 casos com `golden_app.json` **gravado no app**
-  (`"fonte":"app"`) e `cade conformidade` dá **11 ok, 0 divergentes, 0 provisórios**.
-- Setup: `python3 scripts/dev.py setup|doctor|test|gate|install-mcp`; Rust: `cargo test --workspace`.
-- Docs-chave: `AGENTS.md`, `docs/rust-port.md` (matriz de paridade), `docs/ladder.md` (contrato ladder/1),
-  `docs/re-engenharia.md` (§9 geometria, §11 papéis, §13 ladder), `docs/conformidade.md`,
-  `docs/bibliografia/automacao-industrial.md`, `docs/app-sim.md`, `docs/integracao.md`.
+## Histórico reescrito (2026-11-01)
+- `git filter-repo`: removidos `pratica5/`, o histórico antigo de `corpus/` e
+  `tools/render_cad.sh`; senha do app (literal) → `CADE_SENHA`; `/home/monteiro` → `~`; nome do professor
+  e `murillous` anonimizados. `main`, tags e **branches antigas apagadas**; worktrees removidos.
+- Release/tag **v0.3.0 apagados** (o asset antigo embutia o corpus). `v0.2.0` (sem assets) mantida.
+- **Residual**: as refs de PR do GitHub (#5–#9 mesclados, #7 fechado) e o fork do colega ainda
+  alcançam o histórico antigo via páginas de PR/fork — para sumir de vez: repo privado ou recriar
+  o repo (ou suporte GitHub). Backup da história antiga: `/tmp/opencode/rewrite/` (bundle+mirror).
+- O corpus voltou num commit **novo** só como fixture (`corpus/NOTICE.md`); o histórico antigo dele
+  não existe mais.
 
-## Trabalho em andamento quando esta sessão acabou
-### Goldens do app + conformidade — CONCLUÍDO (main, 22/10/2026)
-- `tools/golden_app.py`: gravador `cenario.json` → `golden_app.json` no app real (Wine), com observador
-  injetável e testes unitários. Fecha os disjuntores após Play/`reiniciar` (`--sem-disjuntores` grava o
-  app cru), recusa cenário com dois atuadores segurados e solta o mouse **no ponto do clique**.
-- **Fatos do app que custaram caro** (todos agora documentados): disjuntores iniciam **abertos** (sem
-  clique o motor não gira); **um ponteiro só** (não dá para segurar S1 e apertar S0); o app repinta em
-  ticks de 100 ms e a captura pega **quadro parcial** (settle de 0,5 s + 0,25 s antes de ler);
-  **`3012` é fonte** (secundário `p4`=L/`p3`=N) — somar `3003` no mesmo par de trilhos = **CURTO**.
-- Correções de modelo: `3012` como fonte no Python (`geo_check`) e no Rust (`cade_check::geom`/`geo`/
-  `acionavel`, `cade_sim::circuito`); `vinculos` do Rust passou a aceitar disjuntor (`6002/6003/6009/6010`)
-  no contato 8016/8017, como o Python. Exemplo `partida_trafo_comando` sem a `3003` extra.
-- Verificação: `python3 scripts/dev.py test` (192), `cargo test --workspace`, `python3 scripts/dev.py gate`
-  (11 exemplos, média 100), `cade conformidade tests/conformidade` (11/11).
+## Pendências
+- **Ladder com temporizador na conformidade** (`intercalada`, `partida_sequencial_3`,
+  `pratica5_complementar`): app ~0,41× tempo de parede; comparar por janela/fator (goldens ainda
+  sem `fonte:app`).
+- **3 fios (7501/7502) e 9015**: sem protótipo/geometria no `symbol_lib` (Ghidra/desenho no app).
+- **A13**: portar `cade_render` (preview PNG), `cade_app` (Wine), `cade_vision`, `cade_maint`;
+  depois remover o Python.
+- **PR #7** (colega): fechado, não mesclado; trabalho coberto pelo main.
+- Benchmark: repetir com casos novos (o B6 usou moldes próximos).
 
-### Ladder + entregas A/B — CONCLUÍDO (main `836dc4a`)
-- DSL `ladder/1` em Python: `tools/ladder_dsl.py` (V1–V8, modelo lógico 100 ms = geométrico `tools/clp_sim.py`),
-  `tools/cadfile.py` (round-trip .cad), pinos do CLP corrigidos, `app_sim` (Play via Stop vermelho, DJ1, saídas
-  10205/bobinas ladder, `--roteiro`), SKILL/docs. 173 testes; gate: 5 `.ladder.json` OK.
-- **Entrega A**: `~/docs/uema/.../atividade-partidas-intercalares/cad/Pratica5_Complementar_Monteiro.cad`
-  (+ `.ladder.json`); R2 → Q0.2 corrigida (bug provado no app), RT1/RT2 em I0.4–I0.7, H3/H4 em Q0.4/Q0.5;
-  T1–T7 aprovados no app — `../evidencias/relatorio_T1_T7.md` + `evidencias/app/*.png`.
-- **Entrega B**: `.../partida-sequencial-3-motores/` (README, cad/, evidencias/): M3 ~0,6 s, M2 2,4 s, M1 4,4 s
-  no app. B0: M1 cai ~0,7 s depois (cascata do ladder sugerido; documentado).
-- Pendências: ladder no Rust; `potencia` em lista + `dj_comum`; casos `tools/eval/casos/ladder/` fora do
-  `run_eval`; H1–H3/térmicos da B (opcional). Arquivos das entregas NÃO commitados no repo da UEMA.
-- Observação: tempos no app variam com carga da máquina (atrasos chegaram a ~3,9 s sob compilação Rust).
-
-### Rust (cade_sim / conformidade / Docker) — PR da branch `feat/rust-sim-conformidade`
-- **Feito:** crate `cade_sim` (geometria reaproveitada de `cade_check::geom`; papéis em duas camadas: tabela embutida = a do
-  Python + derivada de `docs/classes-papeis.json`; NA/NC/NA-NC/comutados, disjuntor/interruptor iniciam abertos, fusível
-  íntegro, temporizadores 9004/9005/9006 + contatos 7004..7015 por rótulo, motores, curto, relaxação). `ExecutorSim`
-  implementa `cade_check::ExecutorTestes` e está ligado em `src/cade_cli/src/check.rs` (`cade gate`/`design` rodam testes
-  de verdade). CLI `cade simulate|test|conformidade`. Paridade com o Python: `tests/golden/sim/gerar.py` +
-  `tests/paridade/tests/simulacao.rs`. Conformidade: `tests/conformidade/<caso>/` (11 goldens **provisórios**,
-  `"fonte":"oraculo_python"`; regere com `python3 tests/conformidade/gerar.py`, que preserva goldens `"fonte":"app"`).
-  `Dockerfile` (scratch + binário musl), job de CI, `docker/wine-golden/Dockerfile` (opcional, NÃO executado).
-  Doc: `docs/conformidade.md` (formato, como gravar no app, Docker, licença) e seção "Simulação" de `docs/rust-port.md`.
-- **Falta:** (1) gravar `golden_app.json` reais com `app_sim` (Wine) — divergências esperadas listadas em
-  `docs/conformidade.md` (disjuntor 6009/6010 inicia aberto no app; térmico por rótulo; ticks de 100 ms);
-  (2) ladder/CLP em `cade_sim::ladder::ModeloLadder` (hoje só o trait; `saidas_clp` sempre `[]`);
-  (3) sem modelo: temporizador intermitente 9007, pulsos 9015, sensores 3 fios, GRAFCET/pneumática;
-  (4) motor "gira" = dois pinos de fase com estampas diferentes (confiança média, validar no app).
-
-### Se os agentes tiverem caído sem commitar
-- Ladder/entregas: o trabalho fica **não commitado no checkout principal** (`git status` mostra `tools/dissect.py`,
-  `tools/app_sim.py`, `docs/pinos-binario.json`, …). Revise, rode `python3 scripts/dev.py test`, commite com
-  `wip:` se incompleto e continue de onde parou.
-- Rust sim: worktree `.claude/worktrees/agent-aa61b087d86f7595a` (branch `feat/rust-sim`); idem.
-
-### PR de terceiro aberto
-- **#7** (autor `colega`, colega do usuário): "exercicio de partida sequencial de 3 motores com CLP". Não foi
-  revisado nesta sessão. Sobrepõe a Entrega B; pergunte ao usuário antes de mergear/fechar.
-
-## Próximos passos (ordem)
-> Checklist completo, com critérios de aceite e mapa das lacunas de RE: **`docs/TODO.md`**
-> (dois eixos: 100% funcional para as entregas e ≥80% para um agente resolver sozinho).
-1. ~~Fechar entregas A e B~~ — feito (validadas no Wine); arquivos seguem sem commit no repo da UEMA.
-2. ~~Mergear `feat/rust-sim`~~ — feito (PR #9).
-3. ~~Gravar goldens do app~~ — feito: 11 casos `"fonte":"app"`, `cade conformidade` 11/11.
-4. **Portar ladder para o `cade_sim`** (contrato `docs/ladder.md`, oráculo = Python novo) — próximo.
-5. Restante do port (crates esqueleto em `src/`): `cade_render` (preview PNG), `cade_mcp` (servidor MCP stdio +
-   `cade install-mcp`), `cade_app` (Wine), `cade_vision` (detector), `cade_maint` (gen_symbol_lib/learn_pins/
-   apply_bin_pins). Depois: PR que **apaga o Python** (dev.py, requirements, tools/*.py) quando tudo tiver paridade.
-6. Benchmark de confiabilidade (≥ 80%): 12 casos held-out em `tools/eval/heldout/` (ainda NÃO criados — o
-   agente que ia criá-los caiu), agentes resolvendo só com o MCP, `run_eval.py` pontua; iterar skill/DSL/erros.
-   Falta também `run_eval` pontuar `.ladder.json` (hoje os casos de `tools/eval/casos/ladder/` ficam de fora).
-7. Temporizadores 9004–9007 + bancada de cobertura por classe: rascunho não verificado na branch
-   `wip/temporizadores-bancada` (remota).
-8. Roadmap do `ladder/1` (borda 10052/10053, TOF 10067, contador 10063, GRAFCET 10100) — `docs/ladder.md` §2.6.
-
-## Fatos que custaram caro (não reaprender)
-- Conectividade do app é **geometria** (extremo a extremo; T só com `4001`); nets gravados são descartados.
-- Entidade 0 fica colada ao `CADe_SIMU*` (seq 0); nunca reaproveitar a do doador.
-- Fonte única `3007` + trilho PE; PE no N = curto. Térmico `6007` e contato 8016/8017 com **mesmo rótulo**.
-- Folha segura em unidades do `.cad`: x ≤ 455, y ≤ 305 (a barra de status do app usa unidade ~3,3× maior).
-- Botão 3D só troca bitmap (n16); nada a gerar. Para 10204/10205, `n16=1` = 24 V DC (muda a simulação).
-- opencode v2 grava MCP em `mcp.servers.<nome>`; `opencode mcp` não tem `remove`.
+## Comandos
+```bash
+python3 scripts/dev.py setup && python3 scripts/dev.py doctor   # sem Wine
+python3 scripts/dev.py test                                    # 244 passed
+cargo test --workspace                                         # 34 suites
+python3 scripts/dev.py gate                                    # exemplos + eval
+./target/release/cade conformidade tests/conformidade           # goldens do app
+DISPLAY=:2 python3 tools/golden_app.py --todos                 # regravar goldens (Wine)
+./target/release/cade mcp                                      # MCP Rust (stdio)
+```
