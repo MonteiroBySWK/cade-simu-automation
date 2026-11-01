@@ -84,7 +84,8 @@ fn confere_paridade(exemplo: &str) {
     let (ok_py, texto_py) = oraculo(exemplo, &cad_path, &casos);
     let c = CircuitoClp::de_bytes(&cad).unwrap_or_else(|e| panic!("{exemplo}: parse Rust: {e}"));
     let (ok_rs, texto_rs) = ladder::teste_casos(&c, &casos);
-    assert_eq!(texto_rs, texto_py, "{exemplo}: texto diverge do oraculo");
+    let norm = |t: String| t.replace("\r\n", "\n");
+    assert_eq!(norm(texto_rs), norm(texto_py), "{exemplo}: texto diverge do oraculo");
     assert_eq!(ok_rs, ok_py, "{exemplo}: veredito diverge do oraculo");
     assert!(ok_rs, "{exemplo}: casos reprovam (oraculo tambem reprova?)");
 }
