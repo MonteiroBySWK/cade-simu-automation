@@ -3,7 +3,7 @@
 ## CADe_SIMU
 
 - Sem spec pública do `.cad` (buscas só retornam tutoriais YouTube e papers didáticos). Confirma necessidade de RE próprio.
-- Porte Linux: `github.com/KelvinNovais/CADe_SIMU-Linux` (AppImage, senha CADE_SENHA). Base para automação Wine/headless sem Windows.
+- Porte Linux: `github.com/KelvinNovais/CADe_SIMU-Linux` (AppImage, senha do app (defina `CADE_SENHA`)). Base para automação Wine/headless sem Windows.
 - Manual local `Ajuda/Manual CADe_SIMU.pdf` é a melhor fonte de símbolos; `Scribd: CADe-SIMU-Manual-in-Practice` como backup.
 
 ## Análise de binário (descartada)

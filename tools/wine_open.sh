@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Abre .cad no CADe_SIMU via Wine de forma robusta e tira screenshot.
 # Uso: wine_open.sh <arquivo.cad> <saida.png> [cliques-zoom-mais]
-# - copia p/ o dir do EXE (argv curto), unlock SENHA CADE_SENHA com retry, maximiza, Zoom Todo.
+# - copia p/ o dir do EXE (argv curto), unlock com CADE_SENHA, maximiza, Zoom Todo.
 set -u
 CAD="$1"; SHOT="$2"; ZOOMPLUS="${3:-0}"
 EXE_DIR="${CADE_DIR:?defina CADE_DIR com a pasta do CADe_SIMU (veja docs/DEPENDENCIAS.md)}"
@@ -17,7 +17,7 @@ for i in $(seq 1 20); do
     W=$(xdotool search --name "SENHA" | head -1)
     xdotool windowactivate "$W" 2>/dev/null; sleep 1
     xdotool mousemove 512 335 click 1; sleep 1
-    xdotool type "$CADE_SENHA"; sleep 1
+    xdotool type "'"${CADE_SENHA:-}"'"; sleep 1
     xdotool key Return; sleep 4
   fi
   sleep 4

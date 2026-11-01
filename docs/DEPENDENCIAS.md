@@ -34,5 +34,5 @@ Os arquivos do app e do curso **não** são redistribuídos aqui (ver licença/n
 
 ## Variáveis de ambiente
 
-`CADE_DIR`, `CADE_EXE`, `CADE_ACERVO` (resolvidas em `tools/cade_config.py`). Scripts `.sh` de Wine exigem
+`CADE_DIR`, `CADE_EXE`, `CADE_ACERVO` (resolvidas em `tools/cade_config.py`) e `CADE_SENHA` (senha do app, por ambiente; **nao** vai no repo). Scripts `.sh` de Wine exigem
 `CADE_DIR`/`CADE_EXE` e param com mensagem clara se faltarem.

@@ -44,7 +44,7 @@ RTTI: `CCADe_SIMUDoc`, `CCADe_SIMUView`.
   - `dump6.java` — decompila uma função por endereço (recebe o addr).
 
 ```bash
-EXE="~/Downloads/CADe_SIMU 4.0 [BR]/CADe_SIMU 4.0 [BR]/CADe_SIMU 4.0 [BR].exe"
+EXE="$CADE_EXE"   # caminho do CADe_SIMU (defina no ambiente; nao versionado)
 /opt/ghidra/support/analyzeHeadless /tmp/opencode/ghidra_proj CADE -import "$EXE" -analysisTimeoutPerFile 3600   # ~150s
 /opt/ghidra/support/analyzeHeadless /tmp/opencode/ghidra_proj CADE -process "CADe_SIMU 4.0 [BR].exe" \
   -noanalysis -scriptPath tools/ghidra -postScript dump6.java 0087aca0

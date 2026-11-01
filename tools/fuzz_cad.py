@@ -38,7 +38,7 @@ def run_case(cad):
     scr = f"""wine "{EXE}" "fz_{name}.cad" & sleep 11
 xdotool key Return; sleep 2
 for i in 1 2 3 4 5 6 7 8; do
-  if xdotool search --name "SENHA" >/dev/null 2>&1; then xdotool type "$CADE_SENHA"; xdotool key Return; sleep 4; break; fi
+  if xdotool search --name "SENHA" >/dev/null 2>&1 && [ -n "${CADE_SENHA:-}" ]; then xdotool type "$CADE_SENHA"; xdotool key Return; sleep 4; break; fi
   sleep 2
 done
 sleep 3

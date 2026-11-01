@@ -1,4 +1,4 @@
-// dump7.java — localiza a checagem de senha (Clave.cpp, "CADE_SENHA").
+// dump7.java — localiza a checagem de senha (Clave.cpp).
 import ghidra.app.script.GhidraScript;
 import ghidra.app.decompiler.*;
 import ghidra.program.model.listing.*;
@@ -9,7 +9,7 @@ public class dump7 extends GhidraScript {
         Program p = currentProgram;
         FunctionManager fm = p.getFunctionManager();
         Listing st = p.getListing();
-        String[] alvo = {"CADE_SENHA", "senha correta", "clave correcta", "palavra-chave", "palabra clave",
+        String[] alvo = {"senha correta", "clave correcta", "palavra-chave", "palabra clave",
                          "Error Clave", "clave de acceso", "Clave"};
         java.util.LinkedHashSet<Function> fns = new java.util.LinkedHashSet<>();
         for (Data d : st.getDefinedData(true)) {

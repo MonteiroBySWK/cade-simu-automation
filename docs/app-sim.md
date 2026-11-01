@@ -18,7 +18,7 @@ no Wine que ele mesmo subiu** (se já há CADe_SIMU rodando de outro agente, esp
 ## Como funciona
 
 1. **Abertura robusta** (`AppSim.abrir`): copia o `.cad` como `app_sim.cad` no diretório do EXE, sobe
-   o Wine, digita a senha CADE_SENHA **uma vez por aparição do teclado** e só considera "pronto" quando a
+   o Wine, digita a senha do app (defina `CADE_SENHA`) **uma vez por aparição do teclado** e só considera "pronto" quando a
    toolbar está ativa (botão Play verde; diálogo modal deixa tudo cinza). Se o app morrer
    ("Erro de acesso Key") ou estourar 70 s: `down` + nova tentativa (até 3). ~20 s.
 2. **Vista**: depois do Play usa *Ver > Zoom Todo* (folha inteira a 1 px/unidade). A vista pode

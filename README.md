@@ -126,7 +126,7 @@ scripts/setup.sh   # build do cade_cli, venv MCP, gera out/intercalada.cad e rod
 
 Gate: `tools/build_spec.py` (gera via `cad_build` + `cad_test`, falha em AVISO/curto) e `tools/wires_check.py`. Esperado: `GATE: OK`.
 
-Variáveis de ambiente (defaults = caminhos do autor): `CADE_ACERVO` (pasta de `.cad` de referência), `CADE_EXE` (CADe_SIMU .exe), `CADE_DIR` (pasta do exe).
+Variáveis de ambiente (sem defaults pessoais): `CADE_ACERVO` (pasta de `.cad` de referência), `CADE_EXE` (CADe_SIMU .exe), `CADE_DIR` (pasta do exe) e `CADE_SENHA` (senha do app, **nao versionada**).
 
 Ver `docs/handoff-atividade.md` e `docs/dsl-layout.md`.
 

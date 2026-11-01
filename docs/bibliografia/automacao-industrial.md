@@ -1,6 +1,6 @@
 # Bibliografia — Automação Industrial (digest e lacunas)
 
-Material da disciplina (UEMA/DECOMP, prof. professor da disciplina) e livro-texto, baixados em
+Material da disciplina (UEMA/DECOMP) e livro-texto, baixados em
 22/10/2026. Extração: `pdftotext -layout` nos digitais e OCR (`tesseract`, modelo `por`) no livro
 escaneado; textos brutos em `out/bibliografia/` (fora do git — `*.pdf` e `out/` são ignorados).
 Este arquivo é o que fica: conceitos, o que o projeto **já cobre**, o que **não cobre** e o que fazer.

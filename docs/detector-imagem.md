@@ -46,8 +46,8 @@ símbolos existem, onde e de que tipo. Minerando renders rotulados:
 
 - `tools/mk_dataset.py` — gera `.cad` sintéticos com símbolos em coords
   conhecidas (clona entidades doadoras; mesmo render do app) + manifesto JSON.
-- `tools/render_cad.sh` — renderiza no CADe_SIMU via Wine (desbloqueio da senha
-  CADE_SENHA por cliques no teclado do diálogo; maximiza MDI; `Ver > Zoom Todo`).
+- `tools/wine_mgr.py` — abre/renderiza no CADe_SIMU via Wine (senha por `CADE_SENHA`)
+  a senha por cliques no teclado do diálogo (`CADE_SENHA`); maximiza MDI; `Ver > Zoom Todo`).
 - `tools/label_dataset.py` — transform calibrado `cad→tela`
   (`screen ≈ (50 + 1.995·x, 124 + 2.045·y)`), recorta cada símbolo rotulado
   em `out/dataset/<classe>/`, mede P/R real (`--detect`) e gera contact sheet.
@@ -62,7 +62,7 @@ aspecto, distância vetorial, k=5 votos). Sem dependências (numpy puro).
 
 ```bash
 python3 tools/mk_dataset.py gen 10          # .cad sintéticos + manifesto
-for c in out/ds/case-*.cad; do tools/render_cad.sh "$c" "${c%.cad}.png"; done
+# use tools/cade_open.py / wine_mgr.py com CADE_SENHA definido
 python3 tools/label_dataset.py --sheet      # recorta rotulados + contact sheet
 python3 tools/classifier.py train           # treina -> out/model.npz
 python3 tools/label_dataset.py --detect --knn   # mede P/R do kNN

@@ -4,7 +4,7 @@ import sys
 from pathlib import Path as _P
 sys.path.insert(0, str(_P(__file__).resolve().parent))
 import cade_config  # noqa: E402
-"""Abre um .cad no CADe_SIMU (Wine) e digita a senha CADE_SENHA sozinho — rápido.
+"""Abre um .cad no CADe_SIMU (Wine) e digita a senha (CADE_SENHA) sozinho — rapido.
 
 Localiza a janela do teclado de senha (CADE SIMU 4.0, ~176x189) e clica os
 dígitos + OK relativo à própria geometria da janela (robusto a posição/escala).
@@ -24,7 +24,7 @@ TECLA = {
     "4": (0.375, 0.598), "9": (0.665, 0.720), "6": (0.665, 0.598), "2": (0.517, 0.481),
     "OK": (0.375, 0.841),
 }
-SENHA = ["CADE_SENHA"]
+SENHA = [c for c in os.environ.get("CADE_SENHA", "")] + ["OK"] if os.environ.get("CADE_SENHA") else []
 
 
 def xdo(disp, *args):

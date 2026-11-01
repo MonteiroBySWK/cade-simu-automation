@@ -30,9 +30,16 @@ ROOT = Path(__file__).resolve().parent.parent
 LOGDIR = ROOT / "logs"
 EXE_DIR = cade_config.cade_dir()
 EXE = "CADe_SIMU 4.0 [BR].exe"
-# frações (x,y) do teclado da senha+OK dentro da janela do diálogo (176x189)
-TECLAS = {"4": (0.375, 0.598), "9": (0.665, 0.720), "6": (0.665, 0.598),
-          "2": (0.517, 0.481), "OK": (0.375, 0.841)}
+# frações (x,y) das teclas dentro da janela do diálogo de senha (176x189)
+TECLAS = {"0": (0.375, 0.598), "1": (0.375, 0.481), "2": (0.517, 0.481), "3": (0.665, 0.481),
+          "4": (0.375, 0.598), "5": (0.517, 0.598), "6": (0.665, 0.598), "7": (0.375, 0.720),
+          "8": (0.517, 0.720), "9": (0.665, 0.720), "OK": (0.375, 0.841)}
+
+
+def senha_teclas():
+    """Teclas da senha do app, de CADE_SENHA (sem default: a senha nao vai no repo)."""
+    s = os.environ.get("CADE_SENHA", "").strip()
+    return [c for c in s] + ["OK"] if s else []
 DISP = os.environ.get("DISPLAY", ":1")
 
 
@@ -124,7 +131,7 @@ def cmd_up(cad=None, disp=None):
                     geo = s.split()[1].split("x")
             if pos and geo == ["176", "189"]:
                 x, y = int(pos[0]), int(pos[1])
-                for k in ["CADE_SENHA"]:
+                for k in (senha_teclas() or []):
                     fx, fy = TECLAS[k]
                     xdo("mousemove", str(int(x + fx * 176)), str(int(y + fy * 189)),
                         "click", "1", disp=disp)
@@ -132,7 +139,7 @@ def cmd_up(cad=None, disp=None):
                 log(f"senha enviada em {time.time()-t0:.1f}s")
                 return 0
         time.sleep(0.4)
-    log("teclado de senha não apareceu (já liberado?)")
+    log("teclado de senha nao apareceu (ja liberado?)")
     return 0
 
 

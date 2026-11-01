@@ -39,7 +39,7 @@ CLI: `python3 tools/mcp_call.py cad_symbols | cad_inspect | cad_test | cad_previ
 |---|---|
 | `tools/build_spec.py` | **gate**: build + validate + test (reprova em curto/teste) |
 | `tools/wires_check.py` | mede trechos que atravessam símbolo (estética) |
-| `tools/wine_mgr.py` | `up`/`down`/`max`/`shot`/`ws N`/`logs` (abre no Wine, digita a senha CADE_SENHA) |
+| `tools/wine_mgr.py` | `up`/`down`/`max`/`shot`/`ws N`/`logs` (abre no Wine, digita a senha do app (defina `CADE_SENHA`)) |
 | `tools/symbol_pins.json` | geometria dos pinos por classe (nome→offset) |
 | `tools/learn_pins2.py` | mede pinos a partir dos 108 `.cad` do acervo |
 | `tools/netlist_sim.py` | simulador de netlist (usado pelo `cad_test`) |
@@ -72,7 +72,7 @@ CLI: `python3 tools/mcp_call.py cad_symbols | cad_inspect | cad_test | cad_previ
 
 ## Ver no app
 ```bash
-python3 tools/wine_mgr.py up out/intercalada.cad   # senha CADE_SENHA automática
+python3 tools/wine_mgr.py up out/intercalada.cad   # senha do app (defina `CADE_SENHA`) automática
 python3 tools/wine_mgr.py max && python3 tools/wine_mgr.py ws 10
 python3 tools/wine_mgr.py shot /tmp/x.png
 ```

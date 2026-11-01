@@ -569,7 +569,7 @@ class AppSim:
             k = self._teclado()
             if k and time.time() - ultimo_envio > 4 and envios < 3:
                 x, y = k
-                for tecla in (W.senha_teclas()):
+                for tecla in (W.senha_teclas() or []):
                     fx, fy = W.TECLAS[tecla]
                     _xdo("mousemove", str(int(x + fx * 176)), str(int(y + fy * 189)), "click", "1")
                     time.sleep(0.2)
