@@ -113,7 +113,11 @@ fn gate_de_cad_estatico_identico_ao_python() {
         if NAO_PORTADO.contains(&nome.as_str()) {
             continue;
         }
-        let cad = fs::read(raiz().join(g["entrada"].as_str().unwrap())).unwrap();
+        let arq = raiz().join(g["entrada"].as_str().unwrap());
+        if !arq.is_file() {
+            continue; // corpus do acervo nao versionado (CADE_ACERVO)
+        }
+        let cad = fs::read(&arq).unwrap();
         let r = gate_bytes(&cad, "{PATH}", &[], &NaoPortado).unwrap_or_else(|e| panic!("[{nome}] {e}"));
         assert!(!r.ok, "[{nome}] gate aprovou sem testes");
         compara(nome, &estatico(&r, ("{PATH}", "{PATH}")), &esperado(g), &mut falhas);

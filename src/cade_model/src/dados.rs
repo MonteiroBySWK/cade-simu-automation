@@ -1,6 +1,6 @@
 //! Dados embutidos no binario (`include_str!`): nada e lido do disco em runtime.
 //!
-//! Fontes (versionadas no repo): `tools/*.json` e `docs/*.json`. Quando o Python for removido,
+//! Fontes (versionadas no repo): `tools/*.json`, `docs/*.json` e as constantes de formato abaixo. Quando o Python for removido,
 //! estes arquivos migram para um diretorio de dados do workspace e so os caminhos abaixo mudam.
 
 use serde_json::Value;
@@ -14,8 +14,11 @@ pub const SYMBOL_NAMES_JSON: &str = include_str!("../../../tools/symbol_names.js
 pub const SHEET_JSON: &str = include_str!("../../../tools/sheet.json");
 pub const PINOS_BINARIO_JSON: &str = include_str!("../../../docs/pinos-binario.json");
 pub const CLASSES_PAPEIS_JSON: &str = include_str!("../../../docs/classes-papeis.json");
-/// Doador do catalogo (`mk_dataset.load_donor`): fornece o rodape (`$$$...`) e o fio 4000 prototipo.
-pub const DOADOR_CAD: &[u8] = include_bytes!("../../../corpus/Arranque_1.cad");
+/// Rodape do `.cad` (formato, sem redistribuir o acervo): constante de interoperabilidade.
+pub const FOOTER: &str = "$$$*2*1*1*2*2*0*1*0*0*333*3234&&&*           *           *           *           *                         *                         *29-Nov-2004*1          *1          *1.cad                *1*1*1*1*1*1*1*1*1*1*1*1*1*1***$$$&&&***$$$&&&*0*33*0#*93*4000##########*0*0*0*0*0*0*0*0*264*111*264*174*0*0*0*0*0*0*0*0*0*33*0#*94*4001##########*0*0*0*0*0*0*0*0*264*111*264*111*0*0*0*0*0*0*0*0*0*33*0#$$$*0*1*0*2*3*1*1*0*0*333*3234&&&*           *           *           *           *                         *                         *15-Sep-2003*1          *1          *1.cad                *1*1*1*1*1*1*1*1*1*1*1*1*1*1***$$$&&&";
+/// Proto do fio 4000 (rotulos e numeros de formato; coords em `nums[8..12]`).
+pub const FIO_4000_LABELS: [&str; 9] = ["", "", "", "", "", "", "", "", ""];
+pub const FIO_4000_NUMS: [&str; 23] = ["0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "1", "0"];
 
 fn json(txt: &str, nome: &str) -> Value {
     serde_json::from_str(txt).unwrap_or_else(|e| panic!("dado embutido {} invalido: {}", nome, e))

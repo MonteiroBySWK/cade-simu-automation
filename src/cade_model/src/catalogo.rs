@@ -1,12 +1,9 @@
 //! Catalogo de entidades-prototipo por classe (`cade_mcp._lib()` sem acervo externo).
 //!
-//! Ordem de precedencia (igual ao Python): doador (`corpus/Arranque_1.cad`, 8 classes) ->
-//! `symbol_lib.json`. As classes que o Python ainda poderia acrescentar do `corpus/*.cad` ja estao
-//! todas em `symbol_lib.json` (verificado); as do acervo do curso (opcional) nao existem aqui.
+//! Fonte: `symbol_lib.json` (as 8 classes que um doador fornecia sao identicas as da lib,
+//! verificado) + constantes de formato (`dados::FOOTER`, `dados::FIO_4000_*`) — sem acervo.
 
 use crate::dados;
-use crate::entidade::{parse_ent, split_entities};
-use crate::latin1;
 use std::collections::HashMap;
 use std::sync::OnceLock;
 
@@ -38,25 +35,9 @@ impl Catalogo {
     }
 
     fn carregar() -> Result<Catalogo, String> {
-        let d = latin1::decodificar(dados::DOADOR_CAD);
-        let part = split_entities(&d)?;
-        let mut protos: HashMap<String, Proto> = HashMap::new();
-        let mut fio: Option<Proto> = None;
-        for e in &part.ents {
-            let Some(p) = parse_ent(e) else { continue };
-            let proto = Proto { id: p.id.clone(), labels: p.labels, nums: p.nums };
-            if CLASSES_DOADOR.contains(&p.id.as_str()) && !protos.contains_key(&p.id) {
-                protos.insert(p.id.clone(), proto.clone());
-            }
-            if p.id == "4000" && fio.is_none() {
-                fio = Some(proto);
-            }
-        }
         let lib = dados::symbol_lib().as_object().ok_or("symbol_lib.json: objeto esperado")?;
+        let mut protos: HashMap<String, Proto> = HashMap::new();
         for (cid, v) in lib {
-            if protos.contains_key(cid) {
-                continue;
-            }
             let strs = |k: &str| -> Result<Vec<String>, String> {
                 v.get(k)
                     .and_then(|a| a.as_array())
@@ -67,7 +48,12 @@ impl Catalogo {
             };
             protos.insert(cid.clone(), Proto { id: cid.clone(), labels: strs("labels")?, nums: strs("nums")? });
         }
-        Ok(Catalogo { protos, footer: part.footer, fio: fio.ok_or("doador sem fio 4000")? })
+        let fio = Proto {
+            id: "4000".into(),
+            labels: dados::FIO_4000_LABELS.iter().map(|s| s.to_string()).collect(),
+            nums: dados::FIO_4000_NUMS.iter().map(|s| s.to_string()).collect(),
+        };
+        Ok(Catalogo { protos, footer: dados::FOOTER.to_string(), fio })
     }
 }
 
@@ -81,7 +67,8 @@ mod tests {
         assert!(c.protos.len() >= 136);
         assert!(c.footer.starts_with("$$$"));
         assert_eq!(c.fio.id, "4000");
-        assert_eq!(c.fio.nums[8], "93");
+        assert_eq!(c.fio.nums.len(), 23);
+        assert_eq!(c.fio.labels.len(), 9);
         for k in CLASSES_DOADOR {
             assert!(c.protos.contains_key(k), "{k}");
         }
